@@ -5,7 +5,7 @@ const CartContext = createContext(null);
 export function CartProvider({ children }) {
   const [items, setItems] = useState(() => {
     try {
-      const saved = localStorage.getItem('sabor-cart');
+      const saved = localStorage.getItem('recheiae-cart');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -14,7 +14,7 @@ export function CartProvider({ children }) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('sabor-cart', JSON.stringify(items));
+    localStorage.setItem('recheiae-cart', JSON.stringify(items));
   }, [items]);
 
   const addItem = useCallback((item) => {

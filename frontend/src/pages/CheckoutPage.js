@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { useCart } from '@/context/CartContext';
 import {
   calculateSubtotal, calculateTotalDiscount, calculateDeliveryFee,
-  calculateTotal, formatPrice, calculateItemPrice
+  calculateTotal, calculatePixDiscount, formatPrice, calculateItemPrice
 } from '@/utils/calculations';
 import { generateWhatsAppMessage, generateWhatsAppLink, generateOrderNumber } from '@/utils/whatsapp';
-import { STORE_CONFIG } from '@/utils/calculations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,19 +14,17 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Send, ShoppingBag, MessageCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, MessageCircle, ShoppingBag, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const paymentMethods = [
-  'Dinheiro',
-  'Cartão de crédito',
-  'Cartão de débito',
-  'PIX',
-];
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const { items, clearCart } = useCart();
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [loadingPM, setLoadingPM] = useState(true);
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
@@ -37,10 +35,25 @@ export default function CheckoutPage() {
     observacoes: '',
   });
 
+  useEffect(() => {
+    axios.get(`${API}/payment-methods`)
+      .then(res => setPaymentMethods(res.data))
+      .catch(() => {
+        setPaymentMethods([
+          { uuid: 'fb-1', nome: 'Pix', ativo: true },
+          { uuid: 'fb-2', nome: 'Cartão de crédito', ativo: true },
+          { uuid: 'fb-3', nome: 'Cartão de débito', ativo: true },
+          { uuid: 'fb-4', nome: 'Dinheiro', ativo: true },
+        ]);
+      })
+      .finally(() => setLoadingPM(false));
+  }, []);
+
   const subtotal = calculateSubtotal(items);
   const totalDiscount = calculateTotalDiscount(items);
   const deliveryFee = calculateDeliveryFee();
-  const total = calculateTotal(items);
+  const pixDiscount = calculatePixDiscount(formData.formaPagamento);
+  const total = calculateTotal(items, formData.formaPagamento);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -48,7 +61,6 @@ export default function CheckoutPage() {
 
   const handleSubmit = (e) => {
     if (e) e.preventDefault();
-
     if (!formData.nome || !formData.telefone || !formData.endereco || !formData.bairro || !formData.formaPagamento) {
       toast.error('Preencha todos os campos obrigatórios');
       return;
@@ -57,7 +69,6 @@ export default function CheckoutPage() {
       toast.error('Seu carrinho está vazio');
       return;
     }
-
     const orderNumber = generateOrderNumber();
     const message = generateWhatsAppMessage({
       orderNumber,
@@ -66,12 +77,11 @@ export default function CheckoutPage() {
       subtotal,
       deliveryFee,
       totalDiscount,
+      pixDiscount,
       total,
     });
-
-    const whatsappLink = generateWhatsAppLink(STORE_CONFIG.whatsapp, message);
+    const whatsappLink = generateWhatsAppLink(message);
     window.open(whatsappLink, '_blank');
-
     toast.success(`Pedido #${orderNumber} enviado!`);
     clearCart();
     navigate('/');
@@ -112,23 +122,11 @@ export default function CheckoutPage() {
             <CardContent className="space-y-4">
               <div className="space-y-1.5">
                 <Label htmlFor="nome" className="text-sm">Nome *</Label>
-                <Input
-                  id="nome"
-                  value={formData.nome}
-                  onChange={e => handleChange('nome', e.target.value)}
-                  placeholder="Seu nome completo"
-                  className="bg-card"
-                />
+                <Input id="nome" value={formData.nome} onChange={e => handleChange('nome', e.target.value)} placeholder="Seu nome completo" className="bg-card" />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="telefone" className="text-sm">Telefone *</Label>
-                <Input
-                  id="telefone"
-                  value={formData.telefone}
-                  onChange={e => handleChange('telefone', e.target.value)}
-                  placeholder="(XX) XXXXX-XXXX"
-                  className="bg-card"
-                />
+                <Input id="telefone" value={formData.telefone} onChange={e => handleChange('telefone', e.target.value)} placeholder="(XX) XXXXX-XXXX" className="bg-card" />
               </div>
             </CardContent>
           </Card>
@@ -140,34 +138,16 @@ export default function CheckoutPage() {
             <CardContent className="space-y-4">
               <div className="space-y-1.5">
                 <Label htmlFor="endereco" className="text-sm">Endereço *</Label>
-                <Input
-                  id="endereco"
-                  value={formData.endereco}
-                  onChange={e => handleChange('endereco', e.target.value)}
-                  placeholder="Rua e número"
-                  className="bg-card"
-                />
+                <Input id="endereco" value={formData.endereco} onChange={e => handleChange('endereco', e.target.value)} placeholder="Rua e número" className="bg-card" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="bairro" className="text-sm">Bairro *</Label>
-                  <Input
-                    id="bairro"
-                    value={formData.bairro}
-                    onChange={e => handleChange('bairro', e.target.value)}
-                    placeholder="Bairro"
-                    className="bg-card"
-                  />
+                  <Input id="bairro" value={formData.bairro} onChange={e => handleChange('bairro', e.target.value)} placeholder="Bairro" className="bg-card" />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="complemento" className="text-sm">Complemento</Label>
-                  <Input
-                    id="complemento"
-                    value={formData.complemento}
-                    onChange={e => handleChange('complemento', e.target.value)}
-                    placeholder="Apto, ref..."
-                    className="bg-card"
-                  />
+                  <Input id="complemento" value={formData.complemento} onChange={e => handleChange('complemento', e.target.value)} placeholder="Apto, ref..." className="bg-card" />
                 </div>
               </div>
             </CardContent>
@@ -180,32 +160,38 @@ export default function CheckoutPage() {
             <CardContent className="space-y-4">
               <div className="space-y-1.5">
                 <Label className="text-sm">Forma de Pagamento *</Label>
-                <Select value={formData.formaPagamento} onValueChange={v => handleChange('formaPagamento', v)}>
-                  <SelectTrigger className="bg-card">
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {paymentMethods.map(method => (
-                      <SelectItem key={method} value={method}>{method}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {loadingPM ? (
+                  <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" /> Carregando...
+                  </div>
+                ) : (
+                  <Select value={formData.formaPagamento} onValueChange={v => handleChange('formaPagamento', v)}>
+                    <SelectTrigger className="bg-card">
+                      <SelectValue placeholder="Selecione..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {paymentMethods.map(method => (
+                        <SelectItem key={method.uuid} value={method.nome}>
+                          {method.nome}
+                          {method.nome.toLowerCase() === 'pix' && ' (desconto R$ 10,00)'}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {pixDiscount > 0 && (
+                  <Badge variant="success" className="text-xs mt-1">
+                    Desconto Pix de {formatPrice(pixDiscount)} aplicado!
+                  </Badge>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="observacoes" className="text-sm">Observações</Label>
-                <Textarea
-                  id="observacoes"
-                  value={formData.observacoes}
-                  onChange={e => handleChange('observacoes', e.target.value)}
-                  placeholder="Troco para quanto? Algum detalhe sobre o pedido?"
-                  rows={3}
-                  className="bg-card"
-                />
+                <Textarea id="observacoes" value={formData.observacoes} onChange={e => handleChange('observacoes', e.target.value)} placeholder="Troco para quanto? Algum detalhe sobre o pedido?" rows={3} className="bg-card" />
               </div>
             </CardContent>
           </Card>
 
-          {/* Mobile submit */}
           <Button type="submit" size="lg" className="w-full md:hidden">
             <MessageCircle className="h-4 w-4" />
             Enviar Pedido pelo WhatsApp
@@ -232,28 +218,33 @@ export default function CheckoutPage() {
               <Separator />
 
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal</span>
+                <span className="text-muted-foreground">SUBTOTAL</span>
                 <span className="text-foreground">{formatPrice(subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">FRETE</span>
+                <span className="text-foreground">{formatPrice(deliveryFee)}</span>
               </div>
               {totalDiscount > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-success">Descontos</span>
+                  <span className="text-success">DESCONTOS</span>
                   <span className="text-success">-{formatPrice(totalDiscount)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Frete</span>
-                <span className="text-foreground">{formatPrice(deliveryFee)}</span>
-              </div>
+              {pixDiscount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-pix-badge font-medium">DESCONTO PIX</span>
+                  <span className="text-pix-badge font-medium">-{formatPrice(pixDiscount)}</span>
+                </div>
+              )}
 
               <Separator />
 
               <div className="flex justify-between font-bold text-lg">
-                <span className="text-foreground">Total</span>
+                <span className="text-foreground">VALOR FINAL</span>
                 <span className="text-foreground">{formatPrice(total)}</span>
               </div>
 
-              {/* Desktop submit */}
               <Button size="lg" className="w-full hidden md:flex mt-2" onClick={handleSubmit}>
                 <MessageCircle className="h-4 w-4" />
                 Enviar pelo WhatsApp

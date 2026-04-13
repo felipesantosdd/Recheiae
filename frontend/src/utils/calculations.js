@@ -1,9 +1,10 @@
 export const STORE_CONFIG = {
-  nome: 'Sabor Express',
-  whatsapp: '5535999582766',
+  nome: 'Recheiaê',
+  whatsapp: '553592147338',
   cidade: 'Itajubá - MG',
   deliveryFee: 10.00,
   deliveryTime: '40 min',
+  pixDiscount: 10.00,
 };
 
 export function calculateItemPrice(originalPrice, discount = 0) {
@@ -25,11 +26,17 @@ export function calculateDeliveryFee() {
   return STORE_CONFIG.deliveryFee;
 }
 
-export function calculateTotal(items) {
+export function calculatePixDiscount(formaPagamento) {
+  if (!formaPagamento) return 0;
+  return formaPagamento.toLowerCase() === 'pix' ? STORE_CONFIG.pixDiscount : 0;
+}
+
+export function calculateTotal(items, formaPagamento = '') {
   const subtotal = calculateSubtotal(items);
   const discount = calculateTotalDiscount(items);
   const delivery = calculateDeliveryFee();
-  return subtotal - discount + delivery;
+  const pixDisc = calculatePixDiscount(formaPagamento);
+  return Math.max(0, subtotal - discount - pixDisc + delivery);
 }
 
 export function formatPrice(value) {

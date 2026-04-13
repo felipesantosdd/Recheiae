@@ -23,24 +23,18 @@ export function CartDrawer() {
 
   return (
     <>
-      {/* Mobile bottom bar */}
+      {/* Floating cart button – always visible when items > 0 */}
       {itemCount > 0 && !isOpen && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden safe-area-inset">
-          <button
-            onClick={openCart}
-            className="w-full bg-primary p-4 flex items-center justify-between shadow-[0_-4px_20px_rgba(0,0,0,0.1)]"
-          >
-            <span className="flex items-center gap-2 text-primary-foreground">
-              <ShoppingBag className="h-5 w-5" />
-              <span className="font-semibold text-sm">
-                Ver Sacola ({itemCount} {itemCount === 1 ? 'item' : 'itens'})
-              </span>
-            </span>
-            <span className="font-bold text-primary-foreground text-sm">
-              {formatPrice(total)}
-            </span>
-          </button>
-        </div>
+        <button
+          onClick={openCart}
+          className="fixed bottom-20 right-5 z-40 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow"
+          aria-label="Abrir carrinho"
+        >
+          <ShoppingBag className="h-6 w-6" />
+          <span className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-accent text-accent-foreground text-[11px] font-bold flex items-center justify-center shadow cart-badge-bounce">
+            {itemCount}
+          </span>
+        </button>
       )}
 
       {/* Cart Sheet */}

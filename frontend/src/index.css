@@ -6,34 +6,36 @@
 
 @layer base {
   :root {
-    /* Warm food delivery palette */
-    --background: 30 25% 98%;
-    --foreground: 20 30% 10%;
+    /* Recheiaê – golden potato warm palette */
+    --background: 40 30% 97%;
+    --foreground: 30 30% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 20 30% 10%;
+    --card-foreground: 30 30% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 20 30% 10%;
-    --primary: 22 93% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 25 20% 95%;
-    --secondary-foreground: 20 25% 15%;
-    --muted: 25 15% 93%;
-    --muted-foreground: 20 10% 46%;
-    --accent: 16 85% 42%;
+    --popover-foreground: 30 30% 8%;
+    --primary: 36 95% 48%;
+    --primary-foreground: 30 30% 8%;
+    --secondary: 38 28% 94%;
+    --secondary-foreground: 30 25% 15%;
+    --muted: 38 18% 92%;
+    --muted-foreground: 30 12% 44%;
+    --accent: 24 88% 45%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 25 12% 90%;
-    --input: 25 12% 88%;
-    --ring: 22 93% 50%;
+    --border: 38 16% 89%;
+    --input: 38 16% 86%;
+    --ring: 36 95% 48%;
     /* Extended semantic tokens */
     --success: 145 63% 38%;
     --success-foreground: 0 0% 100%;
     --promo-badge: 345 82% 46%;
     --promo-badge-foreground: 0 0% 100%;
-    --popular-badge: 22 90% 48%;
+    --popular-badge: 24 88% 45%;
     --popular-badge-foreground: 0 0% 100%;
-    --hero-overlay: 20 40% 8%;
+    --pix-badge: 160 60% 38%;
+    --pix-badge-foreground: 0 0% 100%;
+    --hero-overlay: 30 40% 6%;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
@@ -43,32 +45,34 @@
   }
 
   .dark {
-    --background: 20 20% 6%;
-    --foreground: 30 15% 95%;
-    --card: 20 15% 10%;
-    --card-foreground: 30 15% 95%;
-    --popover: 20 15% 10%;
-    --popover-foreground: 30 15% 95%;
-    --primary: 22 93% 55%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 20 15% 15%;
-    --secondary-foreground: 30 15% 90%;
-    --muted: 20 10% 18%;
-    --muted-foreground: 25 10% 60%;
-    --accent: 16 80% 50%;
+    --background: 30 20% 6%;
+    --foreground: 40 15% 95%;
+    --card: 30 15% 10%;
+    --card-foreground: 40 15% 95%;
+    --popover: 30 15% 10%;
+    --popover-foreground: 40 15% 95%;
+    --primary: 36 95% 52%;
+    --primary-foreground: 30 30% 8%;
+    --secondary: 30 15% 15%;
+    --secondary-foreground: 40 15% 90%;
+    --muted: 30 10% 18%;
+    --muted-foreground: 38 10% 60%;
+    --accent: 24 80% 50%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 20 10% 18%;
-    --input: 20 10% 20%;
-    --ring: 22 93% 55%;
+    --border: 30 10% 18%;
+    --input: 30 10% 20%;
+    --ring: 36 95% 52%;
     --success: 145 55% 48%;
     --success-foreground: 0 0% 100%;
     --promo-badge: 345 75% 50%;
     --promo-badge-foreground: 0 0% 100%;
-    --popular-badge: 22 85% 55%;
+    --popular-badge: 24 85% 55%;
     --popular-badge-foreground: 0 0% 100%;
-    --hero-overlay: 20 30% 5%;
+    --pix-badge: 160 55% 45%;
+    --pix-badge-foreground: 0 0% 100%;
+    --hero-overlay: 30 30% 5%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;

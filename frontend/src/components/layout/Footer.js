@@ -11,12 +11,12 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">S</span>
+                <span className="text-primary-foreground font-bold text-sm">R</span>
               </div>
               <span className="font-bold text-foreground text-lg">{STORE_CONFIG.nome}</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              As melhores pizzas e lanches da cidade, com entrega rápida e sabor incomparável.
+              Batata recheada artesanal com ingredientes selecionados e entrega rápida.
             </p>
           </div>
 
@@ -30,7 +30,7 @@ export function Footer() {
               </p>
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4 shrink-0" />
-                WhatsApp: +55 35 99958-2766
+                WhatsApp: +55 35 9214-7338
               </p>
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4 shrink-0" />

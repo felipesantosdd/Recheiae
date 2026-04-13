@@ -58,6 +58,10 @@ module.exports = {
           DEFAULT: 'hsl(var(--popular-badge))',
           foreground: 'hsl(var(--popular-badge-foreground))',
         },
+        'pix-badge': {
+          DEFAULT: 'hsl(var(--pix-badge))',
+          foreground: 'hsl(var(--pix-badge-foreground))',
+        },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
