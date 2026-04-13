@@ -58,6 +58,7 @@
     "dotenv": "^16.4.7"
   },
   "scripts": {
+    "prebuild": "node ../scripts/export-catalog-snapshot.mjs",
     "start": "craco start",
     "build": "craco build",
     "test": "craco test"
