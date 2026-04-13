@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,8 +12,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Plus, Pencil, Trash2, Loader2, Save, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatPrice } from '@/utils/calculations';
-
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const emptyProduct = {
   nome: '', descricao: '', preco: '', desconto: '0',
@@ -45,9 +43,9 @@ export default function AdminPage() {
   const fetchAll = async () => {
     try {
       const [pRes, cRes, pmRes] = await Promise.all([
-        axios.get(`${API}/products/all`),
-        axios.get(`${API}/combos/all`),
-        axios.get(`${API}/payment-methods/all`),
+        api.get('/products/all'),
+        api.get('/combos/all'),
+        api.get('/payment-methods/all'),
       ]);
       setProducts(pRes.data);
       setCombos(cRes.data);
@@ -73,18 +71,18 @@ export default function AdminPage() {
   const saveProduct = async () => {
     const payload = { ...prodForm, preco: parseFloat(prodForm.preco), desconto: parseFloat(prodForm.desconto) || 0, vendas: parseInt(prodForm.vendas) || 0 };
     try {
-      if (editProduct) { await axios.put(`${API}/admin/products/${editProduct.uuid}`, payload); toast.success('Produto atualizado!'); }
-      else { await axios.post(`${API}/admin/products`, payload); toast.success('Produto criado!'); }
+      if (editProduct) { await api.put(`/admin/products/${editProduct.uuid}`, payload); toast.success('Produto atualizado!'); }
+      else { await api.post('/admin/products', payload); toast.success('Produto criado!'); }
       setProdDialog(false); fetchAll();
     } catch (e) { toast.error('Erro ao salvar produto'); }
   };
   const deleteProduct = async (uuid) => {
     if (!window.confirm('Remover este produto?')) return;
-    try { await axios.delete(`${API}/admin/products/${uuid}`); toast.success('Produto removido!'); fetchAll(); }
+    try { await api.delete(`/admin/products/${uuid}`); toast.success('Produto removido!'); fetchAll(); }
     catch (e) { toast.error('Erro ao remover'); }
   };
   const toggleProductActive = async (p) => {
-    try { await axios.put(`${API}/admin/products/${p.uuid}`, { ativo: !p.ativo }); fetchAll(); }
+    try { await api.put(`/admin/products/${p.uuid}`, { ativo: !p.ativo }); fetchAll(); }
     catch (e) { toast.error('Erro ao atualizar'); }
   };
 
@@ -102,18 +100,18 @@ export default function AdminPage() {
   const saveCombo = async () => {
     const payload = { ...comboForm, valor: parseFloat(comboForm.valor), desconto: parseFloat(comboForm.desconto) || 0, vendas: parseInt(comboForm.vendas) || 0 };
     try {
-      if (editCombo) { await axios.put(`${API}/admin/combos/${editCombo.uuid}`, payload); toast.success('Combo atualizado!'); }
-      else { await axios.post(`${API}/admin/combos`, payload); toast.success('Combo criado!'); }
+      if (editCombo) { await api.put(`/admin/combos/${editCombo.uuid}`, payload); toast.success('Combo atualizado!'); }
+      else { await api.post('/admin/combos', payload); toast.success('Combo criado!'); }
       setComboDialog(false); fetchAll();
     } catch (e) { toast.error('Erro ao salvar combo'); }
   };
   const deleteCombo = async (uuid) => {
     if (!window.confirm('Remover este combo?')) return;
-    try { await axios.delete(`${API}/admin/combos/${uuid}`); toast.success('Combo removido!'); fetchAll(); }
+    try { await api.delete(`/admin/combos/${uuid}`); toast.success('Combo removido!'); fetchAll(); }
     catch (e) { toast.error('Erro ao remover'); }
   };
   const toggleComboActive = async (c) => {
-    try { await axios.put(`${API}/admin/combos/${c.uuid}`, { ativo: !c.ativo }); fetchAll(); }
+    try { await api.put(`/admin/combos/${c.uuid}`, { ativo: !c.ativo }); fetchAll(); }
     catch (e) { toast.error('Erro ao atualizar'); }
   };
   const toggleProductInCombo = (prodId) => {
@@ -129,18 +127,18 @@ export default function AdminPage() {
   const savePM = async () => {
     if (!pmForm.nome.trim()) { toast.error('Nome é obrigatório'); return; }
     try {
-      if (editPM) { await axios.put(`${API}/admin/payment-methods/${editPM.uuid}`, pmForm); toast.success('Forma de pagamento atualizada!'); }
-      else { await axios.post(`${API}/admin/payment-methods`, pmForm); toast.success('Forma de pagamento criada!'); }
+      if (editPM) { await api.put(`/admin/payment-methods/${editPM.uuid}`, pmForm); toast.success('Forma de pagamento atualizada!'); }
+      else { await api.post('/admin/payment-methods', pmForm); toast.success('Forma de pagamento criada!'); }
       setPmDialog(false); fetchAll();
     } catch (e) { toast.error('Erro ao salvar'); }
   };
   const deletePM = async (uuid) => {
     if (!window.confirm('Remover esta forma de pagamento?')) return;
-    try { await axios.delete(`${API}/admin/payment-methods/${uuid}`); toast.success('Removida!'); fetchAll(); }
+    try { await api.delete(`/admin/payment-methods/${uuid}`); toast.success('Removida!'); fetchAll(); }
     catch (e) { toast.error('Erro ao remover'); }
   };
   const togglePMActive = async (pm) => {
-    try { await axios.put(`${API}/admin/payment-methods/${pm.uuid}`, { ativo: !pm.ativo }); fetchAll(); }
+    try { await api.put(`/admin/payment-methods/${pm.uuid}`, { ativo: !pm.ativo }); fetchAll(); }
     catch (e) { toast.error('Erro ao atualizar'); }
   };
 

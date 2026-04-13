@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useCart } from '@/context/CartContext';
 import {
   calculateSubtotal, calculateTotalDiscount, calculateDeliveryFee,
   calculateTotal, calculatePixDiscount, formatPrice, calculateItemPrice
 } from '@/utils/calculations';
+import { api } from '@/lib/api';
 import { generateWhatsAppMessage, generateWhatsAppLink, generateOrderNumber } from '@/utils/whatsapp';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,8 +17,6 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, MessageCircle, ShoppingBag, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -36,7 +34,7 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    axios.get(`${API}/payment-methods`)
+    api.get('/payment-methods')
       .then(res => setPaymentMethods(res.data))
       .catch(() => {
         setPaymentMethods([

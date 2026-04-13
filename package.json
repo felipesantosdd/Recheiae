@@ -1,0 +1,11 @@
+{
+  "name": "recheiae",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev:front",
+    "dev:back": "python -m uvicorn server:app --app-dir backend --host 0.0.0.0 --port 8000",
+    "dev:front": "npm --prefix frontend start",
+    "build:front": "npm --prefix frontend run build",
+    "test:front": "npm --prefix frontend test"
+  }
+}

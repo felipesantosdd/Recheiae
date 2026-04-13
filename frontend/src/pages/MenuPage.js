@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
 import { HeroBanner } from '@/components/menu/HeroBanner';
 import { CategoryNav } from '@/components/menu/CategoryNav';
 import { ProductCard } from '@/components/menu/ProductCard';
 import { ComboCard } from '@/components/menu/ComboCard';
+import { api } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Search, Tag, Flame, Package, Loader2 } from 'lucide-react';
-
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 export default function MenuPage() {
   const [products, setProducts] = useState([]);
@@ -25,9 +23,9 @@ export default function MenuPage() {
   const fetchData = async () => {
     try {
       const [prodRes, comboRes, catRes] = await Promise.all([
-        axios.get(`${API}/products`),
-        axios.get(`${API}/combos`),
-        axios.get(`${API}/categories`),
+        api.get('/products'),
+        api.get('/combos'),
+        api.get('/categories'),
       ]);
       setProducts(prodRes.data);
       setCombos(comboRes.data);
