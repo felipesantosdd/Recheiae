@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-17T19:57:37.047Z",
+  "generatedAt": "2026-04-17T20:16:18.107Z",
   "products": [
     {
       "uuid": "prod-005",
@@ -297,6 +297,7 @@
       "ativo": true
     }
   ],
+  "settings": null,
   "categories": [
     "Batatas Recheadas 500g",
     "Bebidas"

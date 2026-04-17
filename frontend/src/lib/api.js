@@ -34,6 +34,8 @@ function getStaticPayload(pathname) {
       return catalogSnapshot.activeAddons || [];
     case '/addons/all':
       return catalogSnapshot.addons || [];
+    case '/settings':
+      return catalogSnapshot.settings || null;
     default:
       throw new Error(`Rota estatica nao suportada: ${pathname}`);
   }

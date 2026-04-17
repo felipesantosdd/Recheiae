@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Plus, Pencil, Trash2, Loader2, Save, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatPrice } from '@/utils/calculations';
+import { useStoreSettings } from '@/context/StoreSettingsContext';
 
 const emptyProduct = {
   nome: '', descricao: '', preco: '', desconto: '0',
@@ -27,14 +28,23 @@ const emptyAddon = {
   nome: '', preco: '3', ativo: true,
 };
 
+const emptySettings = {
+  whatsapp: '',
+  delivery_time: '',
+  business_hours: '',
+};
+
 export default function AdminPage() {
+  const { setSettings: setGlobalSettings, refreshSettings } = useStoreSettings();
   const [products, setProducts] = useState([]);
   const [combos, setCombos] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [addons, setAddons] = useState([]);
+  const [settings, setSettings] = useState({ ...emptySettings });
   const [loading, setLoading] = useState(true);
   const [savingProduct, setSavingProduct] = useState(false);
   const [savingCombo, setSavingCombo] = useState(false);
+  const [savingSettings, setSavingSettings] = useState(false);
   const [addonDialog, setAddonDialog] = useState(false);
   const [prodDialog, setProdDialog] = useState(false);
   const [comboDialog, setComboDialog] = useState(false);
@@ -115,16 +125,22 @@ export default function AdminPage() {
 
   const fetchAll = async () => {
     try {
-      const [pRes, cRes, pmRes] = await Promise.all([
+      const [pRes, cRes, pmRes, addonRes, settingsRes] = await Promise.all([
         api.get('/products/all'),
         api.get('/combos/all'),
         api.get('/payment-methods/all'),
+        api.get('/addons/all'),
+        api.get('/settings'),
       ]);
-      const addonRes = await api.get('/addons/all');
       setProducts(pRes.data);
       setCombos(cRes.data);
       setPaymentMethods(pmRes.data);
       setAddons(addonRes.data);
+      setSettings({
+        whatsapp: settingsRes.data?.whatsapp || '',
+        delivery_time: settingsRes.data?.delivery_time || '',
+        business_hours: settingsRes.data?.business_hours || '',
+      });
     } catch (e) {
       toast.error('Erro ao carregar dados');
     } finally {
@@ -265,6 +281,25 @@ export default function AdminPage() {
     catch (e) { toast.error('Erro ao atualizar adicional'); }
   };
 
+  const saveSettings = async () => {
+    try {
+      setSavingSettings(true);
+      const payload = {
+        whatsapp: settings.whatsapp.trim(),
+        delivery_time: settings.delivery_time.trim(),
+        business_hours: settings.business_hours.trim(),
+      };
+      await api.put('/admin/settings', payload);
+      setGlobalSettings(payload);
+      refreshSettings();
+      toast.success('Configuracoes atualizadas!');
+    } catch (e) {
+      toast.error('Erro ao salvar configuracoes');
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -289,6 +324,7 @@ export default function AdminPage() {
           <TabsTrigger value="combos">Combos ({combos.length})</TabsTrigger>
           <TabsTrigger value="addons">Adicionais ({addons.length})</TabsTrigger>
           <TabsTrigger value="payments">Pagamentos ({paymentMethods.length})</TabsTrigger>
+          <TabsTrigger value="settings">Loja</TabsTrigger>
         </TabsList>
 
         {/* Products Tab */}
@@ -414,6 +450,50 @@ export default function AdminPage() {
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="settings">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Configuracoes da Loja</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <Label className="text-sm">WhatsApp</Label>
+                <Input
+                  value={settings.whatsapp}
+                  onChange={e => setSettings(prev => ({ ...prev, whatsapp: e.target.value }))}
+                  placeholder="5535998160726"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-sm">Prazo de entrega</Label>
+                <Input
+                  value={settings.delivery_time}
+                  onChange={e => setSettings(prev => ({ ...prev, delivery_time: e.target.value }))}
+                  placeholder="40 min"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-sm">Horarios</Label>
+                <Textarea
+                  value={settings.business_hours}
+                  onChange={e => setSettings(prev => ({ ...prev, business_hours: e.target.value }))}
+                  placeholder={"Seg a Sex: 18:00 - 23:00\nSab e Dom: 17:00 - 00:00"}
+                  rows={4}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Use uma linha para cada horario que deve aparecer no footer.
+                </p>
+              </div>
+              <div className="flex justify-end">
+                <Button onClick={saveSettings} disabled={savingSettings}>
+                  {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  Salvar configuracoes
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 

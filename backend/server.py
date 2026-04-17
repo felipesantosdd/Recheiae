@@ -124,6 +124,11 @@ class AddonUpdate(BaseModel):
     preco: Optional[float] = None
     ativo: Optional[bool] = None
 
+class StoreSettingsUpdate(BaseModel):
+    whatsapp: Optional[str] = None
+    delivery_time: Optional[str] = None
+    business_hours: Optional[str] = None
+
 # Database initialization
 def init_db():
     conn = get_db()
@@ -161,6 +166,12 @@ def init_db():
         preco REAL NOT NULL,
         ativo INTEGER DEFAULT 1
     )''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS store_settings (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        whatsapp TEXT NOT NULL,
+        delivery_time TEXT NOT NULL,
+        business_hours TEXT NOT NULL
+    )''')
     conn.commit()
     cur.execute("SELECT COUNT(*) as cnt FROM products")
     if cur.fetchone()['cnt'] == 0:
@@ -171,6 +182,9 @@ def init_db():
     cur.execute("SELECT COUNT(*) as cnt FROM addons")
     if cur.fetchone()['cnt'] == 0:
         seed_addons(conn)
+    cur.execute("SELECT COUNT(*) as cnt FROM store_settings")
+    if cur.fetchone()['cnt'] == 0:
+        seed_store_settings(conn)
     conn.close()
 
 def seed_payment_methods(conn):
@@ -198,6 +212,19 @@ def seed_addons(conn):
         cur.execute("INSERT INTO addons VALUES (?,?,?,?)", addon)
     conn.commit()
     logger.info("Addons seeded")
+
+def seed_store_settings(conn):
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO store_settings (id, whatsapp, delivery_time, business_hours) VALUES (1, ?, ?, ?)",
+        (
+            "5535998160726",
+            "40 min",
+            "Seg a Sex: 18:00 - 23:00\nSab e Dom: 17:00 - 00:00",
+        ),
+    )
+    conn.commit()
+    logger.info("Store settings seeded")
 
 def seed_data(conn):
     cur = conn.cursor()
@@ -322,6 +349,19 @@ def get_all_addons():
     rows = conn.execute("SELECT * FROM addons ORDER BY nome").fetchall()
     conn.close()
     return [row_to_dict(r) for r in rows]
+
+@api_router.get("/settings")
+def get_store_settings():
+    conn = get_db()
+    row = conn.execute("SELECT whatsapp, delivery_time, business_hours FROM store_settings WHERE id = 1").fetchone()
+    conn.close()
+    if not row:
+        return {
+            "whatsapp": "5535998160726",
+            "delivery_time": "40 min",
+            "business_hours": "Seg a Sex: 18:00 - 23:00\nSab e Dom: 17:00 - 00:00",
+        }
+    return dict(row)
 
 # Admin routes
 @api_router.post("/admin/uploads/image")
@@ -537,6 +577,36 @@ def delete_addon(addon_uuid: str):
     conn.commit()
     conn.close()
     return {"message": "Addon deleted"}
+
+@api_router.put("/admin/settings")
+def update_store_settings(settings: StoreSettingsUpdate):
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    existing = conn.execute("SELECT id FROM store_settings WHERE id = 1").fetchone()
+    payload = {
+        "whatsapp": "5535998160726",
+        "delivery_time": "40 min",
+        "business_hours": "Seg a Sex: 18:00 - 23:00\nSab e Dom: 17:00 - 00:00",
+    }
+    if existing:
+        row = conn.execute("SELECT whatsapp, delivery_time, business_hours FROM store_settings WHERE id = 1").fetchone()
+        payload.update(dict(row))
+    payload.update({k: v for k, v in settings.model_dump(exclude_unset=True).items() if v is not None})
+    if existing:
+        conn.execute(
+            "UPDATE store_settings SET whatsapp = ?, delivery_time = ?, business_hours = ? WHERE id = 1",
+            (payload["whatsapp"], payload["delivery_time"], payload["business_hours"]),
+        )
+    else:
+        conn.execute(
+            "INSERT INTO store_settings (id, whatsapp, delivery_time, business_hours) VALUES (1, ?, ?, ?)",
+            (payload["whatsapp"], payload["delivery_time"], payload["business_hours"]),
+        )
+    conn.commit()
+    row = conn.execute("SELECT whatsapp, delivery_time, business_hours FROM store_settings WHERE id = 1").fetchone()
+    conn.close()
+    return dict(row)
 
 app.include_router(api_router)
 app.add_middleware(

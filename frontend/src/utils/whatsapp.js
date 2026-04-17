@@ -1,4 +1,4 @@
-import { STORE_CONFIG } from './calculations';
+import { STORE_CONFIG, normalizeStoreSettings } from './calculations';
 
 function formatBRL(value) {
   return value.toFixed(2).replace('.', ',');
@@ -20,7 +20,8 @@ export function generateGoogleMapsLink(endereco, bairro) {
   return `https://maps.google.com/?q=${encodeURIComponent(query)}`;
 }
 
-export function generateWhatsAppMessage({ orderNumber, customer, items, subtotal, deliveryFee, totalDiscount, total }) {
+export function generateWhatsAppMessage({ orderNumber, customer, items, subtotal, deliveryFee, totalDiscount, total, settings }) {
+  const storeSettings = normalizeStoreSettings(settings);
   const now = new Date();
   const dateStr = now.toLocaleDateString('pt-BR');
   const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -70,11 +71,12 @@ export function generateWhatsAppMessage({ orderNumber, customer, items, subtotal
   if (customer.observacoes) {
     msg += `\ud83d\udcdd Observacoes gerais do pedido: ${customer.observacoes}\n\n`;
   }
-  msg += `\ud83d\udd50 Prazo para entrega: ${STORE_CONFIG.deliveryTime}`;
+  msg += `\ud83d\udd50 Prazo para entrega: ${storeSettings.deliveryTime}`;
 
   return msg;
 }
 
-export function generateWhatsAppLink(message) {
-  return `https://wa.me/${STORE_CONFIG.whatsapp}?text=${encodeURIComponent(message)}`;
+export function generateWhatsAppLink(message, settings) {
+  const storeSettings = normalizeStoreSettings(settings);
+  return `https://wa.me/${storeSettings.whatsapp}?text=${encodeURIComponent(message)}`;
 }

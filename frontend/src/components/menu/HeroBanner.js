@@ -1,13 +1,16 @@
 import { MapPin, Clock, Star, Truck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { STORE_CONFIG, formatPrice } from '@/utils/calculations';
+import { useStoreSettings } from '@/context/StoreSettingsContext';
 
 export function HeroBanner() {
+  const { normalizedSettings } = useStoreSettings();
+
   return (
     <div className="relative w-full h-[200px] sm:h-[260px] md:h-[320px] overflow-hidden">
       <img
         src="https://images.unsplash.com/photo-1645673197548-9adfa2ea55dc?w=1400&h=500&fit=crop&auto=format&q=80"
-        alt="Recheiaê - Batata Recheada Delivery"
+        alt="Recheiae - Batata Recheada Delivery"
         className="absolute inset-0 w-full h-full object-cover"
       />
       <div className="hero-gradient absolute inset-0" />
@@ -19,7 +22,7 @@ export function HeroBanner() {
           {STORE_CONFIG.nome}
         </h1>
         <p className="text-sm md:text-base text-card/80 mt-1 max-w-md">
-          Batata recheada artesanal com entrega rápida
+          Batata recheada artesanal com entrega rapida
         </p>
         <div className="flex flex-wrap items-center gap-3 sm:gap-5 mt-3 text-card/70 text-xs sm:text-sm">
           <span className="flex items-center gap-1.5">
@@ -28,7 +31,7 @@ export function HeroBanner() {
           </span>
           <span className="flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5" />
-            {STORE_CONFIG.deliveryTime}
+            {normalizedSettings.deliveryTime}
           </span>
           <span className="flex items-center gap-1.5">
             <Star className="h-3.5 w-3.5 fill-current" />

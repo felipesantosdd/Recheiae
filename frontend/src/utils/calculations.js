@@ -1,10 +1,31 @@
 export const STORE_CONFIG = {
-  nome: 'Recheiaê',
+  nome: 'Recheiae',
   whatsapp: '5535998160726',
-  cidade: 'Itajubá - MG',
-  deliveryFee: 10.00,
+  cidade: 'Itajuba - MG',
+  deliveryFee: 10.0,
   deliveryTime: '40 min',
+  businessHours: 'Seg a Sex: 18:00 - 23:00\nSab e Dom: 17:00 - 00:00',
 };
+
+export function normalizeStoreSettings(settings = {}) {
+  return {
+    whatsapp: settings.whatsapp || STORE_CONFIG.whatsapp,
+    deliveryTime: settings.deliveryTime || settings.delivery_time || STORE_CONFIG.deliveryTime,
+    businessHours: settings.businessHours || settings.business_hours || STORE_CONFIG.businessHours,
+  };
+}
+
+export function formatWhatsAppNumber(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.length === 13) {
+    return `+${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 9)}-${digits.slice(9)}`;
+  }
+  if (digits.length === 12) {
+    return `+${digits.slice(0, 2)} ${digits.slice(2, 4)} ${digits.slice(4, 8)}-${digits.slice(8)}`;
+  }
+  return value;
+}
 
 export function calculateItemPrice(originalPrice, discount = 0) {
   return originalPrice * (1 - discount / 100);
@@ -44,5 +65,5 @@ export function formatPrice(value) {
   if (value == null || Number.isNaN(Number(value))) {
     return (0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
-  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }

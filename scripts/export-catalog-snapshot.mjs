@@ -59,6 +59,16 @@ function exportSnapshotFromDb(databaseFile) {
       .all()
       .map(rowToRecord);
 
+    let settings = null;
+    try {
+      settings =
+        db
+          .prepare('SELECT whatsapp, delivery_time, business_hours FROM store_settings WHERE id = 1')
+          .get() || null;
+    } catch {
+      settings = null;
+    }
+
     const activeProducts = products.filter((item) => item.ativo);
     const activeCombos = combos.filter((item) => item.ativo);
     const activePaymentMethods = paymentMethods.filter((item) => item.ativo);
@@ -75,6 +85,7 @@ function exportSnapshotFromDb(databaseFile) {
       activePaymentMethods,
       addons,
       activeAddons,
+      settings,
       categories,
     };
   } finally {
