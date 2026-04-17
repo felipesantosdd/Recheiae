@@ -21,9 +21,11 @@ export function Header() {
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center shadow-sm">
-            <span className="text-primary-foreground font-extrabold text-base">R</span>
-          </div>
+          <img
+            src="/favicon.png"
+            alt={`${STORE_CONFIG.nome} logo`}
+            className="h-9 w-9 rounded-xl object-cover shadow-sm border border-border"
+          />
           <span className="font-extrabold text-foreground text-xl tracking-tight">{STORE_CONFIG.nome}</span>
         </Link>
 

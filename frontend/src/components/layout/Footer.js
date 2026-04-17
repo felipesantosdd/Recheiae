@@ -13,9 +13,11 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">R</span>
-              </div>
+              <img
+                src="/favicon.png"
+                alt={`${STORE_CONFIG.nome} logo`}
+                className="h-8 w-8 rounded-lg object-cover border border-border"
+              />
               <span className="font-bold text-foreground text-lg">{STORE_CONFIG.nome}</span>
             </div>
             <p className="text-sm text-muted-foreground">

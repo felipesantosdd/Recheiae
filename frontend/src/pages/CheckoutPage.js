@@ -6,6 +6,9 @@ import {
   calculateTotalDiscount,
   calculateDeliveryFee,
   calculateTotal,
+  DELIVERY_NEIGHBORHOODS,
+  getNeighborhoodDeliveryRule,
+  resolveNeighborhoodName,
   formatPrice,
   calculateCartItemUnitPrice,
 } from '@/utils/calculations';
@@ -28,9 +31,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, MessageCircle, ShoppingBag, Loader2 } from 'lucide-react';
+import { ArrowLeft, Check, ChevronsUpDown, MessageCircle, ShoppingBag, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 function formatCep(value) {
   const digits = value.replace(/\D/g, '').slice(0, 8);
@@ -45,6 +62,7 @@ export default function CheckoutPage() {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [loadingPM, setLoadingPM] = useState(true);
   const [loadingCep, setLoadingCep] = useState(false);
+  const [bairroOpen, setBairroOpen] = useState(false);
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
@@ -72,8 +90,9 @@ export default function CheckoutPage() {
 
   const subtotal = calculateSubtotal(items);
   const totalDiscount = calculateTotalDiscount(items);
-  const deliveryFee = calculateDeliveryFee();
-  const total = calculateTotal(items);
+  const deliveryRule = getNeighborhoodDeliveryRule(formData.bairro);
+  const deliveryFee = calculateDeliveryFee(formData.bairro);
+  const total = calculateTotal(items, deliveryFee);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -106,7 +125,7 @@ export default function CheckoutPage() {
         ...prev,
         cep: formatCep(digits),
         endereco: data.logradouro || prev.endereco,
-        bairro: data.bairro || prev.bairro,
+        bairro: data.bairro ? resolveNeighborhoodName(data.bairro) : prev.bairro,
         complemento: prev.complemento || data.complemento || '',
       }));
 
@@ -262,13 +281,59 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="bairro" className="text-sm">Bairro *</Label>
-                  <Input
-                    id="bairro"
-                    value={formData.bairro}
-                    onChange={(e) => handleChange('bairro', e.target.value)}
-                    placeholder="Bairro"
-                    className="bg-card"
-                  />
+                  <Popover open={bairroOpen} onOpenChange={setBairroOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        id="bairro"
+                        type="button"
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={bairroOpen}
+                        className="w-full justify-between bg-card font-normal"
+                      >
+                        <span className="truncate">
+                          {formData.bairro || 'Selecione o bairro'}
+                        </span>
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Digite para buscar o bairro..." />
+                        <CommandList>
+                          <CommandEmpty>Nenhum bairro encontrado.</CommandEmpty>
+                          <CommandGroup>
+                            {DELIVERY_NEIGHBORHOODS.map((bairro) => (
+                              <CommandItem
+                                key={bairro.value}
+                                value={`${bairro.label} ${bairro.fee}`}
+                                onSelect={() => {
+                                  handleChange('bairro', bairro.value);
+                                  setBairroOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    'mr-2 h-4 w-4',
+                                    formData.bairro === bairro.value ? 'opacity-100' : 'opacity-0',
+                                  )}
+                                />
+                                <span className="flex-1">{bairro.label}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {formatPrice(bairro.fee)}
+                                </span>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <p className="text-xs text-muted-foreground">
+                    {deliveryRule
+                      ? `Frete para ${deliveryRule.name}: ${formatPrice(deliveryFee)}`
+                      : `Frete padrao aplicado: ${formatPrice(deliveryFee)}`}
+                  </p>
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="complemento" className="text-sm">Complemento</Label>
