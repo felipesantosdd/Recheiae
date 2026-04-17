@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import {
   calculateSubtotal, calculateTotalDiscount, calculateDeliveryFee,
-  calculateTotal, calculatePixDiscount, formatPrice, calculateItemPrice
+  calculateTotal, formatPrice, calculateCartItemUnitPrice
 } from '@/utils/calculations';
 import { api } from '@/lib/api';
 import { generateWhatsAppMessage, generateWhatsAppLink, generateOrderNumber } from '@/utils/whatsapp';
@@ -14,7 +14,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, MessageCircle, ShoppingBag, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -50,8 +49,7 @@ export default function CheckoutPage() {
   const subtotal = calculateSubtotal(items);
   const totalDiscount = calculateTotalDiscount(items);
   const deliveryFee = calculateDeliveryFee();
-  const pixDiscount = calculatePixDiscount(formData.formaPagamento);
-  const total = calculateTotal(items, formData.formaPagamento);
+  const total = calculateTotal(items);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -75,7 +73,6 @@ export default function CheckoutPage() {
       subtotal,
       deliveryFee,
       totalDiscount,
-      pixDiscount,
       total,
     });
     const whatsappLink = generateWhatsAppLink(message);
@@ -169,18 +166,10 @@ export default function CheckoutPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {paymentMethods.map(method => (
-                        <SelectItem key={method.uuid} value={method.nome}>
-                          {method.nome}
-                          {method.nome.toLowerCase() === 'pix' && ' (desconto R$ 10,00)'}
-                        </SelectItem>
+                        <SelectItem key={method.uuid} value={method.nome}>{method.nome}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                )}
-                {pixDiscount > 0 && (
-                  <Badge variant="success" className="text-xs mt-1">
-                    Desconto Pix de {formatPrice(pixDiscount)} aplicado!
-                  </Badge>
                 )}
               </div>
               <div className="space-y-1.5">
@@ -204,10 +193,22 @@ export default function CheckoutPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               {items.map(item => {
-                const unitPrice = calculateItemPrice(item.originalPrice, item.discount);
+                const unitPrice = calculateCartItemUnitPrice(item);
                 return (
-                  <div key={`${item.type}-${item.id}`} className="flex justify-between text-sm gap-2">
-                    <span className="text-muted-foreground truncate">{item.quantity}x {item.name}</span>
+                  <div key={item.signature || `${item.type}-${item.id}`} className="flex justify-between text-sm gap-2">
+                    <div className="min-w-0">
+                      <span className="text-muted-foreground truncate block">{item.quantity}x {item.name}</span>
+                      {item.addons?.length > 0 && (
+                        <span className="text-[11px] text-muted-foreground block">
+                          + {item.addons.map((addon) => addon.name).join(', ')}
+                        </span>
+                      )}
+                      {item.notes && (
+                        <span className="text-[11px] text-muted-foreground block truncate">
+                          Obs.: {item.notes}
+                        </span>
+                      )}
+                    </div>
                     <span className="font-medium text-foreground shrink-0">{formatPrice(unitPrice * item.quantity)}</span>
                   </div>
                 );
@@ -227,12 +228,6 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-sm">
                   <span className="text-success">DESCONTOS</span>
                   <span className="text-success">-{formatPrice(totalDiscount)}</span>
-                </div>
-              )}
-              {pixDiscount > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-pix-badge font-medium">DESCONTO PIX</span>
-                  <span className="text-pix-badge font-medium">-{formatPrice(pixDiscount)}</span>
                 </div>
               )}
 

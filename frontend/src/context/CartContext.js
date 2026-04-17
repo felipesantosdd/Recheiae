@@ -17,33 +17,43 @@ export function CartProvider({ children }) {
     localStorage.setItem('recheiae-cart', JSON.stringify(items));
   }, [items]);
 
-  const addItem = useCallback((item) => {
-    setItems(prev => {
-      const existing = prev.find(i => i.id === item.id && i.type === item.type);
-      if (existing) {
-        return prev.map(i =>
-          i.id === item.id && i.type === item.type
-            ? { ...i, quantity: i.quantity + 1 }
-            : i
-        );
-      }
-      return [...prev, { ...item, quantity: 1 }];
+  const buildItemSignature = useCallback((item) => {
+    return JSON.stringify({
+      id: item.id,
+      type: item.type,
+      addons: (item.addons || []).map((addon) => addon.name).sort(),
+      notes: item.notes || '',
     });
   }, []);
 
-  const removeItem = useCallback((id, type) => {
-    setItems(prev => prev.filter(i => !(i.id === id && i.type === type)));
-  }, []);
+  const addItem = useCallback((item) => {
+    setItems(prev => {
+      const itemSignature = buildItemSignature(item);
+      const existing = prev.find(i => (i.signature || buildItemSignature(i)) === itemSignature);
+      if (existing) {
+        return prev.map(i =>
+          (i.signature || buildItemSignature(i)) === itemSignature
+            ? { ...i, quantity: i.quantity + 1, signature: itemSignature }
+            : i
+        );
+      }
+      return [...prev, { ...item, quantity: 1, signature: itemSignature }];
+    });
+  }, [buildItemSignature]);
 
-  const updateQuantity = useCallback((id, type, quantity) => {
+  const removeItem = useCallback((signature) => {
+    setItems(prev => prev.filter(i => (i.signature || buildItemSignature(i)) !== signature));
+  }, [buildItemSignature]);
+
+  const updateQuantity = useCallback((signature, quantity) => {
     if (quantity <= 0) {
-      setItems(prev => prev.filter(i => !(i.id === id && i.type === type)));
+      setItems(prev => prev.filter(i => (i.signature || buildItemSignature(i)) !== signature));
       return;
     }
     setItems(prev => prev.map(i =>
-      i.id === id && i.type === type ? { ...i, quantity } : i
+      (i.signature || buildItemSignature(i)) === signature ? { ...i, quantity } : i
     ));
-  }, []);
+  }, [buildItemSignature]);
 
   const clearCart = useCallback(() => {
     setItems([]);

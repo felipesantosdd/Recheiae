@@ -1,382 +1,224 @@
 {
-  "generatedAt": "2026-04-13T19:14:28.515Z",
+  "generatedAt": "2026-04-17T19:57:37.047Z",
   "products": [
     {
-      "uuid": "prod-004",
-      "nome": "Batata 4 Queijos",
-      "descricao": "Mussarela, cheddar, provolone e parmesão com creme de leite",
-      "preco": 34.9,
-      "desconto": 15,
-      "foto": "https://images.unsplash.com/photo-1645673197548-9adfa2ea55dc?w=400&h=300&fit=crop&crop=center",
-      "categoria": "Batatas Recheadas",
-      "vendas": 130,
-      "ativo": false
-    },
-    {
       "uuid": "prod-005",
-      "nome": "Batata Bacon Cheddar",
-      "descricao": "Bacon crocante picado com cheddar cremoso derretido e cebolinha",
-      "preco": 31.9,
-      "desconto": 0,
-      "foto": "https://images.unsplash.com/photo-1639744210631-209fce3e256c?w=400&h=300&fit=crop&crop=top",
-      "categoria": "Batatas Recheadas",
-      "vendas": 170,
-      "ativo": false
-    },
-    {
-      "uuid": "prod-006",
-      "nome": "Batata Brócolis com Cheddar",
-      "descricao": "Brócolis cozido no vapor com cheddar cremoso e bacon bits",
-      "preco": 30.9,
-      "desconto": 0,
-      "foto": "https://images.unsplash.com/photo-1761712826074-5f1bab2b2f32?w=400&h=300&fit=crop&crop=center",
-      "categoria": "Batatas Recheadas",
-      "vendas": 90,
-      "ativo": false
-    },
-    {
-      "uuid": "prod-003",
-      "nome": "Batata Calabresa",
-      "descricao": "Calabresa acebolada com queijo mussarela derretido e molho especial",
-      "preco": 28.9,
-      "desconto": 0,
-      "foto": "https://images.unsplash.com/photo-1761712826074-5f1bab2b2f32?w=400&h=300&fit=crop",
-      "categoria": "Batatas Recheadas",
-      "vendas": 150,
-      "ativo": false
+      "nome": "Batata Recheada De Brocolis Com Queijo",
+      "descricao": "Batata recheada feita na hora, bem caprichada e cheia de sabor. Brocolis temperadinho com queijo cremoso derretendo, combinacao que voce nem sabia que precisava. Mais leve? Talvez. Mas sem miseria? Nunca.",
+      "preco": 22.9,
+      "desconto": 10,
+      "foto": "/images/uploads/product-prod-005.jpeg",
+      "categoria": "Batatas Recheadas 500g",
+      "vendas": 0,
+      "ativo": true
     },
     {
       "uuid": "prod-001",
-      "nome": "Batata Carne Seca",
-      "descricao": "Batata recheada com carne seca desfiada, cheddar cremoso, cebola caramelizada e cebolinha",
-      "preco": 32.9,
-      "desconto": 0,
-      "foto": "https://images.unsplash.com/photo-1645673197548-9adfa2ea55dc?w=400&h=300&fit=crop",
-      "categoria": "Batatas Recheadas",
-      "vendas": 200,
+      "nome": "Batata Recheada De Carne Com Cheddar E Doritos",
+      "descricao": "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
+      "preco": 28.9,
+      "desconto": 10,
+      "foto": "/images/uploads/product-prod-001.jpeg",
+      "categoria": "Batatas Recheadas 500g",
+      "vendas": 1,
+      "ativo": true
+    },
+    {
+      "uuid": "prod-003",
+      "nome": "Batata Recheada De Frango Com Catupiry",
+      "descricao": "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
+      "preco": 25.9,
+      "desconto": 10,
+      "foto": "/images/uploads/product-prod-003.jpeg",
+      "categoria": "Batatas Recheadas 500g",
+      "vendas": 1,
+      "ativo": true
+    },
+    {
+      "uuid": "prod-004",
+      "nome": "Batata Recheada De Sabor Pizza",
+      "descricao": "Batata quentinha, feita na hora e carregada de sabor. Presunto e queijo super cremoso, tomate, finalizacao com mussarela, Doritos e cream cheese. E aquela batata forte, bem servida e sem miseria, pra quem gosta de comer de verdade.",
+      "preco": 26.9,
+      "desconto": 10,
+      "foto": "/images/uploads/product-prod-004.jpeg",
+      "categoria": "Batatas Recheadas 500g",
+      "vendas": 1,
       "ativo": true
     },
     {
       "uuid": "prod-002",
-      "nome": "Batata Frango Catupiry",
-      "descricao": "Frango desfiado temperado com catupiry original, milho e orégano",
-      "preco": 29.9,
+      "nome": "Batata Recheada De Strogonoff De Frango",
+      "descricao": "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, milho, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!",
+      "preco": 24.9,
       "desconto": 10,
-      "foto": "https://images.unsplash.com/photo-1639744210631-209fce3e256c?w=400&h=300&fit=crop",
-      "categoria": "Batatas Recheadas",
-      "vendas": 180,
+      "foto": "/images/uploads/product-prod-002.jpeg",
+      "categoria": "Batatas Recheadas 500g",
+      "vendas": 1,
+      "ativo": true
+    },
+    {
+      "uuid": "prod-006",
+      "nome": "Coca-Cola Lata 310ml",
+      "descricao": "Refrigerante Coca-Cola tradicional em lata de 350ml, gelado e pronto para acompanhar seu pedido.",
+      "preco": 6,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-006.jpg",
+      "categoria": "Bebidas",
+      "vendas": 0,
       "ativo": true
     },
     {
       "uuid": "prod-007",
-      "nome": "Batata Strogonoff",
-      "descricao": "Strogonoff de carne cremoso com batata palha e salsinha",
-      "preco": 33.9,
-      "desconto": 10,
-      "foto": "https://images.unsplash.com/photo-1645673197548-9adfa2ea55dc?w=400&h=300&fit=crop&crop=top",
-      "categoria": "Batatas Recheadas",
-      "vendas": 160,
+      "nome": "Coca-Cola Zero Lata 350ml",
+      "descricao": "Refrigerante Coca-Cola Zero em lata de 350ml, sem acucar e com o sabor classico que combina com qualquer refeicao.",
+      "preco": 6,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-007.webp",
+      "categoria": "Bebidas",
+      "vendas": 0,
       "ativo": true
     },
     {
       "uuid": "prod-008",
-      "nome": "Batata Vegana",
-      "descricao": "Cogumelos refogados, milho, ervilha, tomate seco e azeite trufado",
-      "preco": 27.9,
+      "nome": "Guarana Antarctica Lata 350ml",
+      "descricao": "Refrigerante Guarana Antarctica tradicional em lata de 350ml, gelado e ideal para acompanhar seu lanche.",
+      "preco": 5,
       "desconto": 0,
-      "foto": "https://images.unsplash.com/photo-1639744210631-209fce3e256c?w=400&h=300&fit=crop&crop=center",
-      "categoria": "Batatas Recheadas",
-      "vendas": 60,
+      "foto": "/images/uploads/product-prod-008.webp",
+      "categoria": "Bebidas",
+      "vendas": 0,
       "ativo": true
     },
     {
       "uuid": "prod-009",
-      "nome": "Refrigerante 2 Litros",
-      "descricao": "Coca-Cola, Guaraná ou Fanta - escolha na observação",
-      "preco": 14,
-      "desconto": 0,
-      "foto": "https://images.unsplash.com/photo-1632996988606-274cfd06eb68?w=400&h=300&fit=crop",
-      "categoria": "Bebidas",
-      "vendas": 300,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-012",
-      "nome": "Refrigerante Lata 350ml",
-      "descricao": "Coca-Cola, Guaraná, Fanta ou Sprite gelada",
+      "nome": "Guarana Antarctica Zero Lata 350ml",
+      "descricao": "Refrigerante Guarana Antarctica Zero em lata de 350ml, sem acucar e com o sabor leve e refrescante.",
       "preco": 7,
       "desconto": 0,
-      "foto": "https://images.pexels.com/photos/31336111/pexels-photo-31336111.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "foto": "/images/uploads/product-prod-009.webp",
       "categoria": "Bebidas",
-      "vendas": 350,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-010",
-      "nome": "Suco Natural 500ml",
-      "descricao": "Laranja, limão, maracujá ou abacaxi - feito na hora",
-      "preco": 12,
-      "desconto": 0,
-      "foto": "https://images.pexels.com/photos/4113669/pexels-photo-4113669.jpeg?auto=compress&cs=tinysrgb&w=400",
-      "categoria": "Bebidas",
-      "vendas": 80,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-011",
-      "nome": "Água Mineral 500ml",
-      "descricao": "Água mineral sem gás gelada",
-      "preco": 5,
-      "desconto": 0,
-      "foto": "https://images.unsplash.com/photo-1653122024753-d7322d90b3d7?w=400&h=300&fit=crop",
-      "categoria": "Bebidas",
-      "vendas": 250,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-014",
-      "nome": "Brownie com Sorvete",
-      "descricao": "Brownie artesanal quentinho com sorvete de creme e calda",
-      "preco": 22.9,
-      "desconto": 0,
-      "foto": "https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=300&fit=crop",
-      "categoria": "Sobremesas",
-      "vendas": 60,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-013",
-      "nome": "Petit Gateau",
-      "descricao": "Bolo quente de chocolate com sorvete de creme e calda especial",
-      "preco": 24.9,
-      "desconto": 20,
-      "foto": "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400&h=300&fit=crop",
-      "categoria": "Sobremesas",
-      "vendas": 70,
+      "vendas": 0,
       "ativo": true
     }
   ],
   "activeProducts": [
     {
+      "uuid": "prod-005",
+      "nome": "Batata Recheada De Brocolis Com Queijo",
+      "descricao": "Batata recheada feita na hora, bem caprichada e cheia de sabor. Brocolis temperadinho com queijo cremoso derretendo, combinacao que voce nem sabia que precisava. Mais leve? Talvez. Mas sem miseria? Nunca.",
+      "preco": 22.9,
+      "desconto": 10,
+      "foto": "/images/uploads/product-prod-005.jpeg",
+      "categoria": "Batatas Recheadas 500g",
+      "vendas": 0,
+      "ativo": true
+    },
+    {
       "uuid": "prod-001",
-      "nome": "Batata Carne Seca",
-      "descricao": "Batata recheada com carne seca desfiada, cheddar cremoso, cebola caramelizada e cebolinha",
-      "preco": 32.9,
-      "desconto": 0,
-      "foto": "https://images.unsplash.com/photo-1645673197548-9adfa2ea55dc?w=400&h=300&fit=crop",
-      "categoria": "Batatas Recheadas",
-      "vendas": 200,
+      "nome": "Batata Recheada De Carne Com Cheddar E Doritos",
+      "descricao": "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
+      "preco": 28.9,
+      "desconto": 10,
+      "foto": "/images/uploads/product-prod-001.jpeg",
+      "categoria": "Batatas Recheadas 500g",
+      "vendas": 1,
+      "ativo": true
+    },
+    {
+      "uuid": "prod-003",
+      "nome": "Batata Recheada De Frango Com Catupiry",
+      "descricao": "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
+      "preco": 25.9,
+      "desconto": 10,
+      "foto": "/images/uploads/product-prod-003.jpeg",
+      "categoria": "Batatas Recheadas 500g",
+      "vendas": 1,
+      "ativo": true
+    },
+    {
+      "uuid": "prod-004",
+      "nome": "Batata Recheada De Sabor Pizza",
+      "descricao": "Batata quentinha, feita na hora e carregada de sabor. Presunto e queijo super cremoso, tomate, finalizacao com mussarela, Doritos e cream cheese. E aquela batata forte, bem servida e sem miseria, pra quem gosta de comer de verdade.",
+      "preco": 26.9,
+      "desconto": 10,
+      "foto": "/images/uploads/product-prod-004.jpeg",
+      "categoria": "Batatas Recheadas 500g",
+      "vendas": 1,
       "ativo": true
     },
     {
       "uuid": "prod-002",
-      "nome": "Batata Frango Catupiry",
-      "descricao": "Frango desfiado temperado com catupiry original, milho e orégano",
-      "preco": 29.9,
+      "nome": "Batata Recheada De Strogonoff De Frango",
+      "descricao": "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, milho, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!",
+      "preco": 24.9,
       "desconto": 10,
-      "foto": "https://images.unsplash.com/photo-1639744210631-209fce3e256c?w=400&h=300&fit=crop",
-      "categoria": "Batatas Recheadas",
-      "vendas": 180,
+      "foto": "/images/uploads/product-prod-002.jpeg",
+      "categoria": "Batatas Recheadas 500g",
+      "vendas": 1,
+      "ativo": true
+    },
+    {
+      "uuid": "prod-006",
+      "nome": "Coca-Cola Lata 310ml",
+      "descricao": "Refrigerante Coca-Cola tradicional em lata de 350ml, gelado e pronto para acompanhar seu pedido.",
+      "preco": 6,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-006.jpg",
+      "categoria": "Bebidas",
+      "vendas": 0,
       "ativo": true
     },
     {
       "uuid": "prod-007",
-      "nome": "Batata Strogonoff",
-      "descricao": "Strogonoff de carne cremoso com batata palha e salsinha",
-      "preco": 33.9,
-      "desconto": 10,
-      "foto": "https://images.unsplash.com/photo-1645673197548-9adfa2ea55dc?w=400&h=300&fit=crop&crop=top",
-      "categoria": "Batatas Recheadas",
-      "vendas": 160,
+      "nome": "Coca-Cola Zero Lata 350ml",
+      "descricao": "Refrigerante Coca-Cola Zero em lata de 350ml, sem acucar e com o sabor classico que combina com qualquer refeicao.",
+      "preco": 6,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-007.webp",
+      "categoria": "Bebidas",
+      "vendas": 0,
       "ativo": true
     },
     {
       "uuid": "prod-008",
-      "nome": "Batata Vegana",
-      "descricao": "Cogumelos refogados, milho, ervilha, tomate seco e azeite trufado",
-      "preco": 27.9,
+      "nome": "Guarana Antarctica Lata 350ml",
+      "descricao": "Refrigerante Guarana Antarctica tradicional em lata de 350ml, gelado e ideal para acompanhar seu lanche.",
+      "preco": 5,
       "desconto": 0,
-      "foto": "https://images.unsplash.com/photo-1639744210631-209fce3e256c?w=400&h=300&fit=crop&crop=center",
-      "categoria": "Batatas Recheadas",
-      "vendas": 60,
+      "foto": "/images/uploads/product-prod-008.webp",
+      "categoria": "Bebidas",
+      "vendas": 0,
       "ativo": true
     },
     {
       "uuid": "prod-009",
-      "nome": "Refrigerante 2 Litros",
-      "descricao": "Coca-Cola, Guaraná ou Fanta - escolha na observação",
-      "preco": 14,
-      "desconto": 0,
-      "foto": "https://images.unsplash.com/photo-1632996988606-274cfd06eb68?w=400&h=300&fit=crop",
-      "categoria": "Bebidas",
-      "vendas": 300,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-012",
-      "nome": "Refrigerante Lata 350ml",
-      "descricao": "Coca-Cola, Guaraná, Fanta ou Sprite gelada",
+      "nome": "Guarana Antarctica Zero Lata 350ml",
+      "descricao": "Refrigerante Guarana Antarctica Zero em lata de 350ml, sem acucar e com o sabor leve e refrescante.",
       "preco": 7,
       "desconto": 0,
-      "foto": "https://images.pexels.com/photos/31336111/pexels-photo-31336111.jpeg?auto=compress&cs=tinysrgb&w=400",
+      "foto": "/images/uploads/product-prod-009.webp",
       "categoria": "Bebidas",
-      "vendas": 350,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-010",
-      "nome": "Suco Natural 500ml",
-      "descricao": "Laranja, limão, maracujá ou abacaxi - feito na hora",
-      "preco": 12,
-      "desconto": 0,
-      "foto": "https://images.pexels.com/photos/4113669/pexels-photo-4113669.jpeg?auto=compress&cs=tinysrgb&w=400",
-      "categoria": "Bebidas",
-      "vendas": 80,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-011",
-      "nome": "Água Mineral 500ml",
-      "descricao": "Água mineral sem gás gelada",
-      "preco": 5,
-      "desconto": 0,
-      "foto": "https://images.unsplash.com/photo-1653122024753-d7322d90b3d7?w=400&h=300&fit=crop",
-      "categoria": "Bebidas",
-      "vendas": 250,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-014",
-      "nome": "Brownie com Sorvete",
-      "descricao": "Brownie artesanal quentinho com sorvete de creme e calda",
-      "preco": 22.9,
-      "desconto": 0,
-      "foto": "https://images.unsplash.com/photo-1551024506-0bccd828d307?w=400&h=300&fit=crop",
-      "categoria": "Sobremesas",
-      "vendas": 60,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-013",
-      "nome": "Petit Gateau",
-      "descricao": "Bolo quente de chocolate com sorvete de creme e calda especial",
-      "preco": 24.9,
-      "desconto": 20,
-      "foto": "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400&h=300&fit=crop",
-      "categoria": "Sobremesas",
-      "vendas": 70,
+      "vendas": 0,
       "ativo": true
     }
   ],
-  "combos": [
-    {
-      "uuid": "combo-002",
-      "nome": "Combo Casal",
-      "descricao": "Batata Bacon Cheddar + Batata Calabresa + 2 Refri Lata",
-      "produto_ids": [
-        "prod-005",
-        "prod-003",
-        "prod-012"
-      ],
-      "valor": 59.9,
-      "desconto": 5,
-      "vendas": 100,
-      "foto": "https://images.unsplash.com/photo-1639744210631-209fce3e256c?w=400&h=300&fit=crop",
-      "ativo": true
-    },
-    {
-      "uuid": "combo-001",
-      "nome": "Combo Recheiaê Família",
-      "descricao": "Batata Carne Seca + Batata Frango Catupiry + Refrigerante 2L",
-      "produto_ids": [
-        "prod-001",
-        "prod-002",
-        "prod-009"
-      ],
-      "valor": 69.9,
-      "desconto": 10,
-      "vendas": 150,
-      "foto": "https://images.unsplash.com/photo-1645673197548-9adfa2ea55dc?w=400&h=300&fit=crop",
-      "ativo": true
-    },
-    {
-      "uuid": "combo-003",
-      "nome": "Combo Solo",
-      "descricao": "Batata Strogonoff + Refrigerante Lata + Brownie",
-      "produto_ids": [
-        "prod-007",
-        "prod-012",
-        "prod-014"
-      ],
-      "valor": 54.9,
-      "desconto": 0,
-      "vendas": 80,
-      "foto": "https://images.unsplash.com/photo-1761712826074-5f1bab2b2f32?w=400&h=300&fit=crop",
-      "ativo": true
-    }
-  ],
-  "activeCombos": [
-    {
-      "uuid": "combo-002",
-      "nome": "Combo Casal",
-      "descricao": "Batata Bacon Cheddar + Batata Calabresa + 2 Refri Lata",
-      "produto_ids": [
-        "prod-005",
-        "prod-003",
-        "prod-012"
-      ],
-      "valor": 59.9,
-      "desconto": 5,
-      "vendas": 100,
-      "foto": "https://images.unsplash.com/photo-1639744210631-209fce3e256c?w=400&h=300&fit=crop",
-      "ativo": true
-    },
-    {
-      "uuid": "combo-001",
-      "nome": "Combo Recheiaê Família",
-      "descricao": "Batata Carne Seca + Batata Frango Catupiry + Refrigerante 2L",
-      "produto_ids": [
-        "prod-001",
-        "prod-002",
-        "prod-009"
-      ],
-      "valor": 69.9,
-      "desconto": 10,
-      "vendas": 150,
-      "foto": "https://images.unsplash.com/photo-1645673197548-9adfa2ea55dc?w=400&h=300&fit=crop",
-      "ativo": true
-    },
-    {
-      "uuid": "combo-003",
-      "nome": "Combo Solo",
-      "descricao": "Batata Strogonoff + Refrigerante Lata + Brownie",
-      "produto_ids": [
-        "prod-007",
-        "prod-012",
-        "prod-014"
-      ],
-      "valor": 54.9,
-      "desconto": 0,
-      "vendas": 80,
-      "foto": "https://images.unsplash.com/photo-1761712826074-5f1bab2b2f32?w=400&h=300&fit=crop",
-      "ativo": true
-    }
-  ],
+  "combos": [],
+  "activeCombos": [],
   "paymentMethods": [
     {
       "uuid": "pm-002",
       "nome": "Cartão de crédito",
-      "ativo": true
+      "ativo": false
     },
     {
       "uuid": "pm-003",
       "nome": "Cartão de débito",
-      "ativo": true
+      "ativo": false
     },
     {
       "uuid": "pm-004",
       "nome": "Dinheiro",
-      "ativo": true
+      "ativo": false
     },
     {
       "uuid": "pm-001",
@@ -386,29 +228,77 @@
   ],
   "activePaymentMethods": [
     {
-      "uuid": "pm-002",
-      "nome": "Cartão de crédito",
-      "ativo": true
-    },
-    {
-      "uuid": "pm-003",
-      "nome": "Cartão de débito",
-      "ativo": true
-    },
-    {
-      "uuid": "pm-004",
-      "nome": "Dinheiro",
-      "ativo": true
-    },
-    {
       "uuid": "pm-001",
       "nome": "Pix",
       "ativo": true
     }
   ],
+  "addons": [
+    {
+      "uuid": "a8475fb7-baea-4cb8-8e7f-de6c5d5e5395",
+      "nome": "Bacon",
+      "preco": 3,
+      "ativo": true
+    },
+    {
+      "uuid": "addon-003",
+      "nome": "Catupiry",
+      "preco": 5,
+      "ativo": true
+    },
+    {
+      "uuid": "addon-004",
+      "nome": "Cheddar",
+      "preco": 5,
+      "ativo": true
+    },
+    {
+      "uuid": "addon-001",
+      "nome": "Doritos",
+      "preco": 3,
+      "ativo": true
+    },
+    {
+      "uuid": "addon-002",
+      "nome": "Mussarela",
+      "preco": 3,
+      "ativo": true
+    }
+  ],
+  "activeAddons": [
+    {
+      "uuid": "a8475fb7-baea-4cb8-8e7f-de6c5d5e5395",
+      "nome": "Bacon",
+      "preco": 3,
+      "ativo": true
+    },
+    {
+      "uuid": "addon-003",
+      "nome": "Catupiry",
+      "preco": 5,
+      "ativo": true
+    },
+    {
+      "uuid": "addon-004",
+      "nome": "Cheddar",
+      "preco": 5,
+      "ativo": true
+    },
+    {
+      "uuid": "addon-001",
+      "nome": "Doritos",
+      "preco": 3,
+      "ativo": true
+    },
+    {
+      "uuid": "addon-002",
+      "nome": "Mussarela",
+      "preco": 3,
+      "ativo": true
+    }
+  ],
   "categories": [
-    "Batatas Recheadas",
-    "Bebidas",
-    "Sobremesas"
+    "Batatas Recheadas 500g",
+    "Bebidas"
   ]
 }

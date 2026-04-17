@@ -30,6 +30,10 @@ function getStaticPayload(pathname) {
       return catalogSnapshot.activePaymentMethods;
     case '/payment-methods/all':
       return catalogSnapshot.paymentMethods;
+    case '/addons':
+      return catalogSnapshot.activeAddons || [];
+    case '/addons/all':
+      return catalogSnapshot.addons || [];
     default:
       throw new Error(`Rota estatica nao suportada: ${pathname}`);
   }

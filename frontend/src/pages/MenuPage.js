@@ -5,7 +5,7 @@ import { ProductCard } from '@/components/menu/ProductCard';
 import { ComboCard } from '@/components/menu/ComboCard';
 import { api } from '@/lib/api';
 import { Input } from '@/components/ui/input';
-import { Search, Tag, Flame, Package, Loader2 } from 'lucide-react';
+import { Search, Package, Loader2 } from 'lucide-react';
 
 export default function MenuPage() {
   const [products, setProducts] = useState([]);
@@ -36,9 +36,6 @@ export default function MenuPage() {
       setLoading(false);
     }
   };
-
-  const promotions = products.filter(p => p.desconto > 0);
-  const mostOrdered = [...products].sort((a, b) => b.vendas - a.vendas).slice(0, 6);
 
   const filteredProducts = searchQuery
     ? products.filter(p =>
@@ -111,40 +108,6 @@ export default function MenuPage() {
               ))}
             </div>
           )}
-        </section>
-      )}
-
-      {/* Promotions */}
-      {!searchQuery && promotions.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 mt-8">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-7 w-7 rounded-full bg-promo-badge/10 flex items-center justify-center">
-              <Tag className="h-4 w-4 text-promo-badge" />
-            </div>
-            <h2 className="text-lg font-bold text-foreground">Promoções</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-            {promotions.map(product => (
-              <ProductCard key={product.uuid} product={product} showPromo />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Most Ordered */}
-      {!searchQuery && mostOrdered.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 mt-10">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
-              <Flame className="h-4 w-4 text-primary" />
-            </div>
-            <h2 className="text-lg font-bold text-foreground">Mais Pedidos</h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-            {mostOrdered.map(product => (
-              <ProductCard key={product.uuid} product={product} showPopular />
-            ))}
-          </div>
         </section>
       )}
 

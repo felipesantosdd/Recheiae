@@ -4,6 +4,10 @@ function formatBRL(value) {
   return value.toFixed(2).replace('.', ',');
 }
 
+function formatAddonName(addon) {
+  return addon.name || addon.nome || 'Adicional';
+}
+
 export function generateOrderNumber() {
   const current = parseInt(localStorage.getItem('recheiae-order-counter') || '0', 10);
   const next = current + 1;
@@ -16,7 +20,7 @@ export function generateGoogleMapsLink(endereco, bairro) {
   return `https://maps.google.com/?q=${encodeURIComponent(query)}`;
 }
 
-export function generateWhatsAppMessage({ orderNumber, customer, items, subtotal, deliveryFee, totalDiscount, pixDiscount, total }) {
+export function generateWhatsAppMessage({ orderNumber, customer, items, subtotal, deliveryFee, totalDiscount, total }) {
   const now = new Date();
   const dateStr = now.toLocaleDateString('pt-BR');
   const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -37,9 +41,20 @@ export function generateWhatsAppMessage({ orderNumber, customer, items, subtotal
   msg += `------- ITENS DO PEDIDO -------\n\n`;
 
   items.forEach(item => {
-    const unitPrice = item.originalPrice;
+    const basePrice = item.originalPrice * (1 - (item.discount || 0) / 100);
+    const addonsTotal = (item.addons || []).reduce((sum, addon) => sum + (addon.price ?? addon.preco ?? 0), 0);
+    const unitPrice = basePrice + addonsTotal;
     const lineTotal = unitPrice * item.quantity;
     msg += `*${item.quantity} x ${item.name}*\n`;
+    if (item.addons?.length) {
+      msg += `Adicionais do item:\n`;
+      item.addons.forEach((addon) => {
+        msg += `- ${formatAddonName(addon)} (+R$ ${formatBRL(addon.price ?? addon.preco ?? 0)})\n`;
+      });
+    }
+    if (item.notes) {
+      msg += `Observacoes do item: ${item.notes}\n`;
+    }
     msg += `\ud83d\udcb5 ${item.quantity} x R$ ${formatBRL(unitPrice)} = R$ ${formatBRL(lineTotal)}\n\n`;
   });
 
@@ -49,14 +64,11 @@ export function generateWhatsAppMessage({ orderNumber, customer, items, subtotal
   if (totalDiscount > 0) {
     msg += `DESCONTOS: R$ ${formatBRL(totalDiscount)}\n`;
   }
-  if (pixDiscount > 0) {
-    msg += `DESCONTO PIX: -R$ ${formatBRL(pixDiscount)}\n`;
-  }
   msg += `*VALOR FINAL: R$ ${formatBRL(total)}*\n\n`;
   msg += `PAGAMENTO\n`;
   msg += `*${customer.formaPagamento}*: R$ ${formatBRL(total)}\n\n`;
   if (customer.observacoes) {
-    msg += `\ud83d\udcdd Observa\u00e7\u00f5es: ${customer.observacoes}\n\n`;
+    msg += `\ud83d\udcdd Observacoes gerais do pedido: ${customer.observacoes}\n\n`;
   }
   msg += `\ud83d\udd50 Prazo para entrega: ${STORE_CONFIG.deliveryTime}`;
 

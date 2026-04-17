@@ -1,13 +1,13 @@
 import { Button } from '@/components/ui/button';
 import { Minus, Plus, Trash2, ImageOff } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import { formatPrice, calculateItemPrice } from '@/utils/calculations';
+import { formatPrice, calculateCartItemUnitPrice } from '@/utils/calculations';
 import { useState } from 'react';
 
 export function CartItem({ item }) {
   const { updateQuantity, removeItem } = useCart();
   const [imgError, setImgError] = useState(false);
-  const unitPrice = calculateItemPrice(item.originalPrice, item.discount);
+  const unitPrice = calculateCartItemUnitPrice(item);
   const lineTotal = unitPrice * item.quantity;
 
   return (
@@ -28,6 +28,16 @@ export function CartItem({ item }) {
       </div>
       <div className="flex-1 min-w-0">
         <h4 className="text-sm font-medium text-foreground truncate">{item.name}</h4>
+        {item.addons?.length > 0 && (
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            + {item.addons.map((addon) => addon.name).join(', ')}
+          </p>
+        )}
+        {item.notes && (
+          <p className="mt-0.5 text-[11px] text-muted-foreground line-clamp-2">
+            Obs.: {item.notes}
+          </p>
+        )}
         <p className="text-sm font-bold text-primary mt-0.5">{formatPrice(lineTotal)}</p>
         <div className="flex items-center gap-2 mt-2">
           <div className="flex items-center border border-border rounded-md">
@@ -35,7 +45,7 @@ export function CartItem({ item }) {
               variant="ghost"
               size="icon"
               className="h-7 w-7 rounded-none"
-              onClick={() => updateQuantity(item.id, item.type, item.quantity - 1)}
+              onClick={() => updateQuantity(item.signature, item.quantity - 1)}
             >
               <Minus className="h-3 w-3" />
             </Button>
@@ -44,7 +54,7 @@ export function CartItem({ item }) {
               variant="ghost"
               size="icon"
               className="h-7 w-7 rounded-none"
-              onClick={() => updateQuantity(item.id, item.type, item.quantity + 1)}
+              onClick={() => updateQuantity(item.signature, item.quantity + 1)}
             >
               <Plus className="h-3 w-3" />
             </Button>
@@ -53,7 +63,7 @@ export function CartItem({ item }) {
             variant="ghost"
             size="icon"
             className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={() => removeItem(item.id, item.type)}
+            onClick={() => removeItem(item.signature)}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>

@@ -54,9 +54,15 @@ function exportSnapshotFromDb(databaseFile) {
       .all()
       .map(rowToRecord);
 
+    const addons = db
+      .prepare('SELECT * FROM addons ORDER BY nome')
+      .all()
+      .map(rowToRecord);
+
     const activeProducts = products.filter((item) => item.ativo);
     const activeCombos = combos.filter((item) => item.ativo);
     const activePaymentMethods = paymentMethods.filter((item) => item.ativo);
+    const activeAddons = addons.filter((item) => item.ativo);
     const categories = [...new Set(activeProducts.map((item) => item.categoria))].sort();
 
     return {
@@ -67,6 +73,8 @@ function exportSnapshotFromDb(databaseFile) {
       activeCombos,
       paymentMethods,
       activePaymentMethods,
+      addons,
+      activeAddons,
       categories,
     };
   } finally {

@@ -63,7 +63,7 @@ export function CartDrawer() {
               <ScrollArea className="flex-1 px-6">
                 <div className="divide-y divide-border">
                   {items.map(item => (
-                    <CartItem key={`${item.type}-${item.id}`} item={item} />
+                    <CartItem key={item.signature || `${item.type}-${item.id}`} item={item} />
                   ))}
                 </div>
               </ScrollArea>

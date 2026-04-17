@@ -1,18 +1,25 @@
 export const STORE_CONFIG = {
   nome: 'Recheiaê',
-  whatsapp: '553592147338',
+  whatsapp: '5535998160726',
   cidade: 'Itajubá - MG',
   deliveryFee: 10.00,
   deliveryTime: '40 min',
-  pixDiscount: 10.00,
 };
 
 export function calculateItemPrice(originalPrice, discount = 0) {
   return originalPrice * (1 - discount / 100);
 }
 
+export function calculateAddonsTotal(addons = []) {
+  return addons.reduce((sum, addon) => sum + (addon.price ?? addon.preco ?? 0), 0);
+}
+
+export function calculateCartItemUnitPrice(item) {
+  return calculateItemPrice(item.originalPrice, item.discount) + calculateAddonsTotal(item.addons);
+}
+
 export function calculateSubtotal(items) {
-  return items.reduce((sum, item) => sum + item.originalPrice * item.quantity, 0);
+  return items.reduce((sum, item) => sum + calculateCartItemUnitPrice(item) * item.quantity, 0);
 }
 
 export function calculateTotalDiscount(items) {
@@ -26,19 +33,16 @@ export function calculateDeliveryFee() {
   return STORE_CONFIG.deliveryFee;
 }
 
-export function calculatePixDiscount(formaPagamento) {
-  if (!formaPagamento) return 0;
-  return formaPagamento.toLowerCase() === 'pix' ? STORE_CONFIG.pixDiscount : 0;
-}
-
-export function calculateTotal(items, formaPagamento = '') {
+export function calculateTotal(items) {
   const subtotal = calculateSubtotal(items);
   const discount = calculateTotalDiscount(items);
   const delivery = calculateDeliveryFee();
-  const pixDisc = calculatePixDiscount(formaPagamento);
-  return Math.max(0, subtotal - discount - pixDisc + delivery);
+  return Math.max(0, subtotal - discount + delivery);
 }
 
 export function formatPrice(value) {
+  if (value == null || Number.isNaN(Number(value))) {
+    return (0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
