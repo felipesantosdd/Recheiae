@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +12,6 @@ import { useCart } from '@/context/CartContext';
 import { formatPrice, calculateItemPrice, calculateAddonsTotal } from '@/utils/calculations';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import { useEffect } from 'react';
 
 export function ProductCard({ product, showPromo, showPopular }) {
   const { addItem } = useCart();
@@ -109,6 +108,7 @@ export function ProductCard({ product, showPromo, showPopular }) {
             )}
           </div>
         </button>
+
         <CardContent className="flex flex-col flex-1 p-3 pb-1">
           <button type="button" className="text-left" onClick={handleOpenOrAdd}>
             <h3 className="font-semibold text-sm text-card-foreground line-clamp-1">
@@ -120,6 +120,7 @@ export function ProductCard({ product, showPromo, showPopular }) {
               </p>
             )}
           </button>
+
           <div className="mt-auto pt-2">
             <div className="flex items-baseline gap-1.5">
               {hasDiscount && (
@@ -133,6 +134,7 @@ export function ProductCard({ product, showPromo, showPopular }) {
             </div>
           </div>
         </CardContent>
+
         <CardFooter className="p-3 pt-2">
           <Button
             variant="default"
@@ -147,100 +149,107 @@ export function ProductCard({ product, showPromo, showPopular }) {
       </Card>
 
       {!isDrink && (
-      <Dialog
-        open={isDialogOpen}
-        onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) resetCustomization();
-        }}
-      >
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{product.nome}</DialogTitle>
-          </DialogHeader>
+        <Dialog
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) resetCustomization();
+          }}
+        >
+          <DialogContent className="max-h-[90vh] w-[calc(100%-1rem)] max-w-lg overflow-y-auto p-4 sm:w-full sm:p-6">
+            <DialogHeader>
+              <DialogTitle>{product.nome}</DialogTitle>
+            </DialogHeader>
 
-          <div className="space-y-4">
-            {product.foto && !imgError && (
-              <div className="h-48 overflow-hidden rounded-md bg-muted">
-                <img
-                  src={product.foto}
-                  alt={product.nome}
-                  className="h-full w-full object-cover"
-                  onError={() => setImgError(true)}
-                />
-              </div>
-            )}
+            <div className="space-y-4">
+              {product.foto && !imgError && (
+                <div className="h-48 overflow-hidden rounded-md bg-muted">
+                  <img
+                    src={product.foto}
+                    alt={product.nome}
+                    className="h-full w-full object-cover"
+                    onError={() => setImgError(true)}
+                  />
+                </div>
+              )}
 
-            {product.descricao && (
-              <p className="text-sm leading-relaxed text-muted-foreground">{product.descricao}</p>
-            )}
+              {product.descricao && (
+                <p className="text-sm leading-relaxed text-muted-foreground">{product.descricao}</p>
+              )}
 
-            <Tabs defaultValue="adicionais" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="adicionais">Adicionais</TabsTrigger>
-                <TabsTrigger value="observacoes">Observações</TabsTrigger>
-              </TabsList>
+              <Tabs defaultValue="adicionais" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="adicionais">Adicionais</TabsTrigger>
+                  <TabsTrigger value="observacoes">Observacoes</TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="adicionais" className="space-y-3 pt-3">
-                {addons.length === 0 && (
-                  <p className="text-sm text-muted-foreground">Nenhum adicional disponivel no momento.</p>
-                )}
-                {addons.map((addon) => (
-                  <label
-                    key={addon.uuid}
-                    className="flex cursor-pointer items-center justify-between rounded-md border border-border p-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Checkbox
-                        checked={selectedAddonIds.includes(addon.uuid)}
-                        onCheckedChange={() => toggleAddon(addon.uuid)}
-                      />
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{addon.name}</p>
-                        <p className="text-xs text-muted-foreground">+ {formatPrice(addon.price)}</p>
+                <TabsContent value="adicionais" className="space-y-3 pt-3">
+                  {addons.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      Nenhum adicional disponivel no momento.
+                    </p>
+                  )}
+
+                  {addons.map((addon) => (
+                    <label
+                      key={addon.uuid}
+                      className="flex cursor-pointer items-center justify-between rounded-md border border-border p-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          checked={selectedAddonIds.includes(addon.uuid)}
+                          onCheckedChange={() => toggleAddon(addon.uuid)}
+                        />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{addon.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            + {formatPrice(addon.price)}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </label>
-                ))}
-              </TabsContent>
+                    </label>
+                  ))}
+                </TabsContent>
 
-              <TabsContent value="observacoes" className="space-y-2 pt-3">
-                <Label htmlFor={`notes-${product.uuid}`} className="text-sm">Observações do item</Label>
-                <Textarea
-                  id={`notes-${product.uuid}`}
-                  value={notes}
-                  onChange={(event) => setNotes(event.target.value)}
-                  placeholder="Ex: sem cebola, caprichar no cheddar..."
-                  rows={4}
-                />
-              </TabsContent>
-            </Tabs>
+                <TabsContent value="observacoes" className="space-y-2 pt-3">
+                  <Label htmlFor={`notes-${product.uuid}`} className="text-sm">
+                    Observacoes do item
+                  </Label>
+                  <Textarea
+                    id={`notes-${product.uuid}`}
+                    value={notes}
+                    onChange={(event) => setNotes(event.target.value)}
+                    placeholder="Ex: sem cebola, caprichar no cheddar..."
+                    rows={4}
+                  />
+                </TabsContent>
+              </Tabs>
 
-            <div className="rounded-md bg-muted/50 p-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Preço base</span>
-                <span className="font-medium">{formatPrice(discountedPrice)}</span>
+              <div className="rounded-md bg-muted/50 p-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Preco base</span>
+                  <span className="font-medium">{formatPrice(discountedPrice)}</span>
+                </div>
+                <div className="mt-1 flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Adicionais</span>
+                  <span className="font-medium">{formatPrice(calculateAddonsTotal(selectedAddons))}</span>
+                </div>
+                <div className="mt-2 flex items-center justify-between text-base font-bold">
+                  <span>Total do item</span>
+                  <span>{formatPrice(finalUnitPrice)}</span>
+                </div>
               </div>
-              <div className="mt-1 flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Adicionais</span>
-                <span className="font-medium">{formatPrice(calculateAddonsTotal(selectedAddons))}</span>
-              </div>
-              <div className="mt-2 flex items-center justify-between text-base font-bold">
-                <span>Total do item</span>
-                <span>{formatPrice(finalUnitPrice)}</span>
-              </div>
+
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
+                <Button onClick={handleAddToCart}>
+                  <Plus className="h-4 w-4" />
+                  Adicionar
+                </Button>
+              </DialogFooter>
             </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleAddToCart}>
-              <Plus className="h-4 w-4" />
-              Adicionar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );
