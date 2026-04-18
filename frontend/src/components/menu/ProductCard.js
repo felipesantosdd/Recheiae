@@ -17,6 +17,7 @@ export function ProductCard({ product, showPromo, showPopular }) {
   const { addItem } = useCart();
   const [imgError, setImgError] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isImageZoomOpen, setIsImageZoomOpen] = useState(false);
   const [addons, setAddons] = useState([]);
   const [selectedAddonIds, setSelectedAddonIds] = useState([]);
   const [notes, setNotes] = useState('');
@@ -163,14 +164,18 @@ export function ProductCard({ product, showPromo, showPopular }) {
 
             <div className="space-y-4">
               {product.foto && !imgError && (
-                <div className="h-48 overflow-hidden rounded-md bg-muted">
+                <button
+                  type="button"
+                  className="flex h-48 w-full items-center justify-center overflow-hidden rounded-md bg-muted transition-opacity hover:opacity-95"
+                  onClick={() => setIsImageZoomOpen(true)}
+                >
                   <img
                     src={product.foto}
                     alt={product.nome}
-                    className="h-full w-full object-cover"
+                    className="max-h-full max-w-full object-contain"
                     onError={() => setImgError(true)}
                   />
-                </div>
+                </button>
               )}
 
               {product.descricao && (
@@ -247,6 +252,20 @@ export function ProductCard({ product, showPromo, showPopular }) {
                   Adicionar
                 </Button>
               </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {!isDrink && product.foto && !imgError && (
+        <Dialog open={isImageZoomOpen} onOpenChange={setIsImageZoomOpen}>
+          <DialogContent className="max-h-[95vh] w-[calc(100%-1rem)] max-w-4xl overflow-hidden p-3 sm:p-4">
+            <div className="flex max-h-[85vh] items-center justify-center overflow-hidden rounded-md bg-muted">
+              <img
+                src={product.foto}
+                alt={product.nome}
+                className="max-h-[85vh] max-w-full object-contain"
+              />
             </div>
           </DialogContent>
         </Dialog>

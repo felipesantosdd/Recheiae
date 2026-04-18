@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-18T21:56:35.826Z",
+  "generatedAt": "2026-04-18T22:02:59.820Z",
   "products": [
     {
       "uuid": "prod-005",
@@ -300,7 +300,7 @@
   "settings": {
     "whatsapp": "5535998160726",
     "delivery_time": "40 min",
-    "business_hours": "Ter a Sex: 19:00 - 23:30\nSab e Dom: 18:00 - 00:00"
+    "business_hours": "Ter a Sex: 19:00 - 23:30\nSab e Dom: 19:00 - 00:00"
   },
   "categories": [
     "Batatas Recheadas 500g",
