@@ -18,6 +18,8 @@ function getStaticPayload(pathname) {
   switch (pathname) {
     case '/products':
       return catalogSnapshot.activeProducts;
+    case '/products/top':
+      return catalogSnapshot.topProducts || [];
     case '/products/all':
       return catalogSnapshot.products;
     case '/combos':

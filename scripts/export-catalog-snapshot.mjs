@@ -13,6 +13,7 @@ const publicSnapshotDir = path.join(rootDir, 'frontend', 'public', 'snapshot');
 const snapshotPath = path.join(snapshotDir, 'catalogSnapshot.json');
 const metadataPath = path.join(publicSnapshotDir, 'build-metadata.json');
 const publicDbPath = path.join(publicSnapshotDir, 'catalog.db');
+const IMPORT_METADATA_PREFIX = '__IMPORT_METADATA__';
 
 async function exists(filePath) {
   try {
@@ -29,6 +30,72 @@ function rowToRecord(row) {
     record.ativo = Boolean(record.ativo);
   }
   return record;
+}
+
+function normalizeCatalogText(value) {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function parseCashObservation(value) {
+  const raw = String(value || '');
+  if (!raw.startsWith(IMPORT_METADATA_PREFIX)) {
+    return null;
+  }
+
+  const newlineIndex = raw.indexOf('\n');
+  const metadataText = newlineIndex >= 0
+    ? raw.slice(IMPORT_METADATA_PREFIX.length, newlineIndex)
+    : raw.slice(IMPORT_METADATA_PREFIX.length);
+
+  try {
+    return JSON.parse(metadataText);
+  } catch {
+    return null;
+  }
+}
+
+function getTopProducts(products, db) {
+  const activeFoodProducts = products.filter((item) => item.ativo && item.categoria !== 'Bebidas');
+  const salesBySlug = {};
+
+  try {
+    const cashEntries = db
+      .prepare("SELECT observacao FROM cash_entries WHERE descricao IN ('Vendas WhatsApp', 'Vendas iFood')")
+      .all();
+
+    cashEntries.forEach((entry) => {
+      const metadata = parseCashObservation(entry.observacao);
+      (metadata?.batches || []).forEach((batch) => {
+        (batch.orders || []).forEach((order) => {
+          (order.items || []).forEach((item) => {
+            const slug = normalizeCatalogText(item.name);
+            const quantity = Number(item.quantity) || 0;
+            if (!slug || quantity <= 0) return;
+            salesBySlug[slug] = (salesBySlug[slug] || 0) + quantity;
+          });
+        });
+      });
+    });
+  } catch {
+    return [];
+  }
+
+  return activeFoodProducts
+    .map((item) => ({
+      ...item,
+      sold_count: salesBySlug[normalizeCatalogText(item.nome)] || 0,
+    }))
+    .filter((item) => item.sold_count > 0)
+    .sort((a, b) => {
+      if (b.sold_count !== a.sold_count) return b.sold_count - a.sold_count;
+      return a.nome.localeCompare(b.nome, 'pt-BR');
+    })
+    .slice(0, 3);
 }
 
 function exportSnapshotFromDb(databaseFile) {
@@ -74,11 +141,13 @@ function exportSnapshotFromDb(databaseFile) {
     const activePaymentMethods = paymentMethods.filter((item) => item.ativo);
     const activeAddons = addons.filter((item) => item.ativo);
     const categories = [...new Set(activeProducts.map((item) => item.categoria))].sort();
+    const topProducts = getTopProducts(products, db);
 
     return {
       generatedAt: new Date().toISOString(),
       products,
       activeProducts,
+      topProducts,
       combos,
       activeCombos,
       paymentMethods,

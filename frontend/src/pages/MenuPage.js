@@ -23,16 +23,19 @@ export default function MenuPage() {
 
   const fetchData = async () => {
     try {
-      const [prodRes, comboRes, catRes, topRes] = await Promise.all([
+      const [prodRes, comboRes, catRes, topRes] = await Promise.allSettled([
         api.get('/products'),
         api.get('/combos'),
         api.get('/categories'),
         api.get('/products/top'),
       ]);
-      setProducts(prodRes.data);
-      setCombos(comboRes.data);
-      setCategories(catRes.data);
-      setTopProducts(topRes.data);
+      if (prodRes.status !== 'fulfilled' || comboRes.status !== 'fulfilled' || catRes.status !== 'fulfilled') {
+        throw new Error('Falha ao carregar o cardapio');
+      }
+      setProducts(prodRes.value.data);
+      setCombos(comboRes.value.data);
+      setCategories(catRes.value.data);
+      setTopProducts(topRes.status === 'fulfilled' ? topRes.value.data : []);
     } catch (e) {
       console.error('Error fetching data:', e);
     } finally {
