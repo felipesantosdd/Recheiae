@@ -11,6 +11,7 @@ from pathlib import Path
 from pydantic import BaseModel
 from typing import List, Optional
 import logging
+from datetime import datetime
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -129,6 +130,24 @@ class StoreSettingsUpdate(BaseModel):
     delivery_time: Optional[str] = None
     business_hours: Optional[str] = None
 
+class CashEntryCreate(BaseModel):
+    tipo: str
+    categoria: str
+    descricao: str
+    valor: float
+    forma_pagamento: Optional[str] = None
+    data_lancamento: Optional[str] = None
+    observacao: Optional[str] = None
+
+class CashEntryUpdate(BaseModel):
+    tipo: Optional[str] = None
+    categoria: Optional[str] = None
+    descricao: Optional[str] = None
+    valor: Optional[float] = None
+    forma_pagamento: Optional[str] = None
+    data_lancamento: Optional[str] = None
+    observacao: Optional[str] = None
+
 # Database initialization
 def init_db():
     conn = get_db()
@@ -171,6 +190,17 @@ def init_db():
         whatsapp TEXT NOT NULL,
         delivery_time TEXT NOT NULL,
         business_hours TEXT NOT NULL
+    )''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS cash_entries (
+        uuid TEXT PRIMARY KEY,
+        tipo TEXT NOT NULL,
+        categoria TEXT NOT NULL,
+        descricao TEXT NOT NULL,
+        valor REAL NOT NULL,
+        forma_pagamento TEXT,
+        data_lancamento TEXT NOT NULL,
+        observacao TEXT,
+        created_at TEXT NOT NULL
     )''')
     conn.commit()
     cur.execute("SELECT COUNT(*) as cnt FROM products")
@@ -607,6 +637,80 @@ def update_store_settings(settings: StoreSettingsUpdate):
     row = conn.execute("SELECT whatsapp, delivery_time, business_hours FROM store_settings WHERE id = 1").fetchone()
     conn.close()
     return dict(row)
+
+@api_router.get("/admin/cash-entries")
+def get_cash_entries():
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT * FROM cash_entries ORDER BY data_lancamento DESC, created_at DESC"
+    ).fetchall()
+    conn.close()
+    return [row_to_dict(r) for r in rows]
+
+@api_router.post("/admin/cash-entries")
+def create_cash_entry(entry: CashEntryCreate):
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    new_uuid = str(uuid_lib.uuid4())
+    now_iso = datetime.now().isoformat(timespec='seconds')
+    data_lancamento = entry.data_lancamento or now_iso
+    conn.execute(
+        """
+        INSERT INTO cash_entries (
+            uuid, tipo, categoria, descricao, valor,
+            forma_pagamento, data_lancamento, observacao, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            new_uuid,
+            entry.tipo,
+            entry.categoria,
+            entry.descricao,
+            entry.valor,
+            entry.forma_pagamento,
+            data_lancamento,
+            entry.observacao,
+            now_iso,
+        ),
+    )
+    conn.commit()
+    row = conn.execute("SELECT * FROM cash_entries WHERE uuid = ?", (new_uuid,)).fetchone()
+    conn.close()
+    return row_to_dict(row)
+
+@api_router.put("/admin/cash-entries/{entry_uuid}")
+def update_cash_entry(entry_uuid: str, entry: CashEntryUpdate):
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    existing = conn.execute("SELECT * FROM cash_entries WHERE uuid = ?", (entry_uuid,)).fetchone()
+    if not existing:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Cash entry not found")
+    updates = {k: v for k, v in entry.model_dump(exclude_unset=True).items()}
+    if updates:
+        set_clause = ", ".join(f"{k} = ?" for k in updates.keys())
+        conn.execute(
+            f"UPDATE cash_entries SET {set_clause} WHERE uuid = ?",
+            list(updates.values()) + [entry_uuid],
+        )
+        conn.commit()
+    row = conn.execute("SELECT * FROM cash_entries WHERE uuid = ?", (entry_uuid,)).fetchone()
+    conn.close()
+    return row_to_dict(row)
+
+@api_router.delete("/admin/cash-entries/{entry_uuid}")
+def delete_cash_entry(entry_uuid: str):
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    conn.execute("DELETE FROM cash_entries WHERE uuid = ?", (entry_uuid,))
+    conn.commit()
+    conn.close()
+    return {"message": "Cash entry deleted"}
 
 app.include_router(api_router)
 app.add_middleware(

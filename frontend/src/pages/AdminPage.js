@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,10 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2, Loader2, Save, CreditCard } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Save, CreditCard, Wallet, ArrowDownCircle, ArrowUpCircle, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatPrice } from '@/utils/calculations';
 import { useStoreSettings } from '@/context/StoreSettingsContext';
@@ -34,35 +35,111 @@ const emptySettings = {
   business_hours: '',
 };
 
+const emptyCashEntry = {
+  tipo: 'entrada',
+  categoria: 'venda',
+  descricao: '',
+  valor: '',
+  forma_pagamento: '',
+  data_lancamento: '',
+  observacao: '',
+};
+
+const cashCategories = [
+  'venda',
+  'delivery',
+  'compra',
+  'insumo',
+  'embalagem',
+  'marketing',
+  'outros',
+];
+
+const emptyIfoodImport = {
+  date: new Date().toISOString().slice(0, 10),
+  rawText: '',
+};
+
 export default function AdminPage() {
   const { setSettings: setGlobalSettings, refreshSettings } = useStoreSettings();
   const [products, setProducts] = useState([]);
   const [combos, setCombos] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [addons, setAddons] = useState([]);
+  const [cashEntries, setCashEntries] = useState([]);
   const [settings, setSettings] = useState({ ...emptySettings });
   const [loading, setLoading] = useState(true);
   const [savingProduct, setSavingProduct] = useState(false);
   const [savingCombo, setSavingCombo] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
+  const [savingCash, setSavingCash] = useState(false);
+  const [savingIfoodImport, setSavingIfoodImport] = useState(false);
   const [addonDialog, setAddonDialog] = useState(false);
   const [prodDialog, setProdDialog] = useState(false);
   const [comboDialog, setComboDialog] = useState(false);
   const [pmDialog, setPmDialog] = useState(false);
+  const [cashDialog, setCashDialog] = useState(false);
+  const [ifoodImportDialog, setIfoodImportDialog] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
   const [editCombo, setEditCombo] = useState(null);
   const [editPM, setEditPM] = useState(null);
   const [editAddon, setEditAddon] = useState(null);
+  const [editCashEntry, setEditCashEntry] = useState(null);
   const [prodForm, setProdForm] = useState({ ...emptyProduct });
   const [comboForm, setComboForm] = useState({ ...emptyCombo });
   const [pmForm, setPmForm] = useState({ nome: '', ativo: true });
   const [addonForm, setAddonForm] = useState({ ...emptyAddon });
+  const [cashForm, setCashForm] = useState({ ...emptyCashEntry });
+  const [cashTypeFilter, setCashTypeFilter] = useState('todos');
+  const [cashDateFrom, setCashDateFrom] = useState('');
+  const [cashDateTo, setCashDateTo] = useState('');
+  const [ifoodImportForm, setIfoodImportForm] = useState({ ...emptyIfoodImport });
   const [productImageFile, setProductImageFile] = useState(null);
   const [comboImageFile, setComboImageFile] = useState(null);
   const [productImagePreview, setProductImagePreview] = useState('');
   const [comboImagePreview, setComboImagePreview] = useState('');
 
   useEffect(() => { fetchAll(); }, []);
+
+  const filteredCashEntries = useMemo(() => {
+    return cashEntries.filter((entry) => {
+      if (cashTypeFilter !== 'todos' && entry.tipo !== cashTypeFilter) {
+        return false;
+      }
+      const datePart = String(entry.data_lancamento || '').slice(0, 10);
+      if (cashDateFrom && datePart < cashDateFrom) {
+        return false;
+      }
+      if (cashDateTo && datePart > cashDateTo) {
+        return false;
+      }
+      return true;
+    });
+  }, [cashEntries, cashTypeFilter, cashDateFrom, cashDateTo]);
+
+  const cashSummary = useMemo(() => {
+    return filteredCashEntries.reduce((acc, entry) => {
+      const value = Number(entry.valor) || 0;
+      if (entry.tipo === 'entrada') {
+        acc.entradas += value;
+      } else {
+        acc.saidas += value;
+      }
+      acc.saldo = acc.entradas - acc.saidas;
+      return acc;
+    }, { entradas: 0, saidas: 0, saldo: 0 });
+  }, [filteredCashEntries]);
+
+  const groupedCashEntries = useMemo(() => {
+    return filteredCashEntries.reduce((groups, entry) => {
+      const dateKey = String(entry.data_lancamento || '').slice(0, 10) || 'Sem data';
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(entry);
+      return groups;
+    }, {});
+  }, [filteredCashEntries]);
 
   const clearProductImageSelection = () => {
     if (productImagePreview.startsWith('blob:')) {
@@ -125,17 +202,19 @@ export default function AdminPage() {
 
   const fetchAll = async () => {
     try {
-      const [pRes, cRes, pmRes, addonRes, settingsRes] = await Promise.all([
+      const [pRes, cRes, pmRes, addonRes, settingsRes, cashRes] = await Promise.all([
         api.get('/products/all'),
         api.get('/combos/all'),
         api.get('/payment-methods/all'),
         api.get('/addons/all'),
         api.get('/settings'),
+        api.get('/admin/cash-entries'),
       ]);
       setProducts(pRes.data);
       setCombos(cRes.data);
       setPaymentMethods(pmRes.data);
       setAddons(addonRes.data);
+      setCashEntries(cashRes.data);
       setSettings({
         whatsapp: settingsRes.data?.whatsapp || '',
         delivery_time: settingsRes.data?.delivery_time || '',
@@ -281,6 +360,160 @@ export default function AdminPage() {
     catch (e) { toast.error('Erro ao atualizar adicional'); }
   };
 
+  const openNewCashEntry = () => {
+    setEditCashEntry(null);
+    setCashForm({
+      ...emptyCashEntry,
+      data_lancamento: new Date().toISOString().slice(0, 10),
+    });
+    setCashDialog(true);
+  };
+  const openEditCashEntry = (entry) => {
+    setEditCashEntry(entry);
+    setCashForm({
+      tipo: entry.tipo || 'entrada',
+      categoria: entry.categoria || 'outros',
+      descricao: entry.descricao || '',
+      valor: String(entry.valor ?? ''),
+      forma_pagamento: entry.forma_pagamento || '',
+      data_lancamento: String(entry.data_lancamento || '').slice(0, 10),
+      observacao: entry.observacao || '',
+    });
+    setCashDialog(true);
+  };
+  const saveCashEntry = async () => {
+    if (!cashForm.descricao.trim()) { toast.error('Descricao e obrigatoria'); return; }
+    if (!cashForm.valor || Number(cashForm.valor) <= 0) { toast.error('Valor invalido'); return; }
+    try {
+      setSavingCash(true);
+      const payload = {
+        ...cashForm,
+        valor: parseFloat(cashForm.valor),
+        data_lancamento: cashForm.data_lancamento || new Date().toISOString().slice(0, 10),
+      };
+      if (editCashEntry) {
+        await api.put(`/admin/cash-entries/${editCashEntry.uuid}`, payload);
+        toast.success('Lancamento atualizado!');
+      } else {
+        await api.post('/admin/cash-entries', payload);
+        toast.success('Lancamento criado!');
+      }
+      setCashDialog(false);
+      fetchAll();
+    } catch (e) {
+      toast.error('Erro ao salvar lancamento');
+    } finally {
+      setSavingCash(false);
+    }
+  };
+  const deleteCashEntry = async (uuid) => {
+    if (!window.confirm('Remover este lancamento?')) return;
+    try {
+      await api.delete(`/admin/cash-entries/${uuid}`);
+      toast.success('Lancamento removido!');
+      fetchAll();
+    } catch (e) {
+      toast.error('Erro ao remover lancamento');
+    }
+  };
+
+  const openIfoodImport = () => {
+    setIfoodImportForm({
+      date: new Date().toISOString().slice(0, 10),
+      rawText: '',
+    });
+    setIfoodImportDialog(true);
+  };
+
+  const parseIfoodNetValues = (rawText) => {
+    const lines = rawText
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    const currencyLines = lines.filter((line) => /^R\$\s*\d/.test(line));
+    if (currencyLines.length < 2) {
+      return { total: 0, count: 0 };
+    }
+
+    let total = 0;
+    let count = 0;
+
+    for (let index = 1; index < currencyLines.length; index += 2) {
+      const line = currencyLines[index];
+      const numericValue = Number(
+        line
+          .replace('R$', '')
+          .replace(/\s/g, '')
+          .replace(/\./g, '')
+          .replace(',', '.'),
+      );
+      if (!Number.isNaN(numericValue)) {
+        total += numericValue;
+        count += 1;
+      }
+    }
+
+    return { total, count };
+  };
+
+  const importIfoodSales = async () => {
+    if (!ifoodImportForm.rawText.trim()) {
+      toast.error('Cole o texto do iFood para importar');
+      return;
+    }
+
+    const { total, count } = parseIfoodNetValues(ifoodImportForm.rawText);
+    if (count === 0 || total <= 0) {
+      toast.error('Nao foi possivel encontrar valores liquidos validos no texto');
+      return;
+    }
+
+    try {
+      setSavingIfoodImport(true);
+
+      const targetDate = ifoodImportForm.date || new Date().toISOString().slice(0, 10);
+      const existingEntry = cashEntries.find((entry) => (
+        entry.tipo === 'entrada'
+        && entry.descricao === 'Vendas iFood'
+        && entry.forma_pagamento === 'iFood'
+        && String(entry.data_lancamento || '').slice(0, 10) === targetDate
+      ));
+
+      const importNote = `Importado do iFood: ${count} pedido(s) somando ${formatPrice(total)} em ${targetDate}.`;
+
+      if (existingEntry) {
+        const mergedObservation = [existingEntry.observacao, importNote]
+          .filter(Boolean)
+          .join('\n');
+
+        await api.put(`/admin/cash-entries/${existingEntry.uuid}`, {
+          valor: Number(existingEntry.valor || 0) + total,
+          observacao: mergedObservation,
+        });
+        toast.success(`iFood somado ao lancamento existente de ${targetDate}`);
+      } else {
+        await api.post('/admin/cash-entries', {
+          tipo: 'entrada',
+          categoria: 'venda',
+          descricao: 'Vendas iFood',
+          valor: total,
+          forma_pagamento: 'iFood',
+          data_lancamento: targetDate,
+          observacao: importNote,
+        });
+        toast.success(`Vendas do iFood importadas para ${targetDate}`);
+      }
+
+      setIfoodImportDialog(false);
+      fetchAll();
+    } catch (e) {
+      toast.error('Erro ao importar vendas do iFood');
+    } finally {
+      setSavingIfoodImport(false);
+    }
+  };
+
   const saveSettings = async () => {
     try {
       setSavingSettings(true);
@@ -324,6 +557,7 @@ export default function AdminPage() {
           <TabsTrigger value="combos">Combos ({combos.length})</TabsTrigger>
           <TabsTrigger value="addons">Adicionais ({addons.length})</TabsTrigger>
           <TabsTrigger value="payments">Pagamentos ({paymentMethods.length})</TabsTrigger>
+          <TabsTrigger value="cash">Caixa ({cashEntries.length})</TabsTrigger>
           <TabsTrigger value="settings">Loja</TabsTrigger>
         </TabsList>
 
@@ -449,6 +683,141 @@ export default function AdminPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="cash">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Tipo</Label>
+                  <Select value={cashTypeFilter} onValueChange={setCashTypeFilter}>
+                    <SelectTrigger className="bg-card">
+                      <SelectValue placeholder="Todos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="entrada">Entradas</SelectItem>
+                      <SelectItem value="saida">Saidas</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">De</Label>
+                  <Input type="date" value={cashDateFrom} onChange={e => setCashDateFrom(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Ate</Label>
+                  <Input type="date" value={cashDateTo} onChange={e => setCashDateTo(e.target.value)} />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => { setCashTypeFilter('todos'); setCashDateFrom(''); setCashDateTo(''); }}>
+                  Limpar filtros
+                </Button>
+                <Button variant="outline" onClick={openIfoodImport}>
+                  <Upload className="h-4 w-4" />
+                  Importar iFood
+                </Button>
+                <Button onClick={openNewCashEntry}><Plus className="h-4 w-4" /> Novo Lancamento</Button>
+              </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-3">
+              <Card>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
+                    <ArrowUpCircle className="h-5 w-5 text-success" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Entradas</p>
+                    <p className="text-lg font-bold text-foreground">{formatPrice(cashSummary.entradas)}</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
+                    <ArrowDownCircle className="h-5 w-5 text-destructive" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Saidas</p>
+                    <p className="text-lg font-bold text-foreground">{formatPrice(cashSummary.saidas)}</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
+                    <Wallet className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Saldo</p>
+                    <p className="text-lg font-bold text-foreground">{formatPrice(cashSummary.saldo)}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-2">
+              {filteredCashEntries.length === 0 && (
+                <Card>
+                  <CardContent className="p-6 text-sm text-muted-foreground text-center">
+                    Nenhum lancamento encontrado para os filtros atuais.
+                  </CardContent>
+                </Card>
+              )}
+
+              {Object.entries(groupedCashEntries).map(([dateKey, entries]) => (
+                <div key={dateKey} className="space-y-2">
+                  <div className="sticky top-0 z-10 rounded-md bg-muted px-3 py-2">
+                    <p className="text-sm font-semibold text-foreground">
+                      {dateKey === 'Sem data'
+                        ? dateKey
+                        : new Date(`${dateKey}T12:00:00`).toLocaleDateString('pt-BR', {
+                            weekday: 'long',
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                          })}
+                    </p>
+                  </div>
+
+                  {entries.map(entry => (
+                    <Card key={entry.uuid}>
+                      <CardContent className="p-4 flex items-start gap-4">
+                        <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                          {entry.tipo === 'entrada'
+                            ? <ArrowUpCircle className="h-5 w-5 text-success" />
+                            : <ArrowDownCircle className="h-5 w-5 text-destructive" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-semibold text-sm text-foreground">{entry.descricao}</h3>
+                            <Badge variant={entry.tipo === 'entrada' ? 'success' : 'outline'} className="text-[10px]">
+                              {entry.tipo}
+                            </Badge>
+                            <Badge variant="secondary" className="text-[10px]">{entry.categoria}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {formatPrice(entry.valor)}
+                            {entry.forma_pagamento && <span className="ml-2">• {entry.forma_pagamento}</span>}
+                          </p>
+                          {entry.observacao && (
+                            <p className="text-xs text-muted-foreground mt-2">{entry.observacao}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Button variant="ghost" size="icon" onClick={() => openEditCashEntry(entry)}><Pencil className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deleteCashEntry(entry.uuid)}><Trash2 className="h-4 w-4" /></Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         </TabsContent>
 
@@ -655,6 +1024,118 @@ export default function AdminPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddonDialog(false)}>Cancelar</Button>
             <Button onClick={saveAddon}><Save className="h-4 w-4" /> Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={cashDialog} onOpenChange={setCashDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editCashEntry ? 'Editar Lancamento' : 'Novo Lancamento'}</DialogTitle>
+            <DialogDescription>Registre entradas e saidas do caixa manualmente</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-sm">Tipo</Label>
+                <Select value={cashForm.tipo} onValueChange={value => setCashForm(prev => ({ ...prev, tipo: value }))}>
+                  <SelectTrigger className="bg-card">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="entrada">Entrada</SelectItem>
+                    <SelectItem value="saida">Saida</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-sm">Categoria</Label>
+                <Select value={cashForm.categoria} onValueChange={value => setCashForm(prev => ({ ...prev, categoria: value }))}>
+                  <SelectTrigger className="bg-card">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cashCategories.map(category => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">Descricao</Label>
+              <Input value={cashForm.descricao} onChange={e => setCashForm(prev => ({ ...prev, descricao: e.target.value }))} placeholder="Ex: Recebimento pix do dia" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-sm">Valor (R$)</Label>
+                <Input type="number" step="0.01" value={cashForm.valor} onChange={e => setCashForm(prev => ({ ...prev, valor: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-sm">Forma de pagamento</Label>
+                <Input value={cashForm.forma_pagamento} onChange={e => setCashForm(prev => ({ ...prev, forma_pagamento: e.target.value }))} placeholder="Pix, Dinheiro, Cartao..." />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">Data</Label>
+              <Input type="date" value={cashForm.data_lancamento} onChange={e => setCashForm(prev => ({ ...prev, data_lancamento: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">Observacao</Label>
+              <Textarea value={cashForm.observacao} onChange={e => setCashForm(prev => ({ ...prev, observacao: e.target.value }))} rows={3} placeholder="Detalhes adicionais do lancamento" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCashDialog(false)}>Cancelar</Button>
+            <Button onClick={saveCashEntry} disabled={savingCash}>
+              {savingCash ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={ifoodImportDialog} onOpenChange={setIfoodImportDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Importar vendas do iFood</DialogTitle>
+            <DialogDescription>
+              Cole o texto do relatório. O sistema vai somar apenas os valores líquidos e lançar como entrada do dia.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label className="text-sm">Data do lancamento</Label>
+              <Input
+                type="date"
+                value={ifoodImportForm.date}
+                onChange={e => setIfoodImportForm(prev => ({ ...prev, date: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">Texto do iFood</Label>
+              <Textarea
+                value={ifoodImportForm.rawText}
+                onChange={e => setIfoodImportForm(prev => ({ ...prev, rawText: e.target.value }))}
+                rows={16}
+                placeholder={`20:19
+7701
+iFood
+Concluido
+R$ 27,90
+R$ 19,67`}
+              />
+              <p className="text-xs text-muted-foreground">
+                Se ja existir um lancamento "Vendas iFood" nessa data, o valor sera somado ao existente.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIfoodImportDialog(false)}>Cancelar</Button>
+            <Button onClick={importIfoodSales} disabled={savingIfoodImport}>
+              {savingIfoodImport ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+              Importar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
