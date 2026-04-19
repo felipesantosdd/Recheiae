@@ -7,11 +7,13 @@ import json
 import uuid as uuid_lib
 import re
 import shutil
+import unicodedata
 from pathlib import Path
 from pydantic import BaseModel
 from typing import List, Optional
 import logging
 from datetime import datetime
+from openpyxl import load_workbook
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -26,6 +28,7 @@ api_router = APIRouter(prefix="/api")
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+IMPORT_METADATA_PREFIX = "__IMPORT_METADATA__"
 
 # SQLite helpers
 def get_db():
@@ -44,6 +47,114 @@ def row_to_dict(row):
 def slugify(value: str) -> str:
     value = re.sub(r'[^a-zA-Z0-9]+', '-', value.strip().lower())
     return value.strip('-') or 'item'
+
+def normalize_catalog_text(value: str) -> str:
+    normalized = unicodedata.normalize('NFD', str(value or ''))
+    normalized = ''.join(char for char in normalized if unicodedata.category(char) != 'Mn')
+    normalized = re.sub(r'\s+', ' ', normalized).strip().lower()
+    return normalized
+
+def parse_cash_observation(value: Optional[str]):
+    raw = str(value or '')
+    if not raw.startswith(IMPORT_METADATA_PREFIX):
+        return None
+    newline_index = raw.find('\n')
+    metadata_text = raw[len(IMPORT_METADATA_PREFIX):] if newline_index < 0 else raw[len(IMPORT_METADATA_PREFIX):newline_index]
+    try:
+        return json.loads(metadata_text)
+    except json.JSONDecodeError:
+        return None
+
+def get_catalog_sales_ranking(conn):
+    products = [row_to_dict(row) for row in conn.execute("SELECT * FROM products WHERE ativo = 1").fetchall()]
+    catalog_items = products
+    sales_by_slug = {}
+
+    cash_rows = conn.execute(
+        "SELECT observacao FROM cash_entries WHERE descricao IN ('Vendas WhatsApp', 'Vendas iFood')"
+    ).fetchall()
+
+    for row in cash_rows:
+        metadata = parse_cash_observation(row['observacao'])
+        if not metadata:
+            continue
+        for batch in metadata.get('batches', []):
+            for order in batch.get('orders', []):
+                for item in order.get('items', []):
+                    item_name = item.get('name')
+                    item_quantity = int(item.get('quantity') or 0)
+                    if not item_name or item_quantity <= 0:
+                        continue
+                    slug = normalize_catalog_text(item_name)
+                    sales_by_slug[slug] = sales_by_slug.get(slug, 0) + item_quantity
+
+    ranked_items = []
+    for item in catalog_items:
+        sold_count = sales_by_slug.get(normalize_catalog_text(item.get('nome')), 0)
+        ranked_items.append({
+            **item,
+            'sold_count': sold_count,
+        })
+
+    ranked_items.sort(key=lambda item: (-item['sold_count'], item['nome']))
+    return ranked_items
+
+def parse_ifood_datetime(value):
+    if isinstance(value, datetime):
+        return value
+    text = str(value or '').strip()
+    for fmt in ("%d/%m/%Y %H:%M:%S", "%d/%m/%Y %H:%M", "%d/%m/%Y"):
+        try:
+            return datetime.strptime(text, fmt)
+        except ValueError:
+            continue
+    return None
+
+def parse_ifood_report(file_obj):
+    workbook = load_workbook(file_obj, read_only=False, data_only=True)
+    worksheet = workbook[workbook.sheetnames[0]]
+    header_row = next(worksheet.iter_rows(min_row=1, max_row=1, values_only=True), None)
+    if not header_row:
+        return []
+
+    headers = {str(value or '').strip(): index for index, value in enumerate(header_row)}
+
+    def cell(row, column_name):
+        index = headers.get(column_name)
+        if index is None or index >= len(row):
+            return None
+        return row[index]
+
+    orders = []
+    for row in worksheet.iter_rows(min_row=2, values_only=True):
+        full_id = cell(row, 'ID COMPLETO DO PEDIDO')
+        short_id = cell(row, 'ID CURTO DO PEDIDO')
+        status = str(cell(row, 'STATUS FINAL DO PEDIDO') or '').strip().upper()
+        net = float(cell(row, 'VALOR LIQUIDO (R$)') or 0)
+
+        if not full_id or net <= 0 or status not in {'CONCLUIDO', 'CONCLUÍDO'}:
+            continue
+
+        order_datetime = parse_ifood_datetime(cell(row, 'DATA E HORA DO PEDIDO'))
+        parsed_date = order_datetime.strftime('%Y-%m-%d') if order_datetime else ''
+        created_at = order_datetime.strftime('%d/%m/%Y %H:%M') if order_datetime else ''
+        time = order_datetime.strftime('%H:%M') if order_datetime else ''
+
+        orders.append({
+            'id': str(full_id).strip(),
+            'orderId': str(short_id).strip(),
+            'createdAt': created_at,
+            'parsedDate': parsed_date,
+            'time': time,
+            'gross': float(cell(row, 'TOTAL PAGO PELO CLIENTE (R$)') or cell(row, 'VALOR DOS ITENS (R$)') or 0),
+            'net': net,
+            'status': status,
+            'paymentMethod': str(cell(row, 'FORMA DE PAGAMENTO') or '').strip(),
+            'deliveryType': str(cell(row, 'TIPO DE ENTREGA') or '').strip(),
+            'channel': str(cell(row, 'CANAL DE VENDA') or '').strip(),
+        })
+
+    return orders
 
 def save_uploaded_image(file: UploadFile, scope: str, item_id: Optional[str] = None) -> str:
     suffix = Path(file.filename or '').suffix.lower()
@@ -148,6 +259,30 @@ class CashEntryUpdate(BaseModel):
     data_lancamento: Optional[str] = None
     observacao: Optional[str] = None
 
+class StockItemCreate(BaseModel):
+    nome: str
+    unidade: str
+    quantidade: float
+    valor_pago: float
+    ativo: Optional[bool] = True
+
+class StockItemUpdate(BaseModel):
+    nome: Optional[str] = None
+    unidade: Optional[str] = None
+    quantidade: Optional[float] = None
+    valor_pago: Optional[float] = None
+    ativo: Optional[bool] = None
+
+class ProductRecipeCreate(BaseModel):
+    product_uuid: str
+    stock_item_uuid: str
+    quantidade_utilizada: float
+
+class ProductRecipeUpdate(BaseModel):
+    product_uuid: Optional[str] = None
+    stock_item_uuid: Optional[str] = None
+    quantidade_utilizada: Optional[float] = None
+
 # Database initialization
 def init_db():
     conn = get_db()
@@ -201,6 +336,20 @@ def init_db():
         data_lancamento TEXT NOT NULL,
         observacao TEXT,
         created_at TEXT NOT NULL
+    )''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS stock_items (
+        uuid TEXT PRIMARY KEY,
+        nome TEXT NOT NULL,
+        unidade TEXT NOT NULL,
+        quantidade REAL NOT NULL,
+        valor_pago REAL NOT NULL,
+        ativo INTEGER DEFAULT 1
+    )''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS product_recipes (
+        uuid TEXT PRIMARY KEY,
+        product_uuid TEXT NOT NULL,
+        stock_item_uuid TEXT NOT NULL,
+        quantidade_utilizada REAL NOT NULL
     )''')
     conn.commit()
     cur.execute("SELECT COUNT(*) as cnt FROM products")
@@ -351,6 +500,13 @@ def get_categories():
     rows = conn.execute("SELECT DISTINCT categoria FROM products WHERE ativo = 1 ORDER BY categoria").fetchall()
     conn.close()
     return [r['categoria'] for r in rows]
+
+@api_router.get("/products/top")
+def get_top_products():
+    conn = get_db()
+    ranking = get_catalog_sales_ranking(conn)
+    conn.close()
+    return [item for item in ranking if item.get('sold_count', 0) > 0][:3]
 
 @api_router.get("/payment-methods")
 def get_payment_methods():
@@ -649,6 +805,23 @@ def get_cash_entries():
     conn.close()
     return [row_to_dict(r) for r in rows]
 
+@api_router.post("/admin/imports/ifood-report")
+async def import_ifood_report(file: UploadFile = File(...)):
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+
+    filename = (file.filename or '').lower()
+    if not filename.endswith('.xlsx'):
+        raise HTTPException(status_code=400, detail="Envie um arquivo .xlsx do iFood")
+
+    try:
+        file.file.seek(0)
+        orders = parse_ifood_report(file.file)
+        return {'orders': orders}
+    except Exception as error:
+        logger.exception("Failed to parse iFood report")
+        raise HTTPException(status_code=400, detail="Nao foi possivel ler a planilha do iFood") from error
+
 @api_router.post("/admin/cash-entries")
 def create_cash_entry(entry: CashEntryCreate):
     if not IS_DEVELOPMENT:
@@ -711,6 +884,165 @@ def delete_cash_entry(entry_uuid: str):
     conn.commit()
     conn.close()
     return {"message": "Cash entry deleted"}
+
+@api_router.get("/admin/stock-items")
+def get_stock_items():
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM stock_items ORDER BY nome").fetchall()
+    conn.close()
+    result = []
+    for row in rows:
+        item = row_to_dict(row)
+        quantidade = float(item.get("quantidade") or 0)
+        valor_pago = float(item.get("valor_pago") or 0)
+        item["unidade"] = "kg"
+        item["custo_unitario"] = (valor_pago / quantidade) if quantidade > 0 else 0
+        item["custo_por_grama"] = (valor_pago / (quantidade * 1000)) if quantidade > 0 else 0
+        result.append(item)
+    return result
+
+@api_router.post("/admin/stock-items")
+def create_stock_item(item: StockItemCreate):
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    new_uuid = str(uuid_lib.uuid4())
+    conn.execute(
+        "INSERT INTO stock_items (uuid, nome, unidade, quantidade, valor_pago, ativo) VALUES (?, ?, ?, ?, ?, ?)",
+        (new_uuid, item.nome, "kg", item.quantidade, item.valor_pago, 1 if item.ativo else 0),
+    )
+    conn.commit()
+    row = conn.execute("SELECT * FROM stock_items WHERE uuid = ?", (new_uuid,)).fetchone()
+    conn.close()
+    data = row_to_dict(row)
+    quantidade = float(data.get("quantidade") or 0)
+    valor_pago = float(data.get("valor_pago") or 0)
+    data["unidade"] = "kg"
+    data["custo_unitario"] = (valor_pago / quantidade) if quantidade > 0 else 0
+    data["custo_por_grama"] = (valor_pago / (quantidade * 1000)) if quantidade > 0 else 0
+    return data
+
+@api_router.put("/admin/stock-items/{item_uuid}")
+def update_stock_item(item_uuid: str, item: StockItemUpdate):
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    existing = conn.execute("SELECT * FROM stock_items WHERE uuid = ?", (item_uuid,)).fetchone()
+    if not existing:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Stock item not found")
+    updates = {}
+    for field, value in item.model_dump(exclude_unset=True).items():
+        if field == 'ativo':
+            updates[field] = 1 if value else 0
+        elif field == 'unidade':
+            updates[field] = "kg"
+        else:
+            updates[field] = value
+    if updates:
+        set_clause = ", ".join(f"{k} = ?" for k in updates.keys())
+        conn.execute(f"UPDATE stock_items SET {set_clause} WHERE uuid = ?", list(updates.values()) + [item_uuid])
+        conn.commit()
+    row = conn.execute("SELECT * FROM stock_items WHERE uuid = ?", (item_uuid,)).fetchone()
+    conn.close()
+    data = row_to_dict(row)
+    quantidade = float(data.get("quantidade") or 0)
+    valor_pago = float(data.get("valor_pago") or 0)
+    data["unidade"] = "kg"
+    data["custo_unitario"] = (valor_pago / quantidade) if quantidade > 0 else 0
+    data["custo_por_grama"] = (valor_pago / (quantidade * 1000)) if quantidade > 0 else 0
+    return data
+
+@api_router.delete("/admin/stock-items/{item_uuid}")
+def delete_stock_item(item_uuid: str):
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    conn.execute("DELETE FROM product_recipes WHERE stock_item_uuid = ?", (item_uuid,))
+    conn.execute("DELETE FROM stock_items WHERE uuid = ?", (item_uuid,))
+    conn.commit()
+    conn.close()
+    return {"message": "Stock item deleted"}
+
+@api_router.get("/admin/product-recipes")
+def get_product_recipes():
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    rows = conn.execute(
+        """
+        SELECT
+            pr.*,
+            p.nome AS product_nome,
+            si.nome AS stock_item_nome,
+            si.unidade AS stock_item_unidade,
+            si.quantidade AS stock_item_quantidade,
+            si.valor_pago AS stock_item_valor_pago
+        FROM product_recipes pr
+        JOIN products p ON p.uuid = pr.product_uuid
+        JOIN stock_items si ON si.uuid = pr.stock_item_uuid
+        ORDER BY p.nome, si.nome
+        """
+    ).fetchall()
+    conn.close()
+    result = []
+    for row in rows:
+        data = row_to_dict(row)
+        quantidade_estoque = float(data.get("stock_item_quantidade") or 0)
+        valor_pago = float(data.get("stock_item_valor_pago") or 0)
+        custo_unitario = (valor_pago / quantidade_estoque) if quantidade_estoque > 0 else 0
+        custo_por_grama = (valor_pago / (quantidade_estoque * 1000)) if quantidade_estoque > 0 else 0
+        data["stock_item_unidade"] = "kg"
+        data["custo_unitario_insumo"] = custo_unitario
+        data["custo_por_grama_insumo"] = custo_por_grama
+        data["custo_estimado"] = custo_por_grama * float(data.get("quantidade_utilizada") or 0)
+        result.append(data)
+    return result
+
+@api_router.post("/admin/product-recipes")
+def create_product_recipe(recipe: ProductRecipeCreate):
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    new_uuid = str(uuid_lib.uuid4())
+    conn.execute(
+        "INSERT INTO product_recipes (uuid, product_uuid, stock_item_uuid, quantidade_utilizada) VALUES (?, ?, ?, ?)",
+        (new_uuid, recipe.product_uuid, recipe.stock_item_uuid, recipe.quantidade_utilizada),
+    )
+    conn.commit()
+    row = conn.execute("SELECT * FROM product_recipes WHERE uuid = ?", (new_uuid,)).fetchone()
+    conn.close()
+    return row_to_dict(row)
+
+@api_router.put("/admin/product-recipes/{recipe_uuid}")
+def update_product_recipe(recipe_uuid: str, recipe: ProductRecipeUpdate):
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    existing = conn.execute("SELECT * FROM product_recipes WHERE uuid = ?", (recipe_uuid,)).fetchone()
+    if not existing:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Product recipe not found")
+    updates = {k: v for k, v in recipe.model_dump(exclude_unset=True).items()}
+    if updates:
+        set_clause = ", ".join(f"{k} = ?" for k in updates.keys())
+        conn.execute(f"UPDATE product_recipes SET {set_clause} WHERE uuid = ?", list(updates.values()) + [recipe_uuid])
+        conn.commit()
+    row = conn.execute("SELECT * FROM product_recipes WHERE uuid = ?", (recipe_uuid,)).fetchone()
+    conn.close()
+    return row_to_dict(row)
+
+@api_router.delete("/admin/product-recipes/{recipe_uuid}")
+def delete_product_recipe(recipe_uuid: str):
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    conn.execute("DELETE FROM product_recipes WHERE uuid = ?", (recipe_uuid,))
+    conn.commit()
+    conn.close()
+    return {"message": "Product recipe deleted"}
 
 app.include_router(api_router)
 app.add_middleware(

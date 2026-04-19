@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-19T00:48:03.928Z",
+  "generatedAt": "2026-04-19T03:39:28.887Z",
   "products": [
     {
       "uuid": "prod-005",
@@ -9,7 +9,7 @@
       "desconto": 10,
       "foto": "/images/uploads/product-prod-005.jpeg",
       "categoria": "Batatas Recheadas 500g",
-      "vendas": 0,
+      "vendas": 1,
       "ativo": true
     },
     {
@@ -20,7 +20,7 @@
       "desconto": 10,
       "foto": "/images/uploads/product-prod-001.jpeg",
       "categoria": "Batatas Recheadas 500g",
-      "vendas": 1,
+      "vendas": 2,
       "ativo": true
     },
     {
@@ -31,7 +31,7 @@
       "desconto": 10,
       "foto": "/images/uploads/product-prod-003.jpeg",
       "categoria": "Batatas Recheadas 500g",
-      "vendas": 1,
+      "vendas": 4,
       "ativo": true
     },
     {
@@ -53,7 +53,7 @@
       "desconto": 10,
       "foto": "/images/uploads/product-prod-002.jpeg",
       "categoria": "Batatas Recheadas 500g",
-      "vendas": 1,
+      "vendas": 6,
       "ativo": true
     },
     {
@@ -64,7 +64,7 @@
       "desconto": 0,
       "foto": "/images/uploads/product-prod-006.jpg",
       "categoria": "Bebidas",
-      "vendas": 0,
+      "vendas": 1,
       "ativo": true
     },
     {
@@ -86,7 +86,7 @@
       "desconto": 0,
       "foto": "/images/uploads/product-prod-008.webp",
       "categoria": "Bebidas",
-      "vendas": 0,
+      "vendas": 2,
       "ativo": true
     },
     {
@@ -98,7 +98,7 @@
       "foto": "/images/uploads/product-prod-009.webp",
       "categoria": "Bebidas",
       "vendas": 0,
-      "ativo": true
+      "ativo": false
     }
   ],
   "activeProducts": [
@@ -110,7 +110,7 @@
       "desconto": 10,
       "foto": "/images/uploads/product-prod-005.jpeg",
       "categoria": "Batatas Recheadas 500g",
-      "vendas": 0,
+      "vendas": 1,
       "ativo": true
     },
     {
@@ -121,7 +121,7 @@
       "desconto": 10,
       "foto": "/images/uploads/product-prod-001.jpeg",
       "categoria": "Batatas Recheadas 500g",
-      "vendas": 1,
+      "vendas": 2,
       "ativo": true
     },
     {
@@ -132,7 +132,7 @@
       "desconto": 10,
       "foto": "/images/uploads/product-prod-003.jpeg",
       "categoria": "Batatas Recheadas 500g",
-      "vendas": 1,
+      "vendas": 4,
       "ativo": true
     },
     {
@@ -154,7 +154,7 @@
       "desconto": 10,
       "foto": "/images/uploads/product-prod-002.jpeg",
       "categoria": "Batatas Recheadas 500g",
-      "vendas": 1,
+      "vendas": 6,
       "ativo": true
     },
     {
@@ -165,7 +165,7 @@
       "desconto": 0,
       "foto": "/images/uploads/product-prod-006.jpg",
       "categoria": "Bebidas",
-      "vendas": 0,
+      "vendas": 1,
       "ativo": true
     },
     {
@@ -187,18 +187,7 @@
       "desconto": 0,
       "foto": "/images/uploads/product-prod-008.webp",
       "categoria": "Bebidas",
-      "vendas": 0,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-009",
-      "nome": "Guarana Antarctica Zero Lata 350ml",
-      "descricao": "Refrigerante Guarana Antarctica Zero em lata de 350ml, sem acucar e com o sabor leve e refrescante.",
-      "preco": 7,
-      "desconto": 0,
-      "foto": "/images/uploads/product-prod-009.webp",
-      "categoria": "Bebidas",
-      "vendas": 0,
+      "vendas": 2,
       "ativo": true
     }
   ],

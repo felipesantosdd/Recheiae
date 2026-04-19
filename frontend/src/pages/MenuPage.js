@@ -10,6 +10,7 @@ import { Search, Package, Loader2 } from 'lucide-react';
 export default function MenuPage() {
   const [products, setProducts] = useState([]);
   const [combos, setCombos] = useState([]);
+  const [topProducts, setTopProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,14 +23,16 @@ export default function MenuPage() {
 
   const fetchData = async () => {
     try {
-      const [prodRes, comboRes, catRes] = await Promise.all([
+      const [prodRes, comboRes, catRes, topRes] = await Promise.all([
         api.get('/products'),
         api.get('/combos'),
         api.get('/categories'),
+        api.get('/products/top'),
       ]);
       setProducts(prodRes.data);
       setCombos(comboRes.data);
       setCategories(catRes.data);
+      setTopProducts(topRes.data);
     } catch (e) {
       console.error('Error fetching data:', e);
     } finally {
@@ -48,6 +51,8 @@ export default function MenuPage() {
     acc[cat] = filteredProducts.filter(p => p.categoria === cat);
     return acc;
   }, {});
+
+  const topProductIds = new Set(topProducts.map((product) => product.uuid));
 
   const scrollToCategory = (cat) => {
     setActiveCategory(cat);
@@ -128,6 +133,27 @@ export default function MenuPage() {
         </section>
       )}
 
+      {!searchQuery && topProducts.length > 0 && (
+        <section className="max-w-6xl mx-auto px-4 mt-10">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
+              <Package className="h-4 w-4 text-primary" />
+            </div>
+            <h2 className="text-lg font-bold text-foreground">Top 3 Mais Pedidos</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            {topProducts.map(product => (
+              <ProductCard
+                key={`top-${product.uuid}`}
+                product={product}
+                showPromo={product.desconto > 0}
+                showPopular
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Category sections */}
       {!searchQuery && categories.map(cat => {
         const catProducts = productsByCategory[cat] || [];
@@ -141,7 +167,7 @@ export default function MenuPage() {
             <h2 className="text-lg font-bold text-foreground mb-4">{cat}</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
               {catProducts.map(product => (
-                <ProductCard key={product.uuid} product={product} />
+                <ProductCard key={product.uuid} product={product} showPopular={topProductIds.has(product.uuid)} />
               ))}
             </div>
           </section>
