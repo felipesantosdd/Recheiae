@@ -66,7 +66,12 @@ def parse_cash_observation(value: Optional[str]):
         return None
 
 def get_catalog_sales_ranking(conn):
-    products = [row_to_dict(row) for row in conn.execute("SELECT * FROM products WHERE ativo = 1").fetchall()]
+    products = [
+        row_to_dict(row)
+        for row in conn.execute(
+            "SELECT * FROM products WHERE ativo = 1 AND categoria != 'Bebidas'"
+        ).fetchall()
+    ]
     catalog_items = products
     sales_by_slug = {}
 
@@ -408,11 +413,11 @@ def seed_store_settings(conn):
 def seed_data(conn):
     cur = conn.cursor()
     products = [
-        ("prod-001", "Batata Recheada De Carne Com Cheddar E Doritos", "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.", 28.90, 10, "/images/products/batata-carne-cheddar-doritos.jpeg", "Batatas Recheadas 500g", 0, 1),
-        ("prod-002", "Batata Recheada De Strogonoff De Frango", "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, milho, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!", 23.90, 10, "/images/products/batata-strogonoff-frango.jpeg", "Batatas Recheadas 500g", 0, 1),
-        ("prod-003", "Batata Recheada De Frango Com Catupiry", "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.", 25.90, 10, "/images/products/batata-frango-catupiry.jpeg", "Batatas Recheadas 500g", 0, 1),
-        ("prod-004", "Batata Recheada De Sabor Pizza", "Batata quentinha, feita na hora e carregada de sabor. Presunto e queijo super cremoso, tomate, finalizacao com mussarela, Doritos e cream cheese. E aquela batata forte, bem servida e sem miseria, pra quem gosta de comer de verdade.", 28.90, 10, "/images/products/batata-sabor-pizza.jpeg", "Batatas Recheadas 500g", 0, 1),
-        ("prod-005", "Batata Recheada De Brocolis Com Queijo", "Batata recheada feita na hora, bem caprichada e cheia de sabor. Brocolis temperadinho com queijo cremoso derretendo, combinacao que voce nem sabia que precisava. Mais leve? Talvez. Mas sem miseria? Nunca.", 22.90, 10, "/images/products/batata-brocolis-queijo.jpeg", "Batatas Recheadas 500g", 0, 1),
+        ("prod-001", "Batata Recheada De Carne Com Cheddar E Doritos", "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.", 28.90, 10, "/images/products/batata-carne-cheddar-doritos.jpeg", "Batatas Recheadas 400g", 0, 1),
+        ("prod-002", "Batata Recheada De Strogonoff De Frango", "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, milho, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!", 23.90, 10, "/images/products/batata-strogonoff-frango.jpeg", "Batatas Recheadas 400g", 0, 1),
+        ("prod-003", "Batata Recheada De Frango Com Catupiry", "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.", 25.90, 10, "/images/products/batata-frango-catupiry.jpeg", "Batatas Recheadas 400g", 0, 1),
+        ("prod-004", "Batata Recheada De Sabor Pizza", "Batata quentinha, feita na hora e carregada de sabor. Presunto e queijo super cremoso, tomate, finalizacao com mussarela, Doritos e cream cheese. E aquela batata forte, bem servida e sem miseria, pra quem gosta de comer de verdade.", 28.90, 10, "/images/products/batata-sabor-pizza.jpeg", "Batatas Recheadas 400g", 0, 1),
+        ("prod-005", "Batata Recheada De Brocolis Com Queijo", "Batata recheada feita na hora, bem caprichada e cheia de sabor. Brocolis temperadinho com queijo cremoso derretendo, combinacao que voce nem sabia que precisava. Mais leve? Talvez. Mas sem miseria? Nunca.", 22.90, 10, "/images/products/batata-brocolis-queijo.jpeg", "Batatas Recheadas 400g", 0, 1),
         ("prod-006", "Coca-Cola Lata 350ml", "Refrigerante Coca-Cola tradicional em lata de 350ml, gelado e pronto para acompanhar seu pedido.", 7.00, 0, None, "Bebidas", 0, 1),
         ("prod-007", "Coca-Cola Zero Lata 350ml", "Refrigerante Coca-Cola Zero em lata de 350ml, sem acucar e com o sabor classico que combina com qualquer refeicao.", 7.00, 0, None, "Bebidas", 0, 1),
         ("prod-008", "Guarana Antarctica Lata 350ml", "Refrigerante Guarana Antarctica tradicional em lata de 350ml, gelado e ideal para acompanhar seu lanche.", 7.00, 0, None, "Bebidas", 0, 1),

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-19T03:39:28.887Z",
+  "generatedAt": "2026-04-19T17:01:10.341Z",
   "products": [
     {
       "uuid": "prod-005",
@@ -8,7 +8,7 @@
       "preco": 22.9,
       "desconto": 10,
       "foto": "/images/uploads/product-prod-005.jpeg",
-      "categoria": "Batatas Recheadas 500g",
+      "categoria": "Batatas Recheadas 400g",
       "vendas": 1,
       "ativo": true
     },
@@ -19,7 +19,7 @@
       "preco": 28.9,
       "desconto": 10,
       "foto": "/images/uploads/product-prod-001.jpeg",
-      "categoria": "Batatas Recheadas 500g",
+      "categoria": "Batatas Recheadas 400g",
       "vendas": 2,
       "ativo": true
     },
@@ -30,7 +30,7 @@
       "preco": 25.9,
       "desconto": 10,
       "foto": "/images/uploads/product-prod-003.jpeg",
-      "categoria": "Batatas Recheadas 500g",
+      "categoria": "Batatas Recheadas 400g",
       "vendas": 4,
       "ativo": true
     },
@@ -41,7 +41,7 @@
       "preco": 26.9,
       "desconto": 10,
       "foto": "/images/uploads/product-prod-004.jpeg",
-      "categoria": "Batatas Recheadas 500g",
+      "categoria": "Batatas Recheadas 400g",
       "vendas": 1,
       "ativo": true
     },
@@ -52,7 +52,7 @@
       "preco": 24.9,
       "desconto": 10,
       "foto": "/images/uploads/product-prod-002.jpeg",
-      "categoria": "Batatas Recheadas 500g",
+      "categoria": "Batatas Recheadas 400g",
       "vendas": 6,
       "ativo": true
     },
@@ -109,7 +109,7 @@
       "preco": 22.9,
       "desconto": 10,
       "foto": "/images/uploads/product-prod-005.jpeg",
-      "categoria": "Batatas Recheadas 500g",
+      "categoria": "Batatas Recheadas 400g",
       "vendas": 1,
       "ativo": true
     },
@@ -120,7 +120,7 @@
       "preco": 28.9,
       "desconto": 10,
       "foto": "/images/uploads/product-prod-001.jpeg",
-      "categoria": "Batatas Recheadas 500g",
+      "categoria": "Batatas Recheadas 400g",
       "vendas": 2,
       "ativo": true
     },
@@ -131,7 +131,7 @@
       "preco": 25.9,
       "desconto": 10,
       "foto": "/images/uploads/product-prod-003.jpeg",
-      "categoria": "Batatas Recheadas 500g",
+      "categoria": "Batatas Recheadas 400g",
       "vendas": 4,
       "ativo": true
     },
@@ -142,7 +142,7 @@
       "preco": 26.9,
       "desconto": 10,
       "foto": "/images/uploads/product-prod-004.jpeg",
-      "categoria": "Batatas Recheadas 500g",
+      "categoria": "Batatas Recheadas 400g",
       "vendas": 1,
       "ativo": true
     },
@@ -153,7 +153,7 @@
       "preco": 24.9,
       "desconto": 10,
       "foto": "/images/uploads/product-prod-002.jpeg",
-      "categoria": "Batatas Recheadas 500g",
+      "categoria": "Batatas Recheadas 400g",
       "vendas": 6,
       "ativo": true
     },
@@ -292,7 +292,7 @@
     "business_hours": "Ter a Sex: 19:00 - 23:30\nSab e Dom: 19:00 - 00:00"
   },
   "categories": [
-    "Batatas Recheadas 500g",
+    "Batatas Recheadas 400g",
     "Bebidas"
   ]
 }
