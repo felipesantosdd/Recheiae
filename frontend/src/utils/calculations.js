@@ -141,6 +141,150 @@ export function normalizeStoreSettings(settings = {}) {
   };
 }
 
+const DAY_NAME_TO_INDEX = {
+  dom: 0,
+  domingo: 0,
+  seg: 1,
+  segunda: 1,
+  'segunda feira': 1,
+  ter: 2,
+  terca: 2,
+  'terca feira': 2,
+  qua: 3,
+  quarta: 3,
+  'quarta feira': 3,
+  qui: 4,
+  quinta: 4,
+  'quinta feira': 4,
+  sex: 5,
+  sexta: 5,
+  'sexta feira': 5,
+  sab: 6,
+  sabado: 6,
+};
+
+function normalizeScheduleText(value = '') {
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\./g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function dayTokenToIndex(token) {
+  return DAY_NAME_TO_INDEX[normalizeScheduleText(token)] ?? null;
+}
+
+function parseTimeToMinutes(value) {
+  const match = String(value || '').match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) return null;
+  return (hours * 60) + minutes;
+}
+
+function expandDayExpression(dayExpression) {
+  const normalized = normalizeScheduleText(dayExpression);
+  if (!normalized) return [];
+
+  if (normalized.includes(' a ')) {
+    const [startToken, endToken] = normalized.split(' a ');
+    const startIndex = dayTokenToIndex(startToken);
+    const endIndex = dayTokenToIndex(endToken);
+    if (startIndex == null || endIndex == null) return [];
+
+    const days = [];
+    let cursor = startIndex;
+    for (let guard = 0; guard < 7; guard += 1) {
+      days.push(cursor);
+      if (cursor === endIndex) break;
+      cursor = (cursor + 1) % 7;
+    }
+    return days;
+  }
+
+  if (normalized.includes(' e ')) {
+    return normalized
+      .split(' e ')
+      .map(dayTokenToIndex)
+      .filter((value) => value != null);
+  }
+
+  const singleDay = dayTokenToIndex(normalized);
+  return singleDay == null ? [] : [singleDay];
+}
+
+export function parseBusinessHours(businessHours = '') {
+  return String(businessHours || '')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const separatorIndex = line.indexOf(':');
+      if (separatorIndex < 0) return null;
+      const dayPart = line.slice(0, separatorIndex);
+
+      const timeMatch = line.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+      if (!timeMatch) return null;
+
+      const startMinutes = parseTimeToMinutes(timeMatch[1]);
+      const endMinutes = parseTimeToMinutes(timeMatch[2]);
+      const days = expandDayExpression(dayPart);
+
+      if (startMinutes == null || endMinutes == null || days.length === 0) {
+        return null;
+      }
+
+      return {
+        label: line,
+        days,
+        startMinutes,
+        endMinutes,
+        wrapsNextDay: endMinutes <= startMinutes,
+      };
+    })
+    .filter(Boolean);
+}
+
+export function getBusinessHoursStatus(businessHours = '', now = new Date()) {
+  const rules = parseBusinessHours(businessHours);
+  if (rules.length === 0) {
+    return {
+      isConfigured: false,
+      isOpen: true,
+      currentRule: null,
+    };
+  }
+
+  const currentDay = now.getDay();
+  const currentMinutes = (now.getHours() * 60) + now.getMinutes();
+  const previousDay = (currentDay + 6) % 7;
+
+  const currentRule = rules.find((rule) => {
+    if (rule.days.includes(currentDay)) {
+      if (!rule.wrapsNextDay) {
+        return currentMinutes >= rule.startMinutes && currentMinutes <= rule.endMinutes;
+      }
+      return currentMinutes >= rule.startMinutes;
+    }
+
+    if (rule.wrapsNextDay && rule.days.includes(previousDay)) {
+      return currentMinutes <= rule.endMinutes;
+    }
+
+    return false;
+  }) || null;
+
+  return {
+    isConfigured: true,
+    isOpen: Boolean(currentRule),
+    currentRule,
+  };
+}
+
 export function formatWhatsAppNumber(value) {
   const digits = String(value || '').replace(/\D/g, '');
   if (!digits) return '';
