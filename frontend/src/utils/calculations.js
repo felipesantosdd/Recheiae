@@ -383,8 +383,7 @@ export function calculatePaymentFee(paymentMethod = '') {
 
 export function calculateTotal(items, deliveryFee = STORE_CONFIG.deliveryFee, paymentFee = 0) {
   const subtotal = calculateSubtotal(items);
-  const discount = calculateTotalDiscount(items);
-  return Math.max(0, subtotal - discount + deliveryFee + paymentFee);
+  return Math.max(0, subtotal + deliveryFee + paymentFee);
 }
 
 export function formatPrice(value) {
