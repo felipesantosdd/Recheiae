@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-21T20:16:16.395Z",
+  "generatedAt": "2026-04-21T20:41:17.664Z",
   "products": [
     {
       "uuid": "prod-005",
@@ -48,7 +48,7 @@
     {
       "uuid": "prod-002",
       "nome": "Batata Recheada De Strogonoff De Frango",
-      "descricao": "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, milho, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!",
+      "descricao": "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!",
       "preco": 24.9,
       "desconto": 10,
       "foto": "/images/uploads/product-prod-002.jpeg",
@@ -149,7 +149,7 @@
     {
       "uuid": "prod-002",
       "nome": "Batata Recheada De Strogonoff De Frango",
-      "descricao": "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, milho, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!",
+      "descricao": "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!",
       "preco": 24.9,
       "desconto": 10,
       "foto": "/images/uploads/product-prod-002.jpeg",
@@ -207,7 +207,7 @@
     {
       "uuid": "prod-002",
       "nome": "Batata Recheada De Strogonoff De Frango",
-      "descricao": "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, milho, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!",
+      "descricao": "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!",
       "preco": 24.9,
       "desconto": 10,
       "foto": "/images/uploads/product-prod-002.jpeg",
