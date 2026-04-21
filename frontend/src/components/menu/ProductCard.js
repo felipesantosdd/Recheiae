@@ -23,7 +23,7 @@ export function ProductCard({ product, showPromo, showPopular, priceOverride = n
   const [notes, setNotes] = useState('');
 
   const discountedPrice = calculateItemPrice(product.preco, product.desconto);
-  const hasOverridePrice = Number.isFinite(Number(priceOverride));
+  const hasOverridePrice = priceOverride != null && Number.isFinite(Number(priceOverride));
   const finalBasePrice = hasOverridePrice ? Number(priceOverride) : discountedPrice;
   const hasBaseSavings = finalBasePrice < product.preco;
   const hasDiscount = product.desconto > 0;
