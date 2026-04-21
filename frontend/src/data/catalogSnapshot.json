@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-21T20:41:17.664Z",
+  "generatedAt": "2026-04-21T21:40:14.795Z",
   "products": [
     {
       "uuid": "prod-005",
@@ -233,19 +233,19 @@
   "activeCombos": [],
   "paymentMethods": [
     {
+      "uuid": "pm-004",
+      "nome": "Dinheiro",
+      "ativo": true
+    },
+    {
       "uuid": "pm-002",
-      "nome": "Cartão de crédito",
-      "ativo": false
+      "nome": "Pagamento na entrega Crédito",
+      "ativo": true
     },
     {
       "uuid": "pm-003",
-      "nome": "Cartão de débito",
-      "ativo": false
-    },
-    {
-      "uuid": "pm-004",
-      "nome": "Dinheiro",
-      "ativo": false
+      "nome": "Pagamento na entrega Débito",
+      "ativo": true
     },
     {
       "uuid": "pm-001",
@@ -254,6 +254,21 @@
     }
   ],
   "activePaymentMethods": [
+    {
+      "uuid": "pm-004",
+      "nome": "Dinheiro",
+      "ativo": true
+    },
+    {
+      "uuid": "pm-002",
+      "nome": "Pagamento na entrega Crédito",
+      "ativo": true
+    },
+    {
+      "uuid": "pm-003",
+      "nome": "Pagamento na entrega Débito",
+      "ativo": true
+    },
     {
       "uuid": "pm-001",
       "nome": "Pix",

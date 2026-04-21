@@ -1,4 +1,4 @@
-import { STORE_CONFIG, normalizeStoreSettings } from './calculations';
+import { STORE_CONFIG, normalizeStoreSettings, getPaymentFeeDetails } from './calculations';
 
 function formatBRL(value) {
   return value.toFixed(2).replace('.', ',');
@@ -15,17 +15,17 @@ export function generateOrderNumber() {
   return next;
 }
 
-export function generateGoogleMapsLink(endereco, bairro) {
-  const query = `${endereco}, ${bairro}, ${STORE_CONFIG.cidade}`;
+export function generateGoogleMapsLink(endereco, numero, bairro) {
+  const query = `${endereco}, ${numero}, ${bairro}, ${STORE_CONFIG.cidade}`;
   return `https://maps.google.com/?q=${encodeURIComponent(query)}`;
 }
 
-export function generateWhatsAppMessage({ orderNumber, customer, items, subtotal, deliveryFee, totalDiscount, total, settings }) {
+export function generateWhatsAppMessage({ orderNumber, customer, items, subtotal, deliveryFee, paymentFee = 0, totalDiscount, total, settings }) {
   const storeSettings = normalizeStoreSettings(settings);
+  const paymentFeeDetails = getPaymentFeeDetails(customer.formaPagamento);
   const now = new Date();
   const dateStr = now.toLocaleDateString('pt-BR');
   const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  const mapsLink = generateGoogleMapsLink(customer.endereco, customer.bairro);
 
   let msg = `#### NOVO PEDIDO ####\n\n`;
   msg += `#\ufe0f\u20e3 N\u00ba pedido: ${orderNumber}\n`;
@@ -33,12 +33,12 @@ export function generateWhatsAppMessage({ orderNumber, customer, items, subtotal
   msg += `\ud83d\udc64 ${customer.nome}\n`;
   msg += `\ud83d\udcde ${customer.telefone}\n\n`;
   msg += `\ud83d\udef5 Endere\u00e7o de entrega\n`;
-  msg += `${customer.endereco}\n`;
+  msg += `${customer.endereco}, ${customer.numero}\n`;
   msg += `Bairro: ${customer.bairro}\n`;
   if (customer.complemento) {
     msg += `(${customer.complemento})\n`;
   }
-  msg += `\nLink do endere\u00e7o:\n${mapsLink}\n\n`;
+  msg += `\n`;
   msg += `------- ITENS DO PEDIDO -------\n\n`;
 
   items.forEach(item => {
@@ -62,6 +62,9 @@ export function generateWhatsAppMessage({ orderNumber, customer, items, subtotal
   msg += `-------------------------------\n\n`;
   msg += `SUBTOTAL: R$ ${formatBRL(subtotal)}\n`;
   msg += `FRETE: R$ ${formatBRL(deliveryFee)}\n`;
+  if (paymentFee > 0) {
+    msg += `${paymentFeeDetails.label}: R$ ${formatBRL(paymentFee)}\n`;
+  }
   if (totalDiscount > 0) {
     msg += `DESCONTOS: R$ ${formatBRL(totalDiscount)}\n`;
   }

@@ -391,8 +391,8 @@ def seed_payment_methods(conn):
     cur = conn.cursor()
     methods = [
         ("pm-001", "Pix", 1),
-        ("pm-002", "Cartão de crédito", 1),
-        ("pm-003", "Cartão de débito", 1),
+        ("pm-002", "Pagamento na entrega Crédito", 1),
+        ("pm-003", "Pagamento na entrega Débito", 1),
         ("pm-004", "Dinheiro", 1),
     ]
     for m in methods:

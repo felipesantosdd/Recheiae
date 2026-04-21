@@ -354,10 +354,37 @@ export function calculateDeliveryFee(bairro = '') {
   return getNeighborhoodDeliveryRule(bairro)?.fee ?? STORE_CONFIG.deliveryFee;
 }
 
-export function calculateTotal(items, deliveryFee = STORE_CONFIG.deliveryFee) {
+export function getPaymentFeeDetails(paymentMethod = '') {
+  const normalized = normalizeText(paymentMethod);
+  if (normalized.includes('CREDITO') || normalized.includes('DEBITO')) {
+    return {
+      amount: 4,
+      label: 'TAXA ENTREGA/MAQUININHA',
+      description: 'Pagamentos no crédito e débito têm taxa adicional de entrega e maquininha.',
+    };
+  }
+  if (normalized.includes('DINHEIRO')) {
+    return {
+      amount: 2,
+      label: 'TAXA ENTREGA',
+      description: 'Pagamentos em dinheiro têm taxa adicional de entrega.',
+    };
+  }
+  return {
+    amount: 0,
+    label: 'TAXA',
+    description: '',
+  };
+}
+
+export function calculatePaymentFee(paymentMethod = '') {
+  return getPaymentFeeDetails(paymentMethod).amount;
+}
+
+export function calculateTotal(items, deliveryFee = STORE_CONFIG.deliveryFee, paymentFee = 0) {
   const subtotal = calculateSubtotal(items);
   const discount = calculateTotalDiscount(items);
-  return Math.max(0, subtotal - discount + deliveryFee);
+  return Math.max(0, subtotal - discount + deliveryFee + paymentFee);
 }
 
 export function formatPrice(value) {

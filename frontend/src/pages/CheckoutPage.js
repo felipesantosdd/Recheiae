@@ -5,6 +5,8 @@ import {
   calculateSubtotal,
   calculateTotalDiscount,
   calculateDeliveryFee,
+  getPaymentFeeDetails,
+  calculatePaymentFee,
   calculateTotal,
   DELIVERY_NEIGHBORHOODS,
   getNeighborhoodDeliveryRule,
@@ -80,6 +82,7 @@ export default function CheckoutPage() {
     telefone: '',
     cep: '',
     endereco: '',
+    numero: '',
     bairro: '',
     complemento: '',
     formaPagamento: '',
@@ -92,8 +95,8 @@ export default function CheckoutPage() {
       .catch(() => {
         setPaymentMethods([
           { uuid: 'fb-1', nome: 'Pix', ativo: true },
-          { uuid: 'fb-2', nome: 'Cartao de credito', ativo: true },
-          { uuid: 'fb-3', nome: 'Cartao de debito', ativo: true },
+          { uuid: 'fb-2', nome: 'Pagamento na entrega Crédito', ativo: true },
+          { uuid: 'fb-3', nome: 'Pagamento na entrega Débito', ativo: true },
           { uuid: 'fb-4', nome: 'Dinheiro', ativo: true },
         ]);
       })
@@ -104,7 +107,9 @@ export default function CheckoutPage() {
   const totalDiscount = calculateTotalDiscount(items);
   const deliveryRule = getNeighborhoodDeliveryRule(formData.bairro);
   const deliveryFee = calculateDeliveryFee(formData.bairro);
-  const total = calculateTotal(items, deliveryFee);
+  const paymentFeeDetails = getPaymentFeeDetails(formData.formaPagamento);
+  const paymentFee = calculatePaymentFee(formData.formaPagamento);
+  const total = calculateTotal(items, deliveryFee, paymentFee);
   const normalizedStoreSettings = normalizeStoreSettings(settings);
   const businessHoursStatus = getBusinessHoursStatus(normalizedStoreSettings.businessHours);
 
@@ -158,6 +163,7 @@ export default function CheckoutPage() {
       !formData.nome ||
       !formData.telefone ||
       !formData.endereco ||
+      !formData.numero ||
       !formData.bairro ||
       !formData.formaPagamento
     ) {
@@ -182,6 +188,7 @@ export default function CheckoutPage() {
       items,
       subtotal,
       deliveryFee,
+      paymentFee,
       totalDiscount,
       total,
       settings,
@@ -306,12 +313,22 @@ export default function CheckoutPage() {
                   id="endereco"
                   value={formData.endereco}
                   onChange={(e) => handleChange('endereco', e.target.value)}
-                  placeholder="Rua e numero"
+                  placeholder="Rua, avenida..."
                   className="bg-card"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="numero" className="text-sm">Numero *</Label>
+                  <Input
+                    id="numero"
+                    value={formData.numero}
+                    onChange={(e) => handleChange('numero', e.target.value)}
+                    placeholder="Ex: 123"
+                    className="bg-card"
+                  />
+                </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="bairro" className="text-sm">Bairro *</Label>
                   <Popover open={bairroOpen} onOpenChange={setBairroOpen}>
@@ -368,6 +385,9 @@ export default function CheckoutPage() {
                       : `Frete padrao aplicado: ${formatPrice(deliveryFee)}`}
                   </p>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="complemento" className="text-sm">Complemento</Label>
                   <Input
@@ -411,6 +431,11 @@ export default function CheckoutPage() {
                   </Select>
                 )}
               </div>
+              {paymentFee > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {paymentFeeDetails.description} Valor aplicado: {formatPrice(paymentFee)}.
+                </p>
+              )}
 
               <div className="space-y-1.5">
                 <Label htmlFor="observacoes" className="text-sm">Observacoes</Label>
@@ -478,6 +503,12 @@ export default function CheckoutPage() {
                 <span className="text-muted-foreground">FRETE</span>
                 <span className="text-foreground">{formatPrice(deliveryFee)}</span>
               </div>
+              {paymentFee > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{paymentFeeDetails.label}</span>
+                  <span className="text-foreground">{formatPrice(paymentFee)}</span>
+                </div>
+              )}
               {totalDiscount > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-success">DESCONTOS</span>
