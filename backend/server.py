@@ -245,6 +245,9 @@ class StoreSettingsUpdate(BaseModel):
     whatsapp: Optional[str] = None
     delivery_time: Optional[str] = None
     business_hours: Optional[str] = None
+    promotion_product_uuid: Optional[str] = None
+    promotion_price: Optional[float] = None
+    promotion_active: Optional[bool] = None
 
 class CashEntryCreate(BaseModel):
     tipo: str
@@ -329,8 +332,21 @@ def init_db():
         id INTEGER PRIMARY KEY CHECK (id = 1),
         whatsapp TEXT NOT NULL,
         delivery_time TEXT NOT NULL,
-        business_hours TEXT NOT NULL
+        business_hours TEXT NOT NULL,
+        promotion_product_uuid TEXT,
+        promotion_price REAL,
+        promotion_active INTEGER DEFAULT 0
     )''')
+    existing_columns = {
+        row['name']
+        for row in cur.execute("PRAGMA table_info(store_settings)").fetchall()
+    }
+    if 'promotion_product_uuid' not in existing_columns:
+        cur.execute("ALTER TABLE store_settings ADD COLUMN promotion_product_uuid TEXT")
+    if 'promotion_price' not in existing_columns:
+        cur.execute("ALTER TABLE store_settings ADD COLUMN promotion_price REAL")
+    if 'promotion_active' not in existing_columns:
+        cur.execute("ALTER TABLE store_settings ADD COLUMN promotion_active INTEGER DEFAULT 0")
     cur.execute('''CREATE TABLE IF NOT EXISTS cash_entries (
         uuid TEXT PRIMARY KEY,
         tipo TEXT NOT NULL,
@@ -400,11 +416,19 @@ def seed_addons(conn):
 def seed_store_settings(conn):
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO store_settings (id, whatsapp, delivery_time, business_hours) VALUES (1, ?, ?, ?)",
+        """
+        INSERT INTO store_settings (
+            id, whatsapp, delivery_time, business_hours,
+            promotion_product_uuid, promotion_price, promotion_active
+        ) VALUES (1, ?, ?, ?, ?, ?, ?)
+        """,
         (
             "5535998160726",
             "40 min",
             "Seg a Sex: 18:00 - 23:00\nSab e Dom: 17:00 - 00:00",
+            "prod-001",
+            24.90,
+            1,
         ),
     )
     conn.commit()
@@ -544,13 +568,28 @@ def get_all_addons():
 @api_router.get("/settings")
 def get_store_settings():
     conn = get_db()
-    row = conn.execute("SELECT whatsapp, delivery_time, business_hours FROM store_settings WHERE id = 1").fetchone()
+    row = conn.execute(
+        """
+        SELECT
+            whatsapp,
+            delivery_time,
+            business_hours,
+            promotion_product_uuid,
+            promotion_price,
+            promotion_active
+        FROM store_settings
+        WHERE id = 1
+        """
+    ).fetchone()
     conn.close()
     if not row:
         return {
             "whatsapp": "5535998160726",
             "delivery_time": "40 min",
             "business_hours": "Seg a Sex: 18:00 - 23:00\nSab e Dom: 17:00 - 00:00",
+            "promotion_product_uuid": "prod-001",
+            "promotion_price": 24.90,
+            "promotion_active": 1,
         }
     return dict(row)
 
@@ -779,23 +818,79 @@ def update_store_settings(settings: StoreSettingsUpdate):
         "whatsapp": "5535998160726",
         "delivery_time": "40 min",
         "business_hours": "Seg a Sex: 18:00 - 23:00\nSab e Dom: 17:00 - 00:00",
+        "promotion_product_uuid": None,
+        "promotion_price": None,
+        "promotion_active": 0,
     }
     if existing:
-        row = conn.execute("SELECT whatsapp, delivery_time, business_hours FROM store_settings WHERE id = 1").fetchone()
+        row = conn.execute(
+            """
+            SELECT
+                whatsapp,
+                delivery_time,
+                business_hours,
+                promotion_product_uuid,
+                promotion_price,
+                promotion_active
+            FROM store_settings
+            WHERE id = 1
+            """
+        ).fetchone()
         payload.update(dict(row))
-    payload.update({k: v for k, v in settings.model_dump(exclude_unset=True).items() if v is not None})
+    payload.update(settings.model_dump(exclude_unset=True))
     if existing:
         conn.execute(
-            "UPDATE store_settings SET whatsapp = ?, delivery_time = ?, business_hours = ? WHERE id = 1",
-            (payload["whatsapp"], payload["delivery_time"], payload["business_hours"]),
+            """
+            UPDATE store_settings
+            SET
+                whatsapp = ?,
+                delivery_time = ?,
+                business_hours = ?,
+                promotion_product_uuid = ?,
+                promotion_price = ?,
+                promotion_active = ?
+            WHERE id = 1
+            """,
+            (
+                payload["whatsapp"],
+                payload["delivery_time"],
+                payload["business_hours"],
+                payload["promotion_product_uuid"],
+                payload["promotion_price"],
+                1 if payload["promotion_active"] else 0,
+            ),
         )
     else:
         conn.execute(
-            "INSERT INTO store_settings (id, whatsapp, delivery_time, business_hours) VALUES (1, ?, ?, ?)",
-            (payload["whatsapp"], payload["delivery_time"], payload["business_hours"]),
+            """
+            INSERT INTO store_settings (
+                id, whatsapp, delivery_time, business_hours,
+                promotion_product_uuid, promotion_price, promotion_active
+            ) VALUES (1, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                payload["whatsapp"],
+                payload["delivery_time"],
+                payload["business_hours"],
+                payload["promotion_product_uuid"],
+                payload["promotion_price"],
+                1 if payload["promotion_active"] else 0,
+            ),
         )
     conn.commit()
-    row = conn.execute("SELECT whatsapp, delivery_time, business_hours FROM store_settings WHERE id = 1").fetchone()
+    row = conn.execute(
+        """
+        SELECT
+            whatsapp,
+            delivery_time,
+            business_hours,
+            promotion_product_uuid,
+            promotion_price,
+            promotion_active
+        FROM store_settings
+        WHERE id = 1
+        """
+    ).fetchone()
     conn.close()
     return dict(row)
 

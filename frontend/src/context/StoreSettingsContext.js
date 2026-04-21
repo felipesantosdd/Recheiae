@@ -8,6 +8,9 @@ const defaultSettings = {
   whatsapp: STORE_CONFIG.whatsapp,
   delivery_time: STORE_CONFIG.deliveryTime,
   business_hours: STORE_CONFIG.businessHours,
+  promotion_product_uuid: STORE_CONFIG.promotionProductUuid,
+  promotion_price: STORE_CONFIG.promotionPrice,
+  promotion_active: STORE_CONFIG.promotionActive,
 };
 
 export function StoreSettingsProvider({ children }) {

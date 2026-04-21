@@ -13,7 +13,7 @@ import { formatPrice, calculateItemPrice, calculateAddonsTotal } from '@/utils/c
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 
-export function ProductCard({ product, showPromo, showPopular }) {
+export function ProductCard({ product, showPromo, showPopular, priceOverride = null, promoBadgeText = null }) {
   const { addItem } = useCart();
   const [imgError, setImgError] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -23,7 +23,11 @@ export function ProductCard({ product, showPromo, showPopular }) {
   const [notes, setNotes] = useState('');
 
   const discountedPrice = calculateItemPrice(product.preco, product.desconto);
+  const hasOverridePrice = Number.isFinite(Number(priceOverride));
+  const finalBasePrice = hasOverridePrice ? Number(priceOverride) : discountedPrice;
+  const hasBaseSavings = finalBasePrice < product.preco;
   const hasDiscount = product.desconto > 0;
+  const promoText = promoBadgeText || 'Promo do Dia';
   const isDrink = product.categoria === 'Bebidas';
 
   useEffect(() => {
@@ -42,7 +46,7 @@ export function ProductCard({ product, showPromo, showPopular }) {
     () => addons.filter((addon) => selectedAddonIds.includes(addon.uuid)),
     [addons, selectedAddonIds],
   );
-  const finalUnitPrice = discountedPrice + calculateAddonsTotal(selectedAddons);
+  const finalUnitPrice = finalBasePrice + calculateAddonsTotal(selectedAddons);
 
   const resetCustomization = () => {
     setSelectedAddonIds([]);
@@ -61,7 +65,8 @@ export function ProductCard({ product, showPromo, showPopular }) {
       type: 'product',
       name: product.nome,
       originalPrice: product.preco,
-      discount: product.desconto || 0,
+      discount: hasOverridePrice ? 0 : (product.desconto || 0),
+      basePriceOverride: hasOverridePrice ? finalBasePrice : null,
       foto: product.foto,
       addons: isDrink ? [] : selectedAddons,
       notes: isDrink ? '' : notes.trim(),
@@ -101,8 +106,10 @@ export function ProductCard({ product, showPromo, showPopular }) {
             </div>
           )}
           <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-            {showPromo && hasDiscount && (
-              <Badge variant="promo" className="text-[10px]">-{product.desconto}%</Badge>
+            {showPromo && hasBaseSavings && (
+              <Badge variant="promo" className="text-[10px]">
+                {hasOverridePrice ? promoText : `-${product.desconto}%`}
+              </Badge>
             )}
             {showPopular && (
               <Badge variant="popular" className="text-[10px]">Mais Pedido</Badge>
@@ -124,13 +131,13 @@ export function ProductCard({ product, showPromo, showPopular }) {
 
           <div className="mt-auto pt-2">
             <div className="flex items-baseline gap-1.5">
-              {hasDiscount && (
+              {hasBaseSavings && (
                 <span className="text-[11px] text-muted-foreground price-original">
                   {formatPrice(product.preco)}
                 </span>
               )}
               <span className="text-base font-bold text-foreground">
-                {formatPrice(discountedPrice)}
+                {formatPrice(finalBasePrice)}
               </span>
             </div>
           </div>
@@ -180,6 +187,12 @@ export function ProductCard({ product, showPromo, showPopular }) {
 
               {product.descricao && (
                 <p className="text-sm leading-relaxed text-muted-foreground">{product.descricao}</p>
+              )}
+
+              {hasOverridePrice && (
+                <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-foreground">
+                  Promocao do dia aplicada nesse item.
+                </div>
               )}
 
               <Tabs defaultValue="adicionais" className="w-full">
@@ -232,8 +245,8 @@ export function ProductCard({ product, showPromo, showPopular }) {
 
               <div className="rounded-md bg-muted/50 p-3">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Preco base</span>
-                  <span className="font-medium">{formatPrice(discountedPrice)}</span>
+                  <span className="text-muted-foreground">{hasOverridePrice ? 'Preco promocional' : 'Preco base'}</span>
+                  <span className="font-medium">{formatPrice(finalBasePrice)}</span>
                 </div>
                 <div className="mt-1 flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Adicionais</span>

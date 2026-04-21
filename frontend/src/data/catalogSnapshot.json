@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-20T00:38:52.578Z",
+  "generatedAt": "2026-04-21T20:16:16.395Z",
   "products": [
     {
       "uuid": "prod-005",
@@ -327,7 +327,10 @@
   "settings": {
     "whatsapp": "5535998160726",
     "delivery_time": "40 min",
-    "business_hours": "Ter a Sex: 19:00 - 23:30\nSab e Dom: 19:00 - 21:30"
+    "business_hours": "Ter a Sex: 19:00 - 23:30\nSab e Dom: 19:00 - 21:30",
+    "promotion_product_uuid": "prod-001",
+    "promotion_price": 24.9,
+    "promotion_active": 1
   },
   "categories": [
     "Batatas Recheadas 400g",

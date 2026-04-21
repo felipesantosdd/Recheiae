@@ -42,7 +42,7 @@ export function generateWhatsAppMessage({ orderNumber, customer, items, subtotal
   msg += `------- ITENS DO PEDIDO -------\n\n`;
 
   items.forEach(item => {
-    const basePrice = item.originalPrice * (1 - (item.discount || 0) / 100);
+    const basePrice = item.basePriceOverride ?? (item.originalPrice * (1 - (item.discount || 0) / 100));
     const addonsTotal = (item.addons || []).reduce((sum, addon) => sum + (addon.price ?? addon.preco ?? 0), 0);
     const unitPrice = basePrice + addonsTotal;
     const lineTotal = unitPrice * item.quantity;

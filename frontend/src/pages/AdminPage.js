@@ -93,6 +93,9 @@ const emptySettings = {
   whatsapp: '',
   delivery_time: '',
   business_hours: '',
+  promotion_product_uuid: '',
+  promotion_price: '',
+  promotion_active: true,
 };
 
 const emptyCashEntry = {
@@ -528,6 +531,11 @@ export default function AdminPage() {
         whatsapp: settingsRes.data?.whatsapp || '',
         delivery_time: settingsRes.data?.delivery_time || '',
         business_hours: settingsRes.data?.business_hours || '',
+        promotion_product_uuid: settingsRes.data?.promotion_product_uuid || '',
+        promotion_price: settingsRes.data?.promotion_price ? toMoneyInput(settingsRes.data.promotion_price) : '',
+        promotion_active: typeof settingsRes.data?.promotion_active === 'boolean'
+          ? settingsRes.data.promotion_active
+          : Boolean(settingsRes.data?.promotion_active),
       });
     } catch (e) {
       toast.error('Erro ao carregar dados');
@@ -1194,9 +1202,18 @@ export default function AdminPage() {
         whatsapp: settings.whatsapp.trim(),
         delivery_time: settings.delivery_time.trim(),
         business_hours: settings.business_hours.trim(),
+        promotion_product_uuid: settings.promotion_product_uuid || null,
+        promotion_price: settings.promotion_product_uuid && settings.promotion_price
+          ? parseMoneyInput(settings.promotion_price)
+          : null,
+        promotion_active: Boolean(settings.promotion_active && settings.promotion_product_uuid && settings.promotion_price),
       };
       await api.put('/admin/settings', payload);
-      setGlobalSettings(payload);
+      setGlobalSettings({
+        ...payload,
+        promotion_price: payload.promotion_price,
+        promotion_active: payload.promotion_active,
+      });
       refreshSettings();
       toast.success('Configuracoes atualizadas!');
     } catch (e) {
@@ -1233,6 +1250,7 @@ export default function AdminPage() {
           <TabsTrigger value="payments">Pagamentos ({paymentMethods.length})</TabsTrigger>
           <TabsTrigger value="cash">Caixa ({cashEntries.length})</TabsTrigger>
           <TabsTrigger value="settings">Loja</TabsTrigger>
+          <TabsTrigger value="promotion">Promocao do Dia</TabsTrigger>
         </TabsList>
 
         {/* Products Tab */}
@@ -1642,6 +1660,80 @@ export default function AdminPage() {
                 <Button onClick={saveSettings} disabled={savingSettings}>
                   {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   Salvar configuracoes
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="promotion">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Promocao do Dia</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Switch
+                  checked={settings.promotion_active}
+                  onCheckedChange={value => setSettings(prev => ({ ...prev, promotion_active: value }))}
+                />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Promocao ativa</p>
+                  <p className="text-xs text-muted-foreground">Quando ativa, o cardapio mostra uma oferta especial do dia.</p>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-sm">Produto em promocao</Label>
+                <Select
+                  value={settings.promotion_product_uuid || '__none__'}
+                  onValueChange={value => setSettings(prev => ({
+                    ...prev,
+                    promotion_product_uuid: value === '__none__' ? '' : value,
+                  }))}
+                >
+                  <SelectTrigger className="bg-card">
+                    <SelectValue placeholder="Selecione um produto" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">Nenhum produto</SelectItem>
+                    {products
+                      .filter(product => product.ativo)
+                      .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+                      .map(product => (
+                        <SelectItem key={product.uuid} value={product.uuid}>
+                          {product.nome}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-sm">Preco promocional (R$)</Label>
+                <Input
+                  inputMode="numeric"
+                  value={settings.promotion_price}
+                  onChange={e => setSettings(prev => ({ ...prev, promotion_price: formatMoneyInput(e.target.value) }))}
+                  placeholder="0,00"
+                />
+              </div>
+
+              {settings.promotion_product_uuid && settings.promotion_price && (
+                <div className="rounded-md border border-border bg-muted/40 p-3 text-sm">
+                  <p className="font-medium text-foreground">
+                    {products.find(product => product.uuid === settings.promotion_product_uuid)?.nome || 'Produto selecionado'}
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    Promocao de hoje em {settings.promotion_price} {settings.promotion_active ? 'ativa no cardapio.' : 'pronta para ativar.'}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <Button onClick={saveSettings} disabled={savingSettings}>
+                  {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  Salvar promocao
                 </Button>
               </div>
             </CardContent>

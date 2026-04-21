@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { HeroBanner } from '@/components/menu/HeroBanner';
 import { CategoryNav } from '@/components/menu/CategoryNav';
 import { ProductCard } from '@/components/menu/ProductCard';
@@ -6,8 +6,10 @@ import { ComboCard } from '@/components/menu/ComboCard';
 import { api } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Search, Package, Loader2 } from 'lucide-react';
+import { useStoreSettings } from '@/context/StoreSettingsContext';
 
 export default function MenuPage() {
+  const { normalizedSettings } = useStoreSettings();
   const [products, setProducts] = useState([]);
   const [combos, setCombos] = useState([]);
   const [topProducts, setTopProducts] = useState([]);
@@ -56,6 +58,32 @@ export default function MenuPage() {
   }, {});
 
   const topProductIds = new Set(topProducts.map((product) => product.uuid));
+  const promotedProduct = useMemo(() => {
+    if (!normalizedSettings.promotionActive || !normalizedSettings.promotionProductUuid) {
+      return null;
+    }
+    return products.find((product) => product.uuid === normalizedSettings.promotionProductUuid) || null;
+  }, [products, normalizedSettings]);
+
+  const getPromotionProps = (product) => {
+    if (
+      promotedProduct
+      && product.uuid === promotedProduct.uuid
+      && Number.isFinite(Number(normalizedSettings.promotionPrice))
+    ) {
+      return {
+        showPromo: true,
+        priceOverride: Number(normalizedSettings.promotionPrice),
+        promoBadgeText: 'Promo do Dia',
+      };
+    }
+
+    return {
+      showPromo: product.desconto > 0,
+      priceOverride: null,
+      promoBadgeText: null,
+    };
+  };
 
   const scrollToCategory = (cat) => {
     setActiveCategory(cat);
@@ -112,7 +140,7 @@ export default function MenuPage() {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
               {filteredProducts.map(product => (
-                <ProductCard key={product.uuid} product={product} showPromo={product.desconto > 0} />
+                <ProductCard key={product.uuid} product={product} {...getPromotionProps(product)} />
               ))}
             </div>
           )}
@@ -136,6 +164,24 @@ export default function MenuPage() {
         </section>
       )}
 
+      {!searchQuery && promotedProduct && (
+        <section className="max-w-6xl mx-auto px-4 mt-10">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
+              <Package className="h-4 w-4 text-primary" />
+            </div>
+            <h2 className="text-lg font-bold text-foreground">Promocao do Dia</h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+            <ProductCard
+              key={`promotion-${promotedProduct.uuid}`}
+              product={promotedProduct}
+              {...getPromotionProps(promotedProduct)}
+            />
+          </div>
+        </section>
+      )}
+
       {!searchQuery && topProducts.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 mt-10">
           <div className="flex items-center gap-2 mb-4">
@@ -149,8 +195,8 @@ export default function MenuPage() {
               <ProductCard
                 key={`top-${product.uuid}`}
                 product={product}
-                showPromo={product.desconto > 0}
                 showPopular
+                {...getPromotionProps(product)}
               />
             ))}
           </div>
@@ -170,7 +216,12 @@ export default function MenuPage() {
             <h2 className="text-lg font-bold text-foreground mb-4">{cat}</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
               {catProducts.map(product => (
-                <ProductCard key={product.uuid} product={product} showPopular={topProductIds.has(product.uuid)} />
+                <ProductCard
+                  key={product.uuid}
+                  product={product}
+                  showPopular={topProductIds.has(product.uuid)}
+                  {...getPromotionProps(product)}
+                />
               ))}
             </div>
           </section>

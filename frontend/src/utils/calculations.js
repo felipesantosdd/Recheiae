@@ -5,6 +5,9 @@ export const STORE_CONFIG = {
   deliveryFee: 10.0,
   deliveryTime: '40 min',
   businessHours: 'Seg a Sex: 18:00 - 23:00\nSab e Dom: 17:00 - 00:00',
+  promotionProductUuid: 'prod-001',
+  promotionPrice: 24.90,
+  promotionActive: true,
 };
 
 const DELIVERY_FEE_ENTRIES = [
@@ -138,6 +141,22 @@ export function normalizeStoreSettings(settings = {}) {
     whatsapp: settings.whatsapp || STORE_CONFIG.whatsapp,
     deliveryTime: settings.deliveryTime || settings.delivery_time || STORE_CONFIG.deliveryTime,
     businessHours: settings.businessHours || settings.business_hours || STORE_CONFIG.businessHours,
+    promotionProductUuid:
+      settings.promotionProductUuid
+      || settings.promotion_product_uuid
+      || STORE_CONFIG.promotionProductUuid,
+    promotionPrice:
+      settings.promotionPrice
+      ?? settings.promotion_price
+      ?? STORE_CONFIG.promotionPrice,
+    promotionActive:
+      typeof settings.promotionActive === 'boolean'
+        ? settings.promotionActive
+        : typeof settings.promotion_active === 'boolean'
+          ? settings.promotion_active
+          : typeof settings.promotion_active === 'number'
+            ? Boolean(settings.promotion_active)
+            : STORE_CONFIG.promotionActive,
   };
 }
 
@@ -315,7 +334,8 @@ export function calculateAddonsTotal(addons = []) {
 }
 
 export function calculateCartItemUnitPrice(item) {
-  return calculateItemPrice(item.originalPrice, item.discount) + calculateAddonsTotal(item.addons);
+  const basePrice = item.basePriceOverride ?? calculateItemPrice(item.originalPrice, item.discount);
+  return basePrice + calculateAddonsTotal(item.addons);
 }
 
 export function calculateSubtotal(items) {
@@ -324,8 +344,9 @@ export function calculateSubtotal(items) {
 
 export function calculateTotalDiscount(items) {
   return items.reduce((sum, item) => {
-    const discountAmount = item.originalPrice * ((item.discount || 0) / 100);
-    return sum + discountAmount * item.quantity;
+    const effectiveUnitPrice = item.basePriceOverride ?? calculateItemPrice(item.originalPrice, item.discount);
+    const discountAmount = Math.max(0, (Number(item.originalPrice) || 0) - effectiveUnitPrice);
+    return sum + (discountAmount * item.quantity);
   }, 0);
 }
 

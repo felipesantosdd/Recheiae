@@ -21,6 +21,9 @@ export function CartProvider({ children }) {
     return JSON.stringify({
       id: item.id,
       type: item.type,
+      originalPrice: item.originalPrice,
+      discount: item.discount || 0,
+      basePriceOverride: item.basePriceOverride ?? null,
       addons: (item.addons || []).map((addon) => addon.name).sort(),
       notes: item.notes || '',
     });

@@ -130,7 +130,17 @@ function exportSnapshotFromDb(databaseFile) {
     try {
       settings =
         db
-          .prepare('SELECT whatsapp, delivery_time, business_hours FROM store_settings WHERE id = 1')
+          .prepare(`
+            SELECT
+              whatsapp,
+              delivery_time,
+              business_hours,
+              promotion_product_uuid,
+              promotion_price,
+              promotion_active
+            FROM store_settings
+            WHERE id = 1
+          `)
           .get() || null;
     } catch {
       settings = null;
