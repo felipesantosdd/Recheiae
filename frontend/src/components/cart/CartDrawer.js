@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
-import { calculateSubtotal, calculateTotalDiscount, calculateDeliveryFee, calculateTotal, formatPrice } from '@/utils/calculations';
+import { calculateSubtotal, calculateTotalDiscount, formatPrice } from '@/utils/calculations';
 import { CartItem } from '@/components/cart/CartItem';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -13,8 +13,6 @@ export function CartDrawer() {
   const { items, isOpen, openCart, closeCart, itemCount, clearCart } = useCart();
   const subtotal = calculateSubtotal(items);
   const totalDiscount = calculateTotalDiscount(items);
-  const deliveryFee = calculateDeliveryFee();
-  const total = calculateTotal(items);
 
   const goToCheckout = () => {
     closeCart();
@@ -79,15 +77,14 @@ export function CartDrawer() {
                     <span className="font-medium text-success">-{formatPrice(totalDiscount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Frete</span>
-                  <span className="font-medium text-foreground">{formatPrice(deliveryFee)}</span>
-                </div>
                 <Separator />
                 <div className="flex justify-between font-bold text-lg">
-                  <span className="text-foreground">Total</span>
-                  <span className="text-foreground">{formatPrice(total)}</span>
+                  <span className="text-foreground">Produtos</span>
+                  <span className="text-foreground">{formatPrice(subtotal)}</span>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  O frete sera calculado no checkout apos informar o endereco.
+                </p>
                 <div className="flex gap-2 pt-1">
                   <Button
                     variant="outline"
