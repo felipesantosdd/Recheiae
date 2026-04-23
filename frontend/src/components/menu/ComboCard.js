@@ -1,17 +1,58 @@
-import { Card, CardContent } from '@/components/ui/card';
+import { useEffect, useMemo, useState } from 'react';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Plus, ImageOff } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import { formatPrice, calculateItemPrice } from '@/utils/calculations';
+import { formatPrice, calculateItemPrice, calculateAddonsTotal } from '@/utils/calculations';
+import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import { useState } from 'react';
 
 export function ComboCard({ combo }) {
   const { addItem } = useCart();
   const [imgError, setImgError] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isImageZoomOpen, setIsImageZoomOpen] = useState(false);
+  const [addons, setAddons] = useState([]);
+  const [selectedAddonIds, setSelectedAddonIds] = useState([]);
+  const [notes, setNotes] = useState('');
+
   const discountedPrice = calculateItemPrice(combo.valor, combo.desconto);
   const hasDiscount = combo.desconto > 0;
+
+  useEffect(() => {
+    api.get('/addons')
+      .then((response) => setAddons(
+        (response.data || []).map((addon) => ({
+          ...addon,
+          name: addon.name || addon.nome,
+          price: addon.price ?? addon.preco ?? 0,
+        })),
+      ))
+      .catch(() => setAddons([]));
+  }, []);
+
+  const selectedAddons = useMemo(
+    () => addons.filter((addon) => selectedAddonIds.includes(addon.uuid)),
+    [addons, selectedAddonIds],
+  );
+  const finalUnitPrice = discountedPrice + calculateAddonsTotal(selectedAddons);
+
+  const resetCustomization = () => {
+    setSelectedAddonIds([]);
+    setNotes('');
+  };
+
+  const toggleAddon = (addonId) => {
+    setSelectedAddonIds((current) =>
+      current.includes(addonId) ? current.filter((id) => id !== addonId) : [...current, addonId],
+    );
+  };
 
   const handleAddToCart = () => {
     addItem({
@@ -21,61 +62,200 @@ export function ComboCard({ combo }) {
       originalPrice: combo.valor,
       discount: combo.desconto || 0,
       foto: combo.foto,
+      addons: selectedAddons,
+      notes: notes.trim(),
     });
     toast.success(`${combo.nome} adicionado ao carrinho!`);
+    setIsDialogOpen(false);
+    resetCustomization();
   };
 
   return (
-    <Card className="card-hover overflow-hidden flex flex-row h-full">
-      <div className="relative w-28 sm:w-36 shrink-0 overflow-hidden bg-muted">
-        {!imgError && combo.foto ? (
-          <img
-            src={combo.foto}
-            alt={combo.nome}
-            className="w-full h-full object-cover"
-            loading="lazy"
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <ImageOff className="h-8 w-8 text-muted-foreground/40" />
-          </div>
-        )}
-        <Badge variant="combo" className="absolute top-2 left-2 text-[10px]">
-          Combo
-        </Badge>
-        {hasDiscount && (
-          <Badge variant="promo" className="absolute top-2 right-2 text-[10px]">
-            -{combo.desconto}%
-          </Badge>
-        )}
-      </div>
-      <CardContent className="flex flex-col flex-1 p-3">
-        <h3 className="font-semibold text-sm text-card-foreground line-clamp-1">
-          {combo.nome}
-        </h3>
-        {combo.descricao && (
-          <p className="text-[11px] text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
-            {combo.descricao}
-          </p>
-        )}
-        <div className="mt-auto pt-3 flex items-center justify-between gap-2">
-          <div className="flex items-baseline gap-1.5">
+    <>
+      <Card className="card-hover overflow-hidden flex flex-col h-full">
+        <button
+          type="button"
+          className="relative aspect-[4/3] overflow-hidden bg-muted text-left"
+          onClick={() => setIsDialogOpen(true)}
+        >
+          {!imgError && combo.foto ? (
+            <img
+              src={combo.foto}
+              alt={combo.nome}
+              className="w-full h-full object-cover"
+              loading="lazy"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <ImageOff className="h-8 w-8 text-muted-foreground/40" />
+            </div>
+          )}
+          <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+            <Badge variant="combo" className="text-[10px]">Combo</Badge>
             {hasDiscount && (
-              <span className="text-[11px] text-muted-foreground price-original">
-                {formatPrice(combo.valor)}
-              </span>
+              <Badge variant="promo" className="text-[10px]">-{combo.desconto}%</Badge>
             )}
-            <span className="text-base font-bold text-foreground">
-              {formatPrice(discountedPrice)}
-            </span>
           </div>
-          <Button size="sm" onClick={handleAddToCart} className="shrink-0 text-xs">
+        </button>
+
+        <CardContent className="flex flex-col flex-1 p-3 pb-1">
+          <button type="button" className="text-left" onClick={() => setIsDialogOpen(true)}>
+            <h3 className="font-semibold text-sm text-card-foreground line-clamp-1">
+              {combo.nome}
+            </h3>
+            {combo.descricao && (
+              <p className="text-[11px] text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
+                {combo.descricao}
+              </p>
+            )}
+          </button>
+
+          <div className="mt-auto pt-2">
+            <div className="flex items-baseline gap-1.5">
+              {hasDiscount && (
+                <span className="text-[11px] text-muted-foreground price-original">
+                  {formatPrice(combo.valor)}
+                </span>
+              )}
+              <span className="text-base font-bold text-foreground">
+                {formatPrice(discountedPrice)}
+              </span>
+            </div>
+          </div>
+        </CardContent>
+
+        <CardFooter className="p-3 pt-2">
+          <Button
+            size="sm"
+            className="w-full text-xs"
+            onClick={() => setIsDialogOpen(true)}
+          >
             <Plus className="h-3.5 w-3.5" />
             Adicionar
           </Button>
-        </div>
-      </CardContent>
-    </Card>
+        </CardFooter>
+      </Card>
+
+      <Dialog
+        open={isDialogOpen}
+        onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) resetCustomization();
+        }}
+      >
+        <DialogContent className="max-h-[90vh] w-[calc(100%-1rem)] max-w-lg overflow-y-auto p-4 sm:w-full sm:p-6">
+          <DialogHeader>
+            <DialogTitle>{combo.nome}</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {combo.foto && !imgError && (
+              <button
+                type="button"
+                className="flex h-48 w-full items-center justify-center overflow-hidden rounded-md bg-muted transition-opacity hover:opacity-95"
+                onClick={() => setIsImageZoomOpen(true)}
+              >
+                <img
+                  src={combo.foto}
+                  alt={combo.nome}
+                  className="max-h-full max-w-full object-contain"
+                  onError={() => setImgError(true)}
+                />
+              </button>
+            )}
+
+            {combo.descricao && (
+              <p className="text-sm leading-relaxed text-muted-foreground">{combo.descricao}</p>
+            )}
+
+            <Tabs defaultValue="adicionais" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="adicionais">Adicionais</TabsTrigger>
+                <TabsTrigger value="observacoes">Observacoes</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="adicionais" className="space-y-3 pt-3">
+                {addons.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Nenhum adicional disponivel no momento.
+                  </p>
+                )}
+
+                {addons.map((addon) => (
+                  <label
+                    key={addon.uuid}
+                    className="flex cursor-pointer items-center justify-between rounded-md border border-border p-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Checkbox
+                        checked={selectedAddonIds.includes(addon.uuid)}
+                        onCheckedChange={() => toggleAddon(addon.uuid)}
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{addon.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          + {formatPrice(addon.price)}
+                        </p>
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </TabsContent>
+
+              <TabsContent value="observacoes" className="space-y-2 pt-3">
+                <Label htmlFor={`combo-notes-${combo.uuid}`} className="text-sm">
+                  Observacoes do item
+                </Label>
+                <Textarea
+                  id={`combo-notes-${combo.uuid}`}
+                  value={notes}
+                  onChange={(event) => setNotes(event.target.value)}
+                  placeholder="Ex: caprichar no recheio, separar embalagem..."
+                  rows={4}
+                />
+              </TabsContent>
+            </Tabs>
+
+            <div className="rounded-md bg-muted/50 p-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Preco base</span>
+                <span className="font-medium">{formatPrice(discountedPrice)}</span>
+              </div>
+              <div className="mt-1 flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Adicionais</span>
+                <span className="font-medium">{formatPrice(calculateAddonsTotal(selectedAddons))}</span>
+              </div>
+              <div className="mt-2 flex items-center justify-between text-base font-bold">
+                <span>Total do item</span>
+                <span>{formatPrice(finalUnitPrice)}</span>
+              </div>
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
+              <Button onClick={handleAddToCart}>
+                <Plus className="h-4 w-4" />
+                Adicionar
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {combo.foto && !imgError && (
+        <Dialog open={isImageZoomOpen} onOpenChange={setIsImageZoomOpen}>
+          <DialogContent className="max-h-[95vh] w-[calc(100%-1rem)] max-w-4xl overflow-hidden p-3 sm:p-4">
+            <div className="flex max-h-[85vh] items-center justify-center overflow-hidden rounded-md bg-muted">
+              <img
+                src={combo.foto}
+                alt={combo.nome}
+                className="max-h-[85vh] max-w-full object-contain"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 }
