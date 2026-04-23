@@ -1,18 +1,63 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
-import { calculateSubtotal, calculateTotalDiscount, formatPrice } from '@/utils/calculations';
+import { calculateSubtotal, calculateTotalDiscount, calculateDeliveryFee, formatPrice, resolveNeighborhoodName } from '@/utils/calculations';
 import { CartItem } from '@/components/cart/CartItem';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, ArrowRight, Trash2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ShoppingBag, ArrowRight, Trash2, Loader2, Truck } from 'lucide-react';
+import { toast } from 'sonner';
+
+function formatCep(value) {
+  const digits = String(value || '').replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+}
 
 export function CartDrawer() {
   const navigate = useNavigate();
   const { items, isOpen, openCart, closeCart, itemCount, clearCart } = useCart();
+  const [cep, setCep] = useState('');
+  const [loadingCep, setLoadingCep] = useState(false);
+  const [freightResult, setFreightResult] = useState(null);
   const subtotal = calculateSubtotal(items);
   const totalDiscount = calculateTotalDiscount(items);
+
+  const lookupFreight = async () => {
+    const digits = cep.replace(/\D/g, '');
+    if (digits.length !== 8) {
+      toast.error('Digite um CEP valido com 8 numeros');
+      return;
+    }
+
+    try {
+      setLoadingCep(true);
+      const response = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      if (!response.ok) {
+        throw new Error('cep_lookup_failed');
+      }
+
+      const data = await response.json();
+      if (data.erro) {
+        toast.error('CEP nao encontrado');
+        return;
+      }
+
+      const bairro = resolveNeighborhoodName(data.bairro || '');
+      setCep(formatCep(digits));
+      setFreightResult({
+        bairro,
+        fee: calculateDeliveryFee(bairro),
+      });
+    } catch {
+      toast.error('Nao foi possivel calcular o frete agora');
+    } finally {
+      setLoadingCep(false);
+    }
+  };
 
   const goToCheckout = () => {
     closeCart();
@@ -67,6 +112,40 @@ export function CartDrawer() {
               </ScrollArea>
 
               <div className="border-t border-border px-6 py-4 space-y-2.5 bg-card">
+                <div className="rounded-xl border border-border bg-muted/30 p-3">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <Truck className="h-4 w-4 text-primary" />
+                    Calcule o frete
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <Input
+                      value={cep}
+                      onChange={(event) => setCep(formatCep(event.target.value))}
+                      onBlur={() => {
+                        if (cep.replace(/\D/g, '').length === 8) {
+                          lookupFreight();
+                        }
+                      }}
+                      placeholder="Digite seu CEP"
+                      className="bg-card"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={lookupFreight}
+                      disabled={loadingCep}
+                      className="shrink-0"
+                    >
+                      {loadingCep ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Calcular'}
+                    </Button>
+                  </div>
+                  {freightResult && (
+                    <div className="mt-3 text-sm">
+                      <p className="text-muted-foreground">Bairro: <span className="font-medium text-foreground">{freightResult.bairro || 'Nao identificado'}</span></p>
+                      <p className="text-muted-foreground">Frete: <span className="font-semibold text-foreground">{formatPrice(freightResult.fee)}</span></p>
+                    </div>
+                  )}
+                </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
                   <span className="font-medium text-foreground">{formatPrice(subtotal)}</span>
@@ -82,9 +161,6 @@ export function CartDrawer() {
                   <span className="text-foreground">Produtos</span>
                   <span className="text-foreground">{formatPrice(subtotal)}</span>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  O frete sera calculado no checkout apos informar o endereco.
-                </p>
                 <div className="flex gap-2 pt-1">
                   <Button
                     variant="outline"
