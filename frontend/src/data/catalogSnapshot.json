@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-04-21T23:43:18.311Z",
+  "generatedAt": "2026-04-23T21:22:59.034Z",
   "products": [
     {
       "uuid": "prod-005",
       "nome": "Batata Recheada De Brocolis Com Queijo",
       "descricao": "Batata recheada feita na hora, bem caprichada e cheia de sabor. Brocolis temperadinho com queijo cremoso derretendo, combinacao que voce nem sabia que precisava. Mais leve? Talvez. Mas sem miseria? Nunca.",
       "preco": 22.9,
-      "desconto": 10,
+      "desconto": 0,
       "foto": "/images/uploads/product-prod-005.jpeg",
       "categoria": "Batatas Recheadas 400g",
       "vendas": 1,
@@ -17,7 +17,7 @@
       "nome": "Batata Recheada De Carne Com Cheddar E Doritos",
       "descricao": "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
       "preco": 28.9,
-      "desconto": 10,
+      "desconto": 0,
       "foto": "/images/uploads/product-prod-001.jpeg",
       "categoria": "Batatas Recheadas 400g",
       "vendas": 2,
@@ -28,7 +28,7 @@
       "nome": "Batata Recheada De Frango Com Catupiry",
       "descricao": "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
       "preco": 25.9,
-      "desconto": 10,
+      "desconto": 0,
       "foto": "/images/uploads/product-prod-003.jpeg",
       "categoria": "Batatas Recheadas 400g",
       "vendas": 4,
@@ -39,7 +39,7 @@
       "nome": "Batata Recheada De Sabor Pizza",
       "descricao": "Batata quentinha, feita na hora e carregada de sabor. Presunto e queijo super cremoso, tomate, finalizacao com mussarela, Doritos e cream cheese. E aquela batata forte, bem servida e sem miseria, pra quem gosta de comer de verdade.",
       "preco": 26.9,
-      "desconto": 10,
+      "desconto": 0,
       "foto": "/images/uploads/product-prod-004.jpeg",
       "categoria": "Batatas Recheadas 400g",
       "vendas": 1,
@@ -50,10 +50,100 @@
       "nome": "Batata Recheada De Strogonoff De Frango",
       "descricao": "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!",
       "preco": 24.9,
-      "desconto": 10,
+      "desconto": 0,
       "foto": "/images/uploads/product-prod-002.jpeg",
       "categoria": "Batatas Recheadas 400g",
       "vendas": 6,
+      "ativo": false
+    },
+    {
+      "uuid": "prod-006",
+      "nome": "Coca-Cola Lata 310ml",
+      "descricao": "Refrigerante Coca-Cola tradicional em lata de 350ml, gelado e pronto para acompanhar seu pedido.",
+      "preco": 6,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-006.jpg",
+      "categoria": "Bebidas",
+      "vendas": 1,
+      "ativo": true
+    },
+    {
+      "uuid": "prod-007",
+      "nome": "Coca-Cola Zero Lata 350ml",
+      "descricao": "Refrigerante Coca-Cola Zero em lata de 350ml, sem acucar e com o sabor classico que combina com qualquer refeicao.",
+      "preco": 6,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-007.webp",
+      "categoria": "Bebidas",
+      "vendas": 0,
+      "ativo": true
+    },
+    {
+      "uuid": "prod-008",
+      "nome": "Guarana Antarctica Lata 350ml",
+      "descricao": "Refrigerante Guarana Antarctica tradicional em lata de 350ml, gelado e ideal para acompanhar seu lanche.",
+      "preco": 5,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-008.webp",
+      "categoria": "Bebidas",
+      "vendas": 2,
+      "ativo": true
+    },
+    {
+      "uuid": "prod-009",
+      "nome": "Guarana Antarctica Zero Lata 350ml",
+      "descricao": "Refrigerante Guarana Antarctica Zero em lata de 350ml, sem acucar e com o sabor leve e refrescante.",
+      "preco": 7,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-009.webp",
+      "categoria": "Bebidas",
+      "vendas": 0,
+      "ativo": true
+    }
+  ],
+  "activeProducts": [
+    {
+      "uuid": "prod-005",
+      "nome": "Batata Recheada De Brocolis Com Queijo",
+      "descricao": "Batata recheada feita na hora, bem caprichada e cheia de sabor. Brocolis temperadinho com queijo cremoso derretendo, combinacao que voce nem sabia que precisava. Mais leve? Talvez. Mas sem miseria? Nunca.",
+      "preco": 22.9,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-005.jpeg",
+      "categoria": "Batatas Recheadas 400g",
+      "vendas": 1,
+      "ativo": true
+    },
+    {
+      "uuid": "prod-001",
+      "nome": "Batata Recheada De Carne Com Cheddar E Doritos",
+      "descricao": "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
+      "preco": 28.9,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-001.jpeg",
+      "categoria": "Batatas Recheadas 400g",
+      "vendas": 2,
+      "ativo": true
+    },
+    {
+      "uuid": "prod-003",
+      "nome": "Batata Recheada De Frango Com Catupiry",
+      "descricao": "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
+      "preco": 25.9,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-003.jpeg",
+      "categoria": "Batatas Recheadas 400g",
+      "vendas": 4,
+      "ativo": true
+    },
+    {
+      "uuid": "prod-004",
+      "nome": "Batata Recheada De Sabor Pizza",
+      "descricao": "Batata quentinha, feita na hora e carregada de sabor. Presunto e queijo super cremoso, tomate, finalizacao com mussarela, Doritos e cream cheese. E aquela batata forte, bem servida e sem miseria, pra quem gosta de comer de verdade.",
+      "preco": 26.9,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-004.jpeg",
+      "categoria": "Batatas Recheadas 400g",
+      "vendas": 1,
       "ativo": true
     },
     {
@@ -98,96 +188,6 @@
       "foto": "/images/uploads/product-prod-009.webp",
       "categoria": "Bebidas",
       "vendas": 0,
-      "ativo": false
-    }
-  ],
-  "activeProducts": [
-    {
-      "uuid": "prod-005",
-      "nome": "Batata Recheada De Brocolis Com Queijo",
-      "descricao": "Batata recheada feita na hora, bem caprichada e cheia de sabor. Brocolis temperadinho com queijo cremoso derretendo, combinacao que voce nem sabia que precisava. Mais leve? Talvez. Mas sem miseria? Nunca.",
-      "preco": 22.9,
-      "desconto": 10,
-      "foto": "/images/uploads/product-prod-005.jpeg",
-      "categoria": "Batatas Recheadas 400g",
-      "vendas": 1,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-001",
-      "nome": "Batata Recheada De Carne Com Cheddar E Doritos",
-      "descricao": "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
-      "preco": 28.9,
-      "desconto": 10,
-      "foto": "/images/uploads/product-prod-001.jpeg",
-      "categoria": "Batatas Recheadas 400g",
-      "vendas": 2,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-003",
-      "nome": "Batata Recheada De Frango Com Catupiry",
-      "descricao": "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
-      "preco": 25.9,
-      "desconto": 10,
-      "foto": "/images/uploads/product-prod-003.jpeg",
-      "categoria": "Batatas Recheadas 400g",
-      "vendas": 4,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-004",
-      "nome": "Batata Recheada De Sabor Pizza",
-      "descricao": "Batata quentinha, feita na hora e carregada de sabor. Presunto e queijo super cremoso, tomate, finalizacao com mussarela, Doritos e cream cheese. E aquela batata forte, bem servida e sem miseria, pra quem gosta de comer de verdade.",
-      "preco": 26.9,
-      "desconto": 10,
-      "foto": "/images/uploads/product-prod-004.jpeg",
-      "categoria": "Batatas Recheadas 400g",
-      "vendas": 1,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-002",
-      "nome": "Batata Recheada De Strogonoff De Frango",
-      "descricao": "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!",
-      "preco": 24.9,
-      "desconto": 10,
-      "foto": "/images/uploads/product-prod-002.jpeg",
-      "categoria": "Batatas Recheadas 400g",
-      "vendas": 6,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-006",
-      "nome": "Coca-Cola Lata 310ml",
-      "descricao": "Refrigerante Coca-Cola tradicional em lata de 350ml, gelado e pronto para acompanhar seu pedido.",
-      "preco": 6,
-      "desconto": 0,
-      "foto": "/images/uploads/product-prod-006.jpg",
-      "categoria": "Bebidas",
-      "vendas": 1,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-007",
-      "nome": "Coca-Cola Zero Lata 350ml",
-      "descricao": "Refrigerante Coca-Cola Zero em lata de 350ml, sem acucar e com o sabor classico que combina com qualquer refeicao.",
-      "preco": 6,
-      "desconto": 0,
-      "foto": "/images/uploads/product-prod-007.webp",
-      "categoria": "Bebidas",
-      "vendas": 0,
-      "ativo": true
-    },
-    {
-      "uuid": "prod-008",
-      "nome": "Guarana Antarctica Lata 350ml",
-      "descricao": "Refrigerante Guarana Antarctica tradicional em lata de 350ml, gelado e ideal para acompanhar seu lanche.",
-      "preco": 5,
-      "desconto": 0,
-      "foto": "/images/uploads/product-prod-008.webp",
-      "categoria": "Bebidas",
-      "vendas": 2,
       "ativo": true
     }
   ],
@@ -197,22 +197,22 @@
       "nome": "Batata Recheada De Frango Com Catupiry",
       "descricao": "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
       "preco": 25.9,
-      "desconto": 10,
+      "desconto": 0,
       "foto": "/images/uploads/product-prod-003.jpeg",
       "categoria": "Batatas Recheadas 400g",
       "vendas": 4,
       "ativo": true,
-      "sold_count": 3
+      "sold_count": 4
     },
     {
-      "uuid": "prod-002",
-      "nome": "Batata Recheada De Strogonoff De Frango",
-      "descricao": "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!",
-      "preco": 24.9,
-      "desconto": 10,
-      "foto": "/images/uploads/product-prod-002.jpeg",
+      "uuid": "prod-001",
+      "nome": "Batata Recheada De Carne Com Cheddar E Doritos",
+      "descricao": "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
+      "preco": 28.9,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-001.jpeg",
       "categoria": "Batatas Recheadas 400g",
-      "vendas": 6,
+      "vendas": 2,
       "ativo": true,
       "sold_count": 3
     },
@@ -221,7 +221,7 @@
       "nome": "Batata Recheada De Brocolis Com Queijo",
       "descricao": "Batata recheada feita na hora, bem caprichada e cheia de sabor. Brocolis temperadinho com queijo cremoso derretendo, combinacao que voce nem sabia que precisava. Mais leve? Talvez. Mas sem miseria? Nunca.",
       "preco": 22.9,
-      "desconto": 10,
+      "desconto": 0,
       "foto": "/images/uploads/product-prod-005.jpeg",
       "categoria": "Batatas Recheadas 400g",
       "vendas": 1,
@@ -229,8 +229,38 @@
       "sold_count": 1
     }
   ],
-  "combos": [],
-  "activeCombos": [],
+  "combos": [
+    {
+      "uuid": "a85e7eb7-244f-4d39-ba49-8def749a155c",
+      "nome": "Batata Explosão + Coca-Cola Lata",
+      "descricao": "Batata recheada feita na hora, bem caprichada e sem economia. Carne moída bem temperada com nosso molho de tomate cremoso da casa envolvendo tudo, finalizada com bastante mussarela, cheddar nas bordas e toque de cheiro verde. Recheio generoso do começo ao fim, acompanhada de Coca-Cola gelada pra completar.",
+      "produto_ids": [
+        "prod-001",
+        "prod-006"
+      ],
+      "valor": 29.9,
+      "desconto": 0,
+      "vendas": 0,
+      "foto": "/images/uploads/combo-182dd2e8-de0e-4cac-b8fc-d94130b5579c.jpeg",
+      "ativo": true
+    }
+  ],
+  "activeCombos": [
+    {
+      "uuid": "a85e7eb7-244f-4d39-ba49-8def749a155c",
+      "nome": "Batata Explosão + Coca-Cola Lata",
+      "descricao": "Batata recheada feita na hora, bem caprichada e sem economia. Carne moída bem temperada com nosso molho de tomate cremoso da casa envolvendo tudo, finalizada com bastante mussarela, cheddar nas bordas e toque de cheiro verde. Recheio generoso do começo ao fim, acompanhada de Coca-Cola gelada pra completar.",
+      "produto_ids": [
+        "prod-001",
+        "prod-006"
+      ],
+      "valor": 29.9,
+      "desconto": 0,
+      "vendas": 0,
+      "foto": "/images/uploads/combo-182dd2e8-de0e-4cac-b8fc-d94130b5579c.jpeg",
+      "ativo": true
+    }
+  ],
   "paymentMethods": [
     {
       "uuid": "pm-004",

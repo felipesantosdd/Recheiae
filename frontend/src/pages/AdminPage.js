@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Plus, Pencil, Trash2, Loader2, Save, CreditCard, Wallet, ArrowDownCircle, ArrowUpCircle, Upload, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatPrice } from '@/utils/calculations';
+import { formatPrice, calculateItemPrice } from '@/utils/calculations';
 import { useStoreSettings } from '@/context/StoreSettingsContext';
 
 const formatMoneyInput = (value) => {
@@ -298,6 +298,11 @@ export default function AdminPage() {
     return productCostMap[recipeManagerProduct.uuid] || null;
   }, [productCostMap, recipeManagerProduct]);
 
+  const selectedPromotionProduct = useMemo(() => {
+    if (!settings.promotion_product_uuid) return null;
+    return products.find((product) => product.uuid === settings.promotion_product_uuid) || null;
+  }, [products, settings.promotion_product_uuid]);
+
   const selectedProductMargin = useMemo(() => {
     if (!recipeManagerProduct || selectedProductRecipes.length === 0) return null;
     const price = Number(recipeManagerProduct.preco) || 0;
@@ -327,6 +332,26 @@ export default function AdminPage() {
 
   const closeConfirmDialog = () => {
     setConfirmDialog({ ...emptyConfirmDialog });
+  };
+
+  const applyPromotionProduct = (product) => {
+    setSettings((prev) => ({
+      ...prev,
+      promotion_product_uuid: product.uuid,
+      promotion_price: prev.promotion_product_uuid === product.uuid && prev.promotion_price
+        ? prev.promotion_price
+        : toMoneyInput(calculateItemPrice(product.preco, product.desconto || 0)),
+      promotion_active: true,
+    }));
+  };
+
+  const clearPromotionSettings = () => {
+    setSettings((prev) => ({
+      ...prev,
+      promotion_product_uuid: '',
+      promotion_price: '',
+      promotion_active: false,
+    }));
   };
 
   const runConfirmDialog = async () => {
@@ -1667,77 +1692,101 @@ export default function AdminPage() {
         </TabsContent>
 
         <TabsContent value="promotion">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Promocao do Dia</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Switch
-                  checked={settings.promotion_active}
-                  onCheckedChange={value => setSettings(prev => ({ ...prev, promotion_active: value }))}
-                />
-                <div>
-                  <p className="text-sm font-medium text-foreground">Promocao ativa</p>
-                  <p className="text-xs text-muted-foreground">Quando ativa, o cardapio mostra uma oferta especial do dia.</p>
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Promocao do Dia</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={settings.promotion_active}
+                    onCheckedChange={value => setSettings(prev => ({ ...prev, promotion_active: value }))}
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Promocao ativa</p>
+                    <p className="text-xs text-muted-foreground">Ative ou pause a promocao do dia sem perder a configuracao.</p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-sm">Produto em promocao</Label>
-                <Select
-                  value={settings.promotion_product_uuid || '__none__'}
-                  onValueChange={value => setSettings(prev => ({
-                    ...prev,
-                    promotion_product_uuid: value === '__none__' ? '' : value,
-                  }))}
-                >
-                  <SelectTrigger className="bg-card">
-                    <SelectValue placeholder="Selecione um produto" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">Nenhum produto</SelectItem>
-                    {products
-                      .filter(product => product.ativo)
-                      .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
-                      .map(product => (
-                        <SelectItem key={product.uuid} value={product.uuid}>
-                          {product.nome}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                {selectedPromotionProduct ? (
+                  <div className="rounded-md border border-border bg-muted/40 p-4">
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{selectedPromotionProduct.nome}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Preco atual: {formatPrice(calculateItemPrice(selectedPromotionProduct.preco, selectedPromotionProduct.desconto || 0))}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Promocao do dia: {settings.promotion_price || '0,00'} {settings.promotion_active ? 'ativa no cardapio.' : 'pronta para ativar.'}
+                        </p>
+                      </div>
+                      <Button variant="outline" onClick={clearPromotionSettings}>
+                        Remover promocao
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-md border border-dashed border-border p-4 text-sm text-muted-foreground">
+                    Nenhum produto selecionado para a promocao do dia.
+                  </div>
+                )}
 
-              <div className="space-y-1.5">
-                <Label className="text-sm">Preco promocional (R$)</Label>
-                <Input
-                  inputMode="numeric"
-                  value={settings.promotion_price}
-                  onChange={e => setSettings(prev => ({ ...prev, promotion_price: formatMoneyInput(e.target.value) }))}
-                  placeholder="0,00"
-                />
-              </div>
-
-              {settings.promotion_product_uuid && settings.promotion_price && (
-                <div className="rounded-md border border-border bg-muted/40 p-3 text-sm">
-                  <p className="font-medium text-foreground">
-                    {products.find(product => product.uuid === settings.promotion_product_uuid)?.nome || 'Produto selecionado'}
-                  </p>
-                  <p className="mt-1 text-muted-foreground">
-                    Promocao de hoje em {settings.promotion_price} {settings.promotion_active ? 'ativa no cardapio.' : 'pronta para ativar.'}
-                  </p>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Preco promocional (R$)</Label>
+                  <Input
+                    inputMode="numeric"
+                    value={settings.promotion_price}
+                    onChange={e => setSettings(prev => ({ ...prev, promotion_price: formatMoneyInput(e.target.value) }))}
+                    placeholder="0,00"
+                  />
                 </div>
-              )}
 
-              <div className="flex justify-end">
-                <Button onClick={saveSettings} disabled={savingSettings}>
-                  {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  Salvar promocao
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="flex justify-end">
+                  <Button onClick={saveSettings} disabled={savingSettings}>
+                    {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                    Salvar promocao
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Escolher produto</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {products
+                  .filter(product => product.ativo && product.categoria !== 'Bebidas')
+                  .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+                  .map(product => {
+                    const discountedPrice = calculateItemPrice(product.preco, product.desconto || 0);
+                    const isSelected = settings.promotion_product_uuid === product.uuid;
+
+                    return (
+                      <div key={product.uuid} className="flex items-center gap-3 rounded-md border border-border p-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-medium text-foreground">{product.nome}</p>
+                            {isSelected && <Badge variant="promo" className="text-[10px]">Atual</Badge>}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Preco atual no cardapio: {formatPrice(discountedPrice)}
+                          </p>
+                        </div>
+                        <Button
+                          variant={isSelected ? 'secondary' : 'outline'}
+                          size="sm"
+                          onClick={() => applyPromotionProduct(product)}
+                        >
+                          {isSelected ? 'Selecionado' : 'Usar na promocao'}
+                        </Button>
+                      </div>
+                    );
+                  })}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
 
