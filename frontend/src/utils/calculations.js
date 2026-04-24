@@ -427,7 +427,7 @@ export function getPaymentFeeDetails(paymentMethod = '') {
   const normalized = normalizeText(paymentMethod);
   if (normalized.includes('CREDITO') || normalized.includes('DEBITO')) {
     return {
-      amount: 4,
+      amount: 2,
       label: 'TAXA ENTREGA/MAQUININHA',
       description: 'Pagamentos no crédito e débito têm taxa adicional de entrega e maquininha.',
     };

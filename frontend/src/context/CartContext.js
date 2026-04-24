@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const CartContext = createContext(null);
+const CHECKOUT_DRAFT_STORAGE_KEY = 'recheiae-checkout-draft';
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState(() => {
@@ -59,6 +60,7 @@ export function CartProvider({ children }) {
   }, [buildItemSignature]);
 
   const clearCart = useCallback(() => {
+    localStorage.removeItem(CHECKOUT_DRAFT_STORAGE_KEY);
     setItems([]);
   }, []);
 

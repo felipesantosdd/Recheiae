@@ -62,6 +62,29 @@ function formatCep(value) {
   return `${digits.slice(0, 5)}-${digits.slice(5)}`;
 }
 
+const CHECKOUT_DRAFT_STORAGE_KEY = 'recheiae-checkout-draft';
+
+const EMPTY_CHECKOUT_FORM = {
+  nome: '',
+  telefone: '',
+  cep: '',
+  endereco: '',
+  numero: '',
+  bairro: '',
+  complemento: '',
+  formaPagamento: '',
+  observacoes: '',
+};
+
+function loadCheckoutDraft() {
+  try {
+    const saved = localStorage.getItem(CHECKOUT_DRAFT_STORAGE_KEY);
+    return saved ? { ...EMPTY_CHECKOUT_FORM, ...JSON.parse(saved) } : EMPTY_CHECKOUT_FORM;
+  } catch {
+    return EMPTY_CHECKOUT_FORM;
+  }
+}
+
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const { items, clearCart } = useCart();
@@ -70,17 +93,7 @@ export default function CheckoutPage() {
   const [loadingPM, setLoadingPM] = useState(true);
   const [loadingCep, setLoadingCep] = useState(false);
   const [bairroOpen, setBairroOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    nome: '',
-    telefone: '',
-    cep: '',
-    endereco: '',
-    numero: '',
-    bairro: '',
-    complemento: '',
-    formaPagamento: '',
-    observacoes: '',
-  });
+  const [formData, setFormData] = useState(loadCheckoutDraft);
 
   useEffect(() => {
     api.get('/payment-methods')
@@ -95,6 +108,10 @@ export default function CheckoutPage() {
       })
       .finally(() => setLoadingPM(false));
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem(CHECKOUT_DRAFT_STORAGE_KEY, JSON.stringify(formData));
+  }, [formData]);
 
   const subtotal = calculateSubtotal(items);
   const totalDiscount = calculateTotalDiscount(items);
