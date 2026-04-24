@@ -239,6 +239,22 @@ export default function AdminPage() {
     }, { entradas: 0, saidas: 0, saldo: 0 });
   }, [filteredCashEntries]);
 
+  const channelSalesSummary = useMemo(() => {
+    return filteredCashEntries.reduce((acc, entry) => {
+      const value = Number(entry.valor) || 0;
+      if (entry.tipo !== 'entrada') {
+        return acc;
+      }
+      if (entry.descricao === 'Vendas iFood') {
+        acc.ifood += value;
+      }
+      if (entry.descricao === 'Vendas WhatsApp') {
+        acc.whatsapp += value;
+      }
+      return acc;
+    }, { ifood: 0, whatsapp: 0 });
+  }, [filteredCashEntries]);
+
   const groupedCashEntries = useMemo(() => {
     return filteredCashEntries.reduce((groups, entry) => {
       const dateKey = String(entry.data_lancamento || '').slice(0, 10) || 'Sem data';
@@ -1612,6 +1628,21 @@ export default function AdminPage() {
                     <p className="text-xs text-muted-foreground">Saldo</p>
                     <p className="text-lg font-bold text-foreground">{formatPrice(cashSummary.saldo)}</p>
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              <Card>
+                <CardContent className="p-3">
+                  <p className="text-xs text-muted-foreground">Vendas iFood</p>
+                  <p className="mt-1 text-base font-bold text-foreground">{formatPrice(channelSalesSummary.ifood)}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-3">
+                  <p className="text-xs text-muted-foreground">Vendas WhatsApp</p>
+                  <p className="mt-1 text-base font-bold text-foreground">{formatPrice(channelSalesSummary.whatsapp)}</p>
                 </CardContent>
               </Card>
             </div>

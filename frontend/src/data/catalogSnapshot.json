@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-23T21:51:04.589Z",
+  "generatedAt": "2026-04-24T02:18:49.244Z",
   "products": [
     {
       "uuid": "prod-005",
@@ -10,7 +10,7 @@
       "foto": "/images/uploads/product-prod-005.jpeg",
       "categoria": "Batatas Recheadas 400g",
       "vendas": 1,
-      "ativo": true
+      "ativo": false
     },
     {
       "uuid": "prod-001",
@@ -26,7 +26,7 @@
     {
       "uuid": "prod-003",
       "nome": "Batata Recheada De Frango Com Catupiry",
-      "descricao": "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
+      "descricao": "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, milho, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
       "preco": 25.9,
       "desconto": 0,
       "foto": "/images/uploads/product-prod-003.jpeg",
@@ -48,13 +48,13 @@
     {
       "uuid": "prod-002",
       "nome": "Batata Recheada De Strogonoff De Frango",
-      "descricao": "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!",
+      "descricao": "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, milho, cebola, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!",
       "preco": 24.9,
       "desconto": 0,
       "foto": "/images/uploads/product-prod-002.jpeg",
       "categoria": "Batatas Recheadas 400g",
       "vendas": 6,
-      "ativo": false
+      "ativo": true
     },
     {
       "uuid": "prod-006",
@@ -103,17 +103,6 @@
   ],
   "activeProducts": [
     {
-      "uuid": "prod-005",
-      "nome": "Batata Recheada De Brocolis Com Queijo",
-      "descricao": "Batata recheada feita na hora, bem caprichada e cheia de sabor. Brocolis temperadinho com queijo cremoso derretendo, combinacao que voce nem sabia que precisava. Mais leve? Talvez. Mas sem miseria? Nunca.",
-      "preco": 22.9,
-      "desconto": 0,
-      "foto": "/images/uploads/product-prod-005.jpeg",
-      "categoria": "Batatas Recheadas 400g",
-      "vendas": 1,
-      "ativo": true
-    },
-    {
       "uuid": "prod-001",
       "nome": "Batata Recheada De Carne Com Cheddar E Doritos",
       "descricao": "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
@@ -127,7 +116,7 @@
     {
       "uuid": "prod-003",
       "nome": "Batata Recheada De Frango Com Catupiry",
-      "descricao": "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
+      "descricao": "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, milho, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
       "preco": 25.9,
       "desconto": 0,
       "foto": "/images/uploads/product-prod-003.jpeg",
@@ -144,6 +133,17 @@
       "foto": "/images/uploads/product-prod-004.jpeg",
       "categoria": "Batatas Recheadas 400g",
       "vendas": 1,
+      "ativo": true
+    },
+    {
+      "uuid": "prod-002",
+      "nome": "Batata Recheada De Strogonoff De Frango",
+      "descricao": "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, milho, cebola, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!",
+      "preco": 24.9,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-002.jpeg",
+      "categoria": "Batatas Recheadas 400g",
+      "vendas": 6,
       "ativo": true
     },
     {
@@ -195,12 +195,24 @@
     {
       "uuid": "prod-003",
       "nome": "Batata Recheada De Frango Com Catupiry",
-      "descricao": "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
+      "descricao": "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, milho, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
       "preco": 25.9,
       "desconto": 0,
       "foto": "/images/uploads/product-prod-003.jpeg",
       "categoria": "Batatas Recheadas 400g",
       "vendas": 4,
+      "ativo": true,
+      "sold_count": 4
+    },
+    {
+      "uuid": "prod-002",
+      "nome": "Batata Recheada De Strogonoff De Frango",
+      "descricao": "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, milho, cebola, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!",
+      "preco": 24.9,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-002.jpeg",
+      "categoria": "Batatas Recheadas 400g",
+      "vendas": 6,
       "ativo": true,
       "sold_count": 4
     },
@@ -215,18 +227,6 @@
       "vendas": 2,
       "ativo": true,
       "sold_count": 3
-    },
-    {
-      "uuid": "prod-005",
-      "nome": "Batata Recheada De Brocolis Com Queijo",
-      "descricao": "Batata recheada feita na hora, bem caprichada e cheia de sabor. Brocolis temperadinho com queijo cremoso derretendo, combinacao que voce nem sabia que precisava. Mais leve? Talvez. Mas sem miseria? Nunca.",
-      "preco": 22.9,
-      "desconto": 0,
-      "foto": "/images/uploads/product-prod-005.jpeg",
-      "categoria": "Batatas Recheadas 400g",
-      "vendas": 1,
-      "ativo": true,
-      "sold_count": 1
     }
   ],
   "combos": [
