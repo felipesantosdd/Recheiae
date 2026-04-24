@@ -205,6 +205,12 @@ function parseTimeToMinutes(value) {
   return (hours * 60) + minutes;
 }
 
+export function parseDeliveryMinutes(value = STORE_CONFIG.deliveryTime) {
+  const match = String(value || '').match(/(\d+)/);
+  if (!match) return 40;
+  return Number(match[1]);
+}
+
 function expandDayExpression(dayExpression) {
   const normalized = normalizeScheduleText(dayExpression);
   if (!normalized) return [];
@@ -302,6 +308,69 @@ export function getBusinessHoursStatus(businessHours = '', now = new Date()) {
     isOpen: Boolean(currentRule),
     currentRule,
   };
+}
+
+export function getNextOpeningInfo(businessHours = '', now = new Date(), deliveryMinutes = 40) {
+  const rules = parseBusinessHours(businessHours);
+  if (rules.length === 0) {
+    return null;
+  }
+
+  const status = getBusinessHoursStatus(businessHours, now);
+  if (status.isOpen) {
+    return null;
+  }
+
+  let nextOpening = null;
+
+  rules.forEach((rule) => {
+    rule.days.forEach((ruleDay) => {
+      for (let dayOffset = 0; dayOffset <= 14; dayOffset += 1) {
+        const candidate = new Date(now);
+        candidate.setHours(0, 0, 0, 0);
+        candidate.setDate(now.getDate() + dayOffset);
+
+        if (candidate.getDay() !== ruleDay) {
+          continue;
+        }
+
+        candidate.setHours(
+          Math.floor(rule.startMinutes / 60),
+          rule.startMinutes % 60,
+          0,
+          0,
+        );
+
+        if (candidate > now && (!nextOpening || candidate < nextOpening)) {
+          nextOpening = candidate;
+        }
+      }
+    });
+  });
+
+  if (!nextOpening) {
+    return null;
+  }
+
+  const deliveryAt = new Date(nextOpening);
+  deliveryAt.setMinutes(deliveryAt.getMinutes() + deliveryMinutes);
+
+  return {
+    opensAt: nextOpening,
+    deliveryAt,
+    deliveryMinutes,
+  };
+}
+
+export function formatScheduleDateTime(date) {
+  if (!date) return '';
+  return date.toLocaleString('pt-BR', {
+    weekday: 'short',
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 export function formatWhatsAppNumber(value) {

@@ -20,16 +20,32 @@ export function generateGoogleMapsLink(endereco, numero, bairro) {
   return `https://maps.google.com/?q=${encodeURIComponent(query)}`;
 }
 
-export function generateWhatsAppMessage({ orderNumber, customer, items, subtotal, deliveryFee, paymentFee = 0, totalDiscount, total, settings }) {
+export function generateWhatsAppMessage({
+  orderNumber,
+  customer,
+  items,
+  subtotal,
+  deliveryFee,
+  paymentFee = 0,
+  totalDiscount,
+  total,
+  settings,
+  scheduledOrder = null,
+}) {
   const storeSettings = normalizeStoreSettings(settings);
   const paymentFeeDetails = getPaymentFeeDetails(customer.formaPagamento);
   const now = new Date();
   const dateStr = now.toLocaleDateString('pt-BR');
   const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-  let msg = `#### NOVO PEDIDO ####\n\n`;
+  let msg = scheduledOrder ? `#### PEDIDO AGENDADO ####\n\n` : `#### NOVO PEDIDO ####\n\n`;
   msg += `#\ufe0f\u20e3 N\u00ba pedido: ${orderNumber}\n`;
   msg += `feito em ${dateStr} ${timeStr}\n\n`;
+  if (scheduledOrder) {
+    msg += `\u26a0\ufe0f Pedido feito fora do horario de atendimento.\n`;
+    msg += `Restaurante abre em: ${scheduledOrder.opensAtLabel}\n`;
+    msg += `Entrega prevista: ${scheduledOrder.deliveryAtLabel}\n\n`;
+  }
   msg += `\ud83d\udc64 ${customer.nome}\n`;
   msg += `\ud83d\udcde ${customer.telefone}\n\n`;
   msg += `\ud83d\udef5 Endere\u00e7o de entrega\n`;
@@ -74,7 +90,11 @@ export function generateWhatsAppMessage({ orderNumber, customer, items, subtotal
   if (customer.observacoes) {
     msg += `\ud83d\udcdd Observacoes gerais do pedido: ${customer.observacoes}\n\n`;
   }
-  msg += `\ud83d\udd50 Prazo para entrega: ${storeSettings.deliveryTime}`;
+  if (scheduledOrder) {
+    msg += `\ud83d\udd50 Pedido agendado para entrega: ${scheduledOrder.deliveryAtLabel}`;
+  } else {
+    msg += `\ud83d\udd50 Prazo para entrega: ${storeSettings.deliveryTime}`;
+  }
 
   return msg;
 }

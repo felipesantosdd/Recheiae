@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-24T02:18:49.244Z",
+  "generatedAt": "2026-04-24T21:53:03.393Z",
   "products": [
     {
       "uuid": "prod-005",
@@ -62,7 +62,7 @@
       "descricao": "Refrigerante Coca-Cola tradicional em lata de 350ml, gelado e pronto para acompanhar seu pedido.",
       "preco": 6,
       "desconto": 0,
-      "foto": "/images/uploads/product-prod-006.jpg",
+      "foto": "/images/uploads/product-prod-006.png",
       "categoria": "Bebidas",
       "vendas": 1,
       "ativo": true
@@ -73,7 +73,7 @@
       "descricao": "Refrigerante Coca-Cola Zero em lata de 350ml, sem acucar e com o sabor classico que combina com qualquer refeicao.",
       "preco": 6,
       "desconto": 0,
-      "foto": "/images/uploads/product-prod-007.webp",
+      "foto": "/images/uploads/product-prod-007.png",
       "categoria": "Bebidas",
       "vendas": 0,
       "ativo": true
@@ -84,7 +84,7 @@
       "descricao": "Refrigerante Guarana Antarctica tradicional em lata de 350ml, gelado e ideal para acompanhar seu lanche.",
       "preco": 5,
       "desconto": 0,
-      "foto": "/images/uploads/product-prod-008.webp",
+      "foto": "/images/uploads/product-prod-008.png",
       "categoria": "Bebidas",
       "vendas": 2,
       "ativo": true
@@ -95,7 +95,62 @@
       "descricao": "Refrigerante Guarana Antarctica Zero em lata de 350ml, sem acucar e com o sabor leve e refrescante.",
       "preco": 7,
       "desconto": 0,
-      "foto": "/images/uploads/product-prod-009.webp",
+      "foto": "/images/uploads/product-prod-009.png",
+      "categoria": "Bebidas",
+      "vendas": 0,
+      "ativo": true
+    },
+    {
+      "uuid": "3af735aa-5962-4236-bab3-80091bc36ba7",
+      "nome": "Suco de Acerola",
+      "descricao": "Suco de acerola natural, feito na hora, com um toque cítrico intenso e refrescante, perfeito pra quem gosta de sabor mais vibrante.",
+      "preco": 7,
+      "desconto": 0,
+      "foto": "/images/uploads/product-3af735aa-5962-4236-bab3-80091bc36ba7.png",
+      "categoria": "Bebidas",
+      "vendas": 0,
+      "ativo": true
+    },
+    {
+      "uuid": "d27de8d0-24e6-4ca8-ac46-88dede4bc882",
+      "nome": "Suco de Acerola com Laranja",
+      "descricao": "Suco natural de acerola com laranja, feito na hora, combinando o azedinho da acerola com a doçura da laranja em uma mistura equilibrada e super refrescante.",
+      "preco": 7.5,
+      "desconto": 0,
+      "foto": "/images/uploads/product-d27de8d0-24e6-4ca8-ac46-88dede4bc882.png",
+      "categoria": "Bebidas",
+      "vendas": 0,
+      "ativo": false
+    },
+    {
+      "uuid": "145d557b-4c6e-4c63-9b7f-97abb1ccd25b",
+      "nome": "Suco de Goiaba",
+      "descricao": "Suco de goiaba natural, preparado na hora, com textura suave e sabor marcante, equilibrando doçura e frescor em cada gole.",
+      "preco": 8,
+      "desconto": 0,
+      "foto": "/images/uploads/product-145d557b-4c6e-4c63-9b7f-97abb1ccd25b.png",
+      "categoria": "Bebidas",
+      "vendas": 0,
+      "ativo": false
+    },
+    {
+      "uuid": "cb448eb5-f631-4491-afd2-59e4ffe5902b",
+      "nome": "Suco de Laranja",
+      "descricao": "Suco de laranja natural, espremido na hora, refrescante e cheio de sabor, feito com frutas selecionadas para garantir aquele gostinho cítrico perfeito do começo ao fim.",
+      "preco": 7,
+      "desconto": 0,
+      "foto": "/images/uploads/product-cb448eb5-f631-4491-afd2-59e4ffe5902b.png",
+      "categoria": "Bebidas",
+      "vendas": 0,
+      "ativo": false
+    },
+    {
+      "uuid": "c4987ec1-7c42-440a-af08-382f3270d978",
+      "nome": "Suco de Manga",
+      "descricao": "Suco de manga natural, feito na hora com fruta madura e cremosa, trazendo um sabor doce e encorpado que refresca e satisfaz a cada gole.",
+      "preco": 8,
+      "desconto": 0,
+      "foto": "/images/uploads/product-c4987ec1-7c42-440a-af08-382f3270d978.png",
       "categoria": "Bebidas",
       "vendas": 0,
       "ativo": true
@@ -152,7 +207,7 @@
       "descricao": "Refrigerante Coca-Cola tradicional em lata de 350ml, gelado e pronto para acompanhar seu pedido.",
       "preco": 6,
       "desconto": 0,
-      "foto": "/images/uploads/product-prod-006.jpg",
+      "foto": "/images/uploads/product-prod-006.png",
       "categoria": "Bebidas",
       "vendas": 1,
       "ativo": true
@@ -163,7 +218,7 @@
       "descricao": "Refrigerante Coca-Cola Zero em lata de 350ml, sem acucar e com o sabor classico que combina com qualquer refeicao.",
       "preco": 6,
       "desconto": 0,
-      "foto": "/images/uploads/product-prod-007.webp",
+      "foto": "/images/uploads/product-prod-007.png",
       "categoria": "Bebidas",
       "vendas": 0,
       "ativo": true
@@ -174,7 +229,7 @@
       "descricao": "Refrigerante Guarana Antarctica tradicional em lata de 350ml, gelado e ideal para acompanhar seu lanche.",
       "preco": 5,
       "desconto": 0,
-      "foto": "/images/uploads/product-prod-008.webp",
+      "foto": "/images/uploads/product-prod-008.png",
       "categoria": "Bebidas",
       "vendas": 2,
       "ativo": true
@@ -185,7 +240,29 @@
       "descricao": "Refrigerante Guarana Antarctica Zero em lata de 350ml, sem acucar e com o sabor leve e refrescante.",
       "preco": 7,
       "desconto": 0,
-      "foto": "/images/uploads/product-prod-009.webp",
+      "foto": "/images/uploads/product-prod-009.png",
+      "categoria": "Bebidas",
+      "vendas": 0,
+      "ativo": true
+    },
+    {
+      "uuid": "3af735aa-5962-4236-bab3-80091bc36ba7",
+      "nome": "Suco de Acerola",
+      "descricao": "Suco de acerola natural, feito na hora, com um toque cítrico intenso e refrescante, perfeito pra quem gosta de sabor mais vibrante.",
+      "preco": 7,
+      "desconto": 0,
+      "foto": "/images/uploads/product-3af735aa-5962-4236-bab3-80091bc36ba7.png",
+      "categoria": "Bebidas",
+      "vendas": 0,
+      "ativo": true
+    },
+    {
+      "uuid": "c4987ec1-7c42-440a-af08-382f3270d978",
+      "nome": "Suco de Manga",
+      "descricao": "Suco de manga natural, feito na hora com fruta madura e cremosa, trazendo um sabor doce e encorpado que refresca e satisfaz a cada gole.",
+      "preco": 8,
+      "desconto": 0,
+      "foto": "/images/uploads/product-c4987ec1-7c42-440a-af08-382f3270d978.png",
       "categoria": "Bebidas",
       "vendas": 0,
       "ativo": true
@@ -202,7 +279,19 @@
       "categoria": "Batatas Recheadas 400g",
       "vendas": 4,
       "ativo": true,
-      "sold_count": 4
+      "sold_count": 7
+    },
+    {
+      "uuid": "prod-001",
+      "nome": "Batata Recheada De Carne Com Cheddar E Doritos",
+      "descricao": "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
+      "preco": 28.9,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-001.jpeg",
+      "categoria": "Batatas Recheadas 400g",
+      "vendas": 2,
+      "ativo": true,
+      "sold_count": 5
     },
     {
       "uuid": "prod-002",
@@ -215,18 +304,6 @@
       "vendas": 6,
       "ativo": true,
       "sold_count": 4
-    },
-    {
-      "uuid": "prod-001",
-      "nome": "Batata Recheada De Carne Com Cheddar E Doritos",
-      "descricao": "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
-      "preco": 28.9,
-      "desconto": 0,
-      "foto": "/images/uploads/product-prod-001.jpeg",
-      "categoria": "Batatas Recheadas 400g",
-      "vendas": 2,
-      "ativo": true,
-      "sold_count": 3
     }
   ],
   "combos": [

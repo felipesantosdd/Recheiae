@@ -14,7 +14,10 @@ import {
   formatPrice,
   calculateCartItemUnitPrice,
   getBusinessHoursStatus,
+  getNextOpeningInfo,
+  formatScheduleDateTime,
   normalizeStoreSettings,
+  parseDeliveryMinutes,
 } from '@/utils/calculations';
 import { api } from '@/lib/api';
 import {
@@ -49,15 +52,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { ArrowLeft, Check, ChevronsUpDown, MessageCircle, ShoppingBag, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -76,7 +70,6 @@ export default function CheckoutPage() {
   const [loadingPM, setLoadingPM] = useState(true);
   const [loadingCep, setLoadingCep] = useState(false);
   const [bairroOpen, setBairroOpen] = useState(false);
-  const [hoursAlertOpen, setHoursAlertOpen] = useState(false);
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
@@ -112,6 +105,18 @@ export default function CheckoutPage() {
   const total = calculateTotal(items, deliveryFee, paymentFee);
   const normalizedStoreSettings = normalizeStoreSettings(settings);
   const businessHoursStatus = getBusinessHoursStatus(normalizedStoreSettings.businessHours);
+  const scheduledOpeningInfo = getNextOpeningInfo(
+    normalizedStoreSettings.businessHours,
+    new Date(),
+    parseDeliveryMinutes(normalizedStoreSettings.deliveryTime),
+  );
+  const scheduledOrder = !businessHoursStatus.isOpen && scheduledOpeningInfo
+    ? {
+        opensAtLabel: formatScheduleDateTime(scheduledOpeningInfo.opensAt),
+        deliveryAtLabel: formatScheduleDateTime(scheduledOpeningInfo.deliveryAt),
+        deliveryMinutes: scheduledOpeningInfo.deliveryMinutes,
+      }
+    : null;
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -176,11 +181,6 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (!businessHoursStatus.isOpen) {
-      setHoursAlertOpen(true);
-      return;
-    }
-
     const orderNumber = generateOrderNumber();
     const message = generateWhatsAppMessage({
       orderNumber,
@@ -192,11 +192,16 @@ export default function CheckoutPage() {
       totalDiscount,
       total,
       settings,
+      scheduledOrder,
     });
     const whatsappLink = generateWhatsAppLink(message, settings);
 
     window.open(whatsappLink, '_blank');
-    toast.success(`Pedido #${orderNumber} enviado!`);
+    toast.success(
+      scheduledOrder
+        ? `Pedido #${orderNumber} agendado para ${scheduledOrder.deliveryAtLabel}!`
+        : `Pedido #${orderNumber} enviado!`,
+    );
     clearCart();
     navigate('/');
   };
@@ -229,11 +234,12 @@ export default function CheckoutPage() {
       <h1 className="text-2xl font-bold text-foreground mb-6">Finalizar Pedido</h1>
 
       {!businessHoursStatus.isOpen && (
-        <Card className="mb-6 border-destructive/30 bg-destructive/5">
+        <Card className="mb-6 border-primary/30 bg-primary/5">
           <CardContent className="p-4">
-            <p className="text-sm font-semibold text-foreground">Loja fechada no momento</p>
+            <p className="text-sm font-semibold text-foreground">Loja fechada: pedido sera agendado</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Estamos aceitando pedidos apenas nestes horarios:
+              Voce pode enviar o pedido agora. Ele ficara agendado para quando abrirmos
+              {scheduledOrder ? `, com entrega prevista para ${scheduledOrder.deliveryAtLabel}.` : '.'}
             </p>
             <p className="mt-1 whitespace-pre-line text-sm text-muted-foreground">
               {normalizedStoreSettings.businessHours}
@@ -451,9 +457,9 @@ export default function CheckoutPage() {
             </CardContent>
           </Card>
 
-          <Button type="submit" size="lg" className="w-full md:hidden" disabled={!businessHoursStatus.isOpen}>
+          <Button type="submit" size="lg" className="w-full md:hidden">
             <MessageCircle className="h-4 w-4" />
-            {businessHoursStatus.isOpen ? 'Enviar Pedido pelo WhatsApp' : 'Pedidos fora do horario'}
+            {businessHoursStatus.isOpen ? 'Enviar Pedido pelo WhatsApp' : 'Agendar Pedido pelo WhatsApp'}
           </Button>
         </form>
 
@@ -523,28 +529,14 @@ export default function CheckoutPage() {
                 <span className="text-foreground">{formatPrice(total)}</span>
               </div>
 
-              <Button size="lg" className="w-full hidden md:flex mt-2" onClick={handleSubmit} disabled={!businessHoursStatus.isOpen}>
+              <Button size="lg" className="w-full hidden md:flex mt-2" onClick={handleSubmit}>
                 <MessageCircle className="h-4 w-4" />
-                {businessHoursStatus.isOpen ? 'Enviar pelo WhatsApp' : 'Pedidos fora do horario'}
+                {businessHoursStatus.isOpen ? 'Enviar pelo WhatsApp' : 'Agendar pelo WhatsApp'}
               </Button>
             </CardContent>
           </Card>
         </div>
       </div>
-
-      <AlertDialog open={hoursAlertOpen} onOpenChange={setHoursAlertOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Pedidos indisponiveis agora</AlertDialogTitle>
-            <AlertDialogDescription className="whitespace-pre-line">
-              {`Estamos fora do horario de funcionamento. Voce podera fazer pedidos nestes horarios:\n${normalizedStoreSettings.businessHours}`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setHoursAlertOpen(false)}>Entendi</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
