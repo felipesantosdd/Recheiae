@@ -21,41 +21,36 @@ export function generateGoogleMapsLink(endereco, numero, bairro) {
 }
 
 export function generateWhatsAppMessage({
-  orderNumber,
   customer,
   items,
   subtotal,
   deliveryFee,
   paymentFee = 0,
   totalDiscount,
+  manualDiscount = 0,
+  giftItems = [],
   total,
-  settings,
   scheduledOrder = null,
 }) {
-  const storeSettings = normalizeStoreSettings(settings);
   const paymentFeeDetails = getPaymentFeeDetails(customer.formaPagamento);
   const now = new Date();
   const dateStr = now.toLocaleDateString('pt-BR');
   const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-  let msg = scheduledOrder ? `#### PEDIDO AGENDADO ####\n\n` : `#### NOVO PEDIDO ####\n\n`;
-  msg += `#\ufe0f\u20e3 N\u00ba pedido: ${orderNumber}\n`;
-  msg += `feito em ${dateStr} ${timeStr}\n\n`;
+  let msg = `${scheduledOrder ? 'PEDIDO AGENDADO' : 'NOVO PEDIDO'}\n`;
+  msg += `${dateStr} as ${timeStr}\n\n`;
   if (scheduledOrder) {
-    msg += `\u26a0\ufe0f Pedido feito fora do horario de atendimento.\n`;
-    msg += `Restaurante abre em: ${scheduledOrder.opensAtLabel}\n`;
-    msg += `Entrega prevista: ${scheduledOrder.deliveryAtLabel}\n\n`;
+    msg += `Agendado: loja abre em ${scheduledOrder.opensAtLabel}\n\n`;
   }
-  msg += `\ud83d\udc64 ${customer.nome}\n`;
-  msg += `\ud83d\udcde ${customer.telefone}\n\n`;
-  msg += `\ud83d\udef5 Endere\u00e7o de entrega\n`;
-  msg += `${customer.endereco}, ${customer.numero}\n`;
-  msg += `Bairro: ${customer.bairro}\n`;
+  msg += `Cliente: ${customer.nome}\n`;
+  msg += `Telefone: ${customer.telefone}\n\n`;
+  msg += `Entrega:\n`;
+  msg += `${customer.endereco}, ${customer.numero} - ${customer.bairro}\n`;
   if (customer.complemento) {
-    msg += `(${customer.complemento})\n`;
+    msg += `Compl.: ${customer.complemento}\n`;
   }
   msg += `\n`;
-  msg += `------- ITENS DO PEDIDO -------\n\n`;
+  msg += `Itens:\n`;
 
   items.forEach(item => {
     const basePrice = item.basePriceOverride ?? (item.originalPrice * (1 - (item.discount || 0) / 100));
@@ -64,36 +59,41 @@ export function generateWhatsAppMessage({
     const lineTotal = unitPrice * item.quantity;
     msg += `*${item.quantity} x ${item.name}*\n`;
     if (item.addons?.length) {
-      msg += `Adicionais do item:\n`;
       item.addons.forEach((addon) => {
         msg += `- ${formatAddonName(addon)} (+R$ ${formatBRL(addon.price ?? addon.preco ?? 0)})\n`;
       });
     }
     if (item.notes) {
-      msg += `Observacoes do item: ${item.notes}\n`;
+      msg += `Obs.: ${item.notes}\n`;
     }
-    msg += `\ud83d\udcb5 ${item.quantity} x R$ ${formatBRL(unitPrice)} = R$ ${formatBRL(lineTotal)}\n\n`;
+    msg += `R$ ${formatBRL(lineTotal)}\n\n`;
   });
 
-  msg += `-------------------------------\n\n`;
-  msg += `SUBTOTAL: R$ ${formatBRL(subtotal)}\n`;
-  msg += `FRETE: R$ ${formatBRL(deliveryFee)}\n`;
+  msg += `Resumo:\n`;
+  msg += `Subtotal: R$ ${formatBRL(subtotal)}\n`;
+  msg += `Frete: R$ ${formatBRL(deliveryFee)}\n`;
   if (paymentFee > 0) {
     msg += `${paymentFeeDetails.label}: R$ ${formatBRL(paymentFee)}\n`;
   }
+  if (manualDiscount > 0) {
+    msg += `Desconto manual: R$ ${formatBRL(manualDiscount)}\n`;
+  }
   if (totalDiscount > 0) {
-    msg += `DESCONTOS: R$ ${formatBRL(totalDiscount)}\n`;
+    msg += `Descontos: R$ ${formatBRL(totalDiscount)}\n`;
   }
-  msg += `*VALOR FINAL: R$ ${formatBRL(total)}*\n\n`;
-  msg += `PAGAMENTO\n`;
-  msg += `*${customer.formaPagamento}*: R$ ${formatBRL(total)}\n\n`;
+  msg += `*Total: R$ ${formatBRL(total)}*\n\n`;
+
+  if (giftItems.length > 0) {
+    msg += `Brindes:\n`;
+    giftItems.forEach((gift) => {
+      msg += `- ${gift.quantity}x ${gift.name}\n`;
+    });
+    msg += `\n`;
+  }
+
+  msg += `Pagamento: ${customer.formaPagamento}`;
   if (customer.observacoes) {
-    msg += `\ud83d\udcdd Observacoes gerais do pedido: ${customer.observacoes}\n\n`;
-  }
-  if (scheduledOrder) {
-    msg += `\ud83d\udd50 Pedido agendado para entrega: ${scheduledOrder.deliveryAtLabel}`;
-  } else {
-    msg += `\ud83d\udd50 Prazo para entrega: ${storeSettings.deliveryTime}`;
+    msg += `\nObs. geral: ${customer.observacoes}`;
   }
 
   return msg;

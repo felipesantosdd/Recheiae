@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-24T22:45:49.936Z",
+  "generatedAt": "2026-04-25T21:24:39.221Z",
   "products": [
     {
       "uuid": "prod-005",
@@ -82,7 +82,7 @@
       "uuid": "prod-008",
       "nome": "Guarana Antarctica Lata 350ml",
       "descricao": "Refrigerante Guarana Antarctica tradicional em lata de 350ml, gelado e ideal para acompanhar seu lanche.",
-      "preco": 5,
+      "preco": 6,
       "desconto": 0,
       "foto": "/images/uploads/product-prod-008.png",
       "categoria": "Bebidas",
@@ -93,7 +93,7 @@
       "uuid": "prod-009",
       "nome": "Guarana Antarctica Zero Lata 350ml",
       "descricao": "Refrigerante Guarana Antarctica Zero em lata de 350ml, sem acucar e com o sabor leve e refrescante.",
-      "preco": 7,
+      "preco": 6,
       "desconto": 0,
       "foto": "/images/uploads/product-prod-009.png",
       "categoria": "Bebidas",
@@ -115,23 +115,23 @@
       "uuid": "d27de8d0-24e6-4ca8-ac46-88dede4bc882",
       "nome": "Suco de Acerola com Laranja",
       "descricao": "Suco natural de acerola com laranja, feito na hora, combinando o azedinho da acerola com a doçura da laranja em uma mistura equilibrada e super refrescante.",
-      "preco": 7.5,
+      "preco": 7,
       "desconto": 0,
       "foto": "/images/uploads/product-d27de8d0-24e6-4ca8-ac46-88dede4bc882.png",
       "categoria": "Bebidas",
       "vendas": 0,
-      "ativo": false
+      "ativo": true
     },
     {
       "uuid": "145d557b-4c6e-4c63-9b7f-97abb1ccd25b",
       "nome": "Suco de Goiaba",
       "descricao": "Suco de goiaba natural, preparado na hora, com textura suave e sabor marcante, equilibrando doçura e frescor em cada gole.",
-      "preco": 8,
+      "preco": 7,
       "desconto": 0,
       "foto": "/images/uploads/product-145d557b-4c6e-4c63-9b7f-97abb1ccd25b.png",
       "categoria": "Bebidas",
       "vendas": 0,
-      "ativo": false
+      "ativo": true
     },
     {
       "uuid": "cb448eb5-f631-4491-afd2-59e4ffe5902b",
@@ -142,13 +142,13 @@
       "foto": "/images/uploads/product-cb448eb5-f631-4491-afd2-59e4ffe5902b.png",
       "categoria": "Bebidas",
       "vendas": 0,
-      "ativo": false
+      "ativo": true
     },
     {
       "uuid": "c4987ec1-7c42-440a-af08-382f3270d978",
       "nome": "Suco de Manga",
       "descricao": "Suco de manga natural, feito na hora com fruta madura e cremosa, trazendo um sabor doce e encorpado que refresca e satisfaz a cada gole.",
-      "preco": 8,
+      "preco": 7,
       "desconto": 0,
       "foto": "/images/uploads/product-c4987ec1-7c42-440a-af08-382f3270d978.png",
       "categoria": "Bebidas",
@@ -227,7 +227,7 @@
       "uuid": "prod-008",
       "nome": "Guarana Antarctica Lata 350ml",
       "descricao": "Refrigerante Guarana Antarctica tradicional em lata de 350ml, gelado e ideal para acompanhar seu lanche.",
-      "preco": 5,
+      "preco": 6,
       "desconto": 0,
       "foto": "/images/uploads/product-prod-008.png",
       "categoria": "Bebidas",
@@ -238,7 +238,7 @@
       "uuid": "prod-009",
       "nome": "Guarana Antarctica Zero Lata 350ml",
       "descricao": "Refrigerante Guarana Antarctica Zero em lata de 350ml, sem acucar e com o sabor leve e refrescante.",
-      "preco": 7,
+      "preco": 6,
       "desconto": 0,
       "foto": "/images/uploads/product-prod-009.png",
       "categoria": "Bebidas",
@@ -257,10 +257,43 @@
       "ativo": true
     },
     {
+      "uuid": "d27de8d0-24e6-4ca8-ac46-88dede4bc882",
+      "nome": "Suco de Acerola com Laranja",
+      "descricao": "Suco natural de acerola com laranja, feito na hora, combinando o azedinho da acerola com a doçura da laranja em uma mistura equilibrada e super refrescante.",
+      "preco": 7,
+      "desconto": 0,
+      "foto": "/images/uploads/product-d27de8d0-24e6-4ca8-ac46-88dede4bc882.png",
+      "categoria": "Bebidas",
+      "vendas": 0,
+      "ativo": true
+    },
+    {
+      "uuid": "145d557b-4c6e-4c63-9b7f-97abb1ccd25b",
+      "nome": "Suco de Goiaba",
+      "descricao": "Suco de goiaba natural, preparado na hora, com textura suave e sabor marcante, equilibrando doçura e frescor em cada gole.",
+      "preco": 7,
+      "desconto": 0,
+      "foto": "/images/uploads/product-145d557b-4c6e-4c63-9b7f-97abb1ccd25b.png",
+      "categoria": "Bebidas",
+      "vendas": 0,
+      "ativo": true
+    },
+    {
+      "uuid": "cb448eb5-f631-4491-afd2-59e4ffe5902b",
+      "nome": "Suco de Laranja",
+      "descricao": "Suco de laranja natural, espremido na hora, refrescante e cheio de sabor, feito com frutas selecionadas para garantir aquele gostinho cítrico perfeito do começo ao fim.",
+      "preco": 7,
+      "desconto": 0,
+      "foto": "/images/uploads/product-cb448eb5-f631-4491-afd2-59e4ffe5902b.png",
+      "categoria": "Bebidas",
+      "vendas": 0,
+      "ativo": true
+    },
+    {
       "uuid": "c4987ec1-7c42-440a-af08-382f3270d978",
       "nome": "Suco de Manga",
       "descricao": "Suco de manga natural, feito na hora com fruta madura e cremosa, trazendo um sabor doce e encorpado que refresca e satisfaz a cada gole.",
-      "preco": 8,
+      "preco": 7,
       "desconto": 0,
       "foto": "/images/uploads/product-c4987ec1-7c42-440a-af08-382f3270d978.png",
       "categoria": "Bebidas",
@@ -279,7 +312,7 @@
       "categoria": "Batatas Recheadas 400g",
       "vendas": 4,
       "ativo": true,
-      "sold_count": 7
+      "sold_count": 10
     },
     {
       "uuid": "prod-001",
@@ -291,7 +324,7 @@
       "categoria": "Batatas Recheadas 400g",
       "vendas": 2,
       "ativo": true,
-      "sold_count": 5
+      "sold_count": 6
     },
     {
       "uuid": "prod-002",
@@ -303,7 +336,7 @@
       "categoria": "Batatas Recheadas 400g",
       "vendas": 6,
       "ativo": true,
-      "sold_count": 4
+      "sold_count": 6
     }
   ],
   "combos": [

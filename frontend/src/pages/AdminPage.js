@@ -1002,10 +1002,22 @@ export default function AdminPage() {
   };
 
   const parseWhatsappOrders = (rawText) => {
-    const blocks = rawText
-      .split(/####\s*NOVO PEDIDO\s*####/i)
-      .map((block) => block.trim())
-      .filter(Boolean);
+    const text = String(rawText || '').trim();
+    if (!text) {
+      return { orders: [], total: 0, productCounts: {}, parsedDate: '' };
+    }
+
+    const headingRegex = /^(?:####\s*NOVO PEDIDO\s*####|PEDIDO AGENDADO|NOVO PEDIDO)$/gim;
+    const matches = [...text.matchAll(headingRegex)];
+    const blocks = matches.length > 0
+      ? matches.map((match, index) => {
+          const start = match.index ?? 0;
+          const end = index + 1 < matches.length
+            ? (matches[index + 1].index ?? text.length)
+            : text.length;
+          return text.slice(start, end).trim();
+        }).filter(Boolean)
+      : [text];
 
     const orders = blocks.map((block) => {
       const lines = block
@@ -1013,11 +1025,18 @@ export default function AdminPage() {
         .map((line) => line.trim())
         .filter(Boolean);
 
-      const finalLine = lines.find((line) => /^VALOR FINAL:/i.test(line));
-      const paymentLine = lines.find((line) => /^(Pix|Dinheiro|Cart[aã]o|Cr[eé]dito|D[eé]bito)/i.test(line));
-      const itemLines = lines.filter((line) => /^\d+\s*x\s+/i.test(line));
-      const orderNumberLine = lines.find((line) => /N[ºo]\s*pedido:/i.test(line));
-      const createdAtLine = lines.find((line) => /^feito em /i.test(line));
+      const finalLine = lines.find((line) => /^(VALOR FINAL|Total):/i.test(line));
+      const freightLine = lines.find((line) => /^FRETE:/i.test(line));
+      const paymentLine = lines.find((line) => (
+        /^Pagamento:/i.test(line)
+        || /^(Pix|Dinheiro|Cart[aã]o|Cr[eé]dito|D[eé]bito)/i.test(line)
+      ));
+      const itemLines = lines.filter((line) => /^\d+\s*x\s+.+/i.test(line) && !/R\$\s*/i.test(line));
+      const orderNumberLine = lines.find((line) => (/N[ºo°]?\s*pedido:/i.test(line) || /^Pedido\s*n[ºo°]/i.test(line)));
+      const createdAtLine = lines.find((line) => (
+        /^feito em /i.test(line)
+        || /^\d{2}\/\d{2}\/\d{4}\s+as\s+\d{2}:\d{2}$/i.test(line)
+      ));
 
       const items = itemLines.map((line) => {
         const match = line.match(/^(\d+)\s*x\s+(.+)$/i);
@@ -1028,16 +1047,35 @@ export default function AdminPage() {
         };
       }).filter(Boolean);
 
+      const total = parseCurrencyText(finalLine);
+      const freight = parseCurrencyText(freightLine);
+      const parsedPaymentMethod = paymentLine
+        ? (/^Pagamento:/i.test(paymentLine)
+            ? paymentLine.replace(/^Pagamento:\s*/i, '').trim()
+            : paymentLine.split(':')[0].trim())
+        : 'WhatsApp';
+
       return {
-        orderNumber: orderNumberLine ? orderNumberLine.replace(/.*:\s*/i, '').trim() : '',
-        createdAt: createdAtLine ? createdAtLine.replace(/^feito em\s*/i, '').trim() : '',
-        total: parseCurrencyText(finalLine),
-        paymentMethod: paymentLine ? paymentLine.split(':')[0].trim() : 'WhatsApp',
+        orderNumber: orderNumberLine
+          ? orderNumberLine
+              .replace(/^Pedido\s*n[ºo°]\s*/i, '')
+              .replace(/.*:\s*/i, '')
+              .trim()
+          : '',
+        createdAt: createdAtLine
+          ? createdAtLine
+              .replace(/^feito em\s*/i, '')
+              .trim()
+          : '',
+        total,
+        freight,
+        netTotal: Math.max(0, total - freight),
+        paymentMethod: parsedPaymentMethod || 'WhatsApp',
         items,
       };
     }).filter((order) => order.total > 0);
 
-    const total = orders.reduce((acc, order) => acc + order.total, 0);
+    const total = orders.reduce((acc, order) => acc + order.netTotal, 0);
     const productCounts = {};
     const firstOrderDate = orders.find((order) => /\d{2}\/\d{2}\/\d{4}/.test(order.createdAt || ''))?.createdAt || '';
     const parsedDateMatch = firstOrderDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);

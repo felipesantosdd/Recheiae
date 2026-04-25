@@ -5,8 +5,21 @@ import { ProductCard } from '@/components/menu/ProductCard';
 import { ComboCard } from '@/components/menu/ComboCard';
 import { api } from '@/lib/api';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Search, Package, Loader2 } from 'lucide-react';
 import { useStoreSettings } from '@/context/StoreSettingsContext';
+import { toast } from 'sonner';
+
+const FIRST_ORDER_MODAL_DISMISSED_KEY = 'recheiae-first-order-modal-dismissed';
+const DEV_FIRST_ORDER_TEST_ENABLED = process.env.NODE_ENV !== 'production';
 
 export default function MenuPage() {
   const { normalizedSettings } = useStoreSettings();
@@ -17,10 +30,20 @@ export default function MenuPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
+  const [showFirstOrderModal, setShowFirstOrderModal] = useState(false);
   const sectionRefs = useRef({});
 
   useEffect(() => {
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    const orderCount = parseInt(localStorage.getItem('recheiae-order-counter') || '0', 10);
+    const dismissed = localStorage.getItem(FIRST_ORDER_MODAL_DISMISSED_KEY) === '1';
+
+    if (orderCount === 0 && !dismissed) {
+      setShowFirstOrderModal(true);
+    }
   }, []);
 
   const fetchData = async () => {
@@ -95,6 +118,18 @@ export default function MenuPage() {
     }
   };
 
+  const handleCloseFirstOrderModal = () => {
+    localStorage.setItem(FIRST_ORDER_MODAL_DISMISSED_KEY, '1');
+    setShowFirstOrderModal(false);
+  };
+
+  const enableFirstOrderTestMode = () => {
+    localStorage.setItem('recheiae-order-counter', '0');
+    localStorage.removeItem(FIRST_ORDER_MODAL_DISMISSED_KEY);
+    setShowFirstOrderModal(true);
+    toast.success('Modo de teste preparado para primeira compra');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -105,7 +140,53 @@ export default function MenuPage() {
 
   return (
     <div className="pb-28 md:pb-8">
+      <Dialog open={showFirstOrderModal} onOpenChange={(open) => !open && handleCloseFirstOrderModal()}>
+        <DialogContent className="max-w-[360px] overflow-hidden border-0 bg-transparent p-0 shadow-none">
+          <div className="relative overflow-hidden rounded-3xl bg-card">
+            <img
+              src="/images/first-order-free-drink.jpeg"
+              alt="Bebida gratis no primeiro pedido"
+              className="h-auto w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/10" />
+            <div className="absolute inset-x-0 bottom-0 p-4">
+              <div className="rounded-2xl bg-black/72 p-4 backdrop-blur-[2px]">
+                <DialogHeader className="text-left">
+                  <DialogTitle className="text-lg font-bold leading-tight text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.45)]">
+                    Bebida gratis no primeiro pedido
+                  </DialogTitle>
+                  <DialogDescription className="text-sm leading-relaxed text-white/90">
+                    Escolha sua bebida de brinde no checkout antes de finalizar.
+                  </DialogDescription>
+                </DialogHeader>
+                <Button className="mt-4 w-full" onClick={handleCloseFirstOrderModal}>
+                  Entendi
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <HeroBanner />
+
+      {DEV_FIRST_ORDER_TEST_ENABLED && (
+        <div className="max-w-6xl mx-auto px-4 mt-5">
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Modo de teste: primeira compra</p>
+                <p className="text-sm text-muted-foreground">
+                  Prepara o sistema para mostrar o modal de bebida gratis e liberar a escolha no checkout.
+                </p>
+              </div>
+              <Button type="button" onClick={enableFirstOrderTestMode}>
+                Primeiro pedido
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Search */}
       <div className="max-w-6xl mx-auto px-4 mt-5">

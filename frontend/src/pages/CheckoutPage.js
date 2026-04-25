@@ -56,10 +56,29 @@ import { ArrowLeft, Check, ChevronsUpDown, MessageCircle, ShoppingBag, Loader2 }
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
+const DEV_ORDER_TOOLS_ENABLED = process.env.NODE_ENV !== 'production';
+const FIRST_ORDER_MODAL_DISMISSED_KEY = 'recheiae-first-order-modal-dismissed';
+
 function formatCep(value) {
   const digits = value.replace(/\D/g, '').slice(0, 8);
   if (digits.length <= 5) return digits;
   return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+}
+
+function toMoneyInput(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  const cents = Number(digits || '0');
+  return (cents / 100).toFixed(2).replace('.', ',');
+}
+
+function parseMoneyInput(value) {
+  if (!value) return 0;
+  const normalized = String(value)
+    .replace(/\s/g, '')
+    .replace(/\./g, '')
+    .replace(',', '.');
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 const CHECKOUT_DRAFT_STORAGE_KEY = 'recheiae-checkout-draft';
@@ -94,6 +113,12 @@ export default function CheckoutPage() {
   const [loadingCep, setLoadingCep] = useState(false);
   const [bairroOpen, setBairroOpen] = useState(false);
   const [formData, setFormData] = useState(loadCheckoutDraft);
+  const [giftProducts, setGiftProducts] = useState([]);
+  const [devDiscountInput, setDevDiscountInput] = useState('0,00');
+  const [devGiftProductId, setDevGiftProductId] = useState('');
+  const [devGiftQuantity, setDevGiftQuantity] = useState('1');
+  const [devGiftItems, setDevGiftItems] = useState([]);
+  const [isFirstOrderCustomer, setIsFirstOrderCustomer] = useState(false);
 
   useEffect(() => {
     api.get('/payment-methods')
@@ -110,6 +135,25 @@ export default function CheckoutPage() {
   }, []);
 
   useEffect(() => {
+    const orderCount = parseInt(localStorage.getItem('recheiae-order-counter') || '0', 10);
+    setIsFirstOrderCustomer(orderCount === 0);
+  }, []);
+
+  useEffect(() => {
+    if (!DEV_ORDER_TOOLS_ENABLED && !isFirstOrderCustomer) return;
+    api.get('/products')
+      .then((res) => {
+        const bebidas = (res.data || []).filter(
+          (product) => product.ativo && String(product.categoria || '').toLowerCase() === 'bebidas',
+        );
+        setGiftProducts(bebidas);
+      })
+      .catch(() => {
+        setGiftProducts([]);
+      });
+  }, [isFirstOrderCustomer]);
+
+  useEffect(() => {
     localStorage.setItem(CHECKOUT_DRAFT_STORAGE_KEY, JSON.stringify(formData));
   }, [formData]);
 
@@ -119,7 +163,9 @@ export default function CheckoutPage() {
   const deliveryFee = calculateDeliveryFee(formData.bairro);
   const paymentFeeDetails = getPaymentFeeDetails(formData.formaPagamento);
   const paymentFee = calculatePaymentFee(formData.formaPagamento);
-  const total = calculateTotal(items, deliveryFee, paymentFee);
+  const manualDiscount = DEV_ORDER_TOOLS_ENABLED ? parseMoneyInput(devDiscountInput) : 0;
+  const totalBeforeDevAdjustments = calculateTotal(items, deliveryFee, paymentFee);
+  const total = Math.max(0, totalBeforeDevAdjustments - manualDiscount);
   const normalizedStoreSettings = normalizeStoreSettings(settings);
   const businessHoursStatus = getBusinessHoursStatus(normalizedStoreSettings.businessHours);
   const scheduledOpeningInfo = getNextOpeningInfo(
@@ -135,8 +181,61 @@ export default function CheckoutPage() {
       }
     : null;
 
+  const canManageGiftDrinks = DEV_ORDER_TOOLS_ENABLED || isFirstOrderCustomer;
+  const giftSectionTitle = isFirstOrderCustomer ? 'Bebida gratis do primeiro pedido' : 'Bebida de brinde';
+  const canEditGiftQuantity = DEV_ORDER_TOOLS_ENABLED;
+
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleAddGiftItem = () => {
+    if (!canManageGiftDrinks) return;
+
+    const product = giftProducts.find((item) => item.uuid === devGiftProductId);
+    const quantity = canEditGiftQuantity
+      ? Math.max(1, parseInt(devGiftQuantity || '1', 10) || 1)
+      : 1;
+
+    if (!product) {
+      toast.error('Selecione uma bebida para brinde');
+      return;
+    }
+
+    setDevGiftItems((prev) => {
+      if (!canEditGiftQuantity) {
+        return [{
+          id: product.uuid,
+          name: product.nome,
+          quantity: 1,
+        }];
+      }
+
+      const existing = prev.find((item) => item.id === product.uuid);
+      if (existing) {
+        return prev.map((item) => (
+          item.id === product.uuid
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        ));
+      }
+
+      return [
+        ...prev,
+        {
+          id: product.uuid,
+          name: product.nome,
+          quantity,
+        },
+      ];
+    });
+
+    setDevGiftProductId('');
+    setDevGiftQuantity('1');
+  };
+
+  const handleRemoveGiftItem = (giftId) => {
+    setDevGiftItems((prev) => prev.filter((item) => item.id !== giftId));
   };
 
   const lookupCep = async (cepValue = formData.cep) => {
@@ -207,6 +306,8 @@ export default function CheckoutPage() {
       deliveryFee,
       paymentFee,
       totalDiscount,
+      manualDiscount,
+      giftItems: devGiftItems,
       total,
       settings,
       scheduledOrder,
@@ -219,6 +320,7 @@ export default function CheckoutPage() {
         ? `Pedido #${orderNumber} agendado para ${scheduledOrder.deliveryAtLabel}!`
         : `Pedido #${orderNumber} enviado!`,
     );
+    localStorage.removeItem(FIRST_ORDER_MODAL_DISMISSED_KEY);
     clearCart();
     navigate('/');
   };
@@ -474,6 +576,90 @@ export default function CheckoutPage() {
             </CardContent>
           </Card>
 
+          {canManageGiftDrinks && (
+            <Card>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-base">
+                  {DEV_ORDER_TOOLS_ENABLED && !isFirstOrderCustomer ? 'Ajustes do Pedido (Dev)' : giftSectionTitle}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {DEV_ORDER_TOOLS_ENABLED && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="devDiscount" className="text-sm">Desconto manual</Label>
+                    <Input
+                      id="devDiscount"
+                      inputMode="numeric"
+                      value={devDiscountInput}
+                      onChange={(e) => setDevDiscountInput(toMoneyInput(e.target.value))}
+                      placeholder="0,00"
+                      className="bg-card"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Digite em centavos. Ex.: 500 vira 5,00.
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <Label className="text-sm">{giftSectionTitle}</Label>
+                  <div className={cn('grid gap-2', canEditGiftQuantity ? 'sm:grid-cols-[1fr_100px_auto]' : 'sm:grid-cols-[1fr_auto]')}>
+                    <Select value={devGiftProductId} onValueChange={setDevGiftProductId}>
+                      <SelectTrigger className="bg-card">
+                        <SelectValue placeholder="Selecione uma bebida" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {giftProducts.map((product) => (
+                          <SelectItem key={product.uuid} value={product.uuid}>
+                            {product.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {canEditGiftQuantity && (
+                      <Input
+                        inputMode="numeric"
+                        value={devGiftQuantity}
+                        onChange={(e) => setDevGiftQuantity(e.target.value.replace(/\D/g, '') || '1')}
+                        className="bg-card"
+                      />
+                    )}
+
+                    <Button type="button" variant="outline" onClick={handleAddGiftItem}>
+                      {canEditGiftQuantity ? 'Adicionar' : 'Escolher'}
+                    </Button>
+                  </div>
+                  {isFirstOrderCustomer && (
+                    <p className="text-xs text-muted-foreground">
+                      Cliente em primeiro pedido: escolha apenas 1 bebida gratis antes de finalizar.
+                    </p>
+                  )}
+                </div>
+
+                {devGiftItems.length > 0 && (
+                  <div className="space-y-2 rounded-lg border border-border p-3">
+                    {devGiftItems.map((gift) => (
+                      <div key={gift.id} className="flex items-center justify-between gap-3 text-sm">
+                        <span className="text-foreground">
+                          {gift.quantity}x {gift.name}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="h-auto px-2 py-1 text-xs"
+                          onClick={() => handleRemoveGiftItem(gift.id)}
+                        >
+                          Remover
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           <Button type="submit" size="lg" className="w-full md:hidden">
             <MessageCircle className="h-4 w-4" />
             {businessHoursStatus.isOpen ? 'Enviar Pedido pelo WhatsApp' : 'Agendar Pedido pelo WhatsApp'}
@@ -532,10 +718,26 @@ export default function CheckoutPage() {
                   <span className="text-foreground">{formatPrice(paymentFee)}</span>
                 </div>
               )}
+              {DEV_ORDER_TOOLS_ENABLED && manualDiscount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-success">DESCONTO MANUAL</span>
+                  <span className="text-success">-{formatPrice(manualDiscount)}</span>
+                </div>
+              )}
               {totalDiscount > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-success">DESCONTOS</span>
                   <span className="text-success">-{formatPrice(totalDiscount)}</span>
+                </div>
+              )}
+              {devGiftItems.length > 0 && (
+                <div className="space-y-1 rounded-lg bg-muted/40 p-3 text-sm">
+                  <p className="font-medium text-foreground">Brindes</p>
+                  {devGiftItems.map((gift) => (
+                    <p key={gift.id} className="text-muted-foreground">
+                      {gift.quantity}x {gift.name}
+                    </p>
+                  ))}
                 </div>
               )}
 

@@ -1,4 +1,4 @@
-export const STORE_CONFIG = {
+﻿export const STORE_CONFIG = {
   nome: 'Recheiae',
   whatsapp: '5535998160726',
   cidade: 'Itajuba - MG',
@@ -427,16 +427,9 @@ export function getPaymentFeeDetails(paymentMethod = '') {
   const normalized = normalizeText(paymentMethod);
   if (normalized.includes('CREDITO') || normalized.includes('DEBITO')) {
     return {
-      amount: 2,
+      amount: 4,
       label: 'TAXA ENTREGA/MAQUININHA',
-      description: 'Pagamentos no crédito e débito têm taxa adicional de entrega e maquininha.',
-    };
-  }
-  if (normalized.includes('DINHEIRO')) {
-    return {
-      amount: 2,
-      label: 'TAXA ENTREGA',
-      description: 'Pagamentos em dinheiro têm taxa adicional de entrega.',
+      description: 'Pagamentos no crÃ©dito e dÃ©bito tÃªm taxa adicional de entrega e maquininha.',
     };
   }
   return {
@@ -461,3 +454,4 @@ export function formatPrice(value) {
   }
   return Number(value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
+
