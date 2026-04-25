@@ -144,7 +144,17 @@ export default function CheckoutPage() {
     api.get('/products')
       .then((res) => {
         const bebidas = (res.data || []).filter(
-          (product) => product.ativo && String(product.categoria || '').toLowerCase() === 'bebidas',
+          (product) => {
+            const nome = String(product.nome || '').toLowerCase();
+            const categoria = String(product.categoria || '').toLowerCase();
+            return (
+              product.ativo
+              && categoria === 'bebidas'
+              && nome.includes('lata')
+              && !nome.includes('combo')
+              && !nome.includes('suco')
+            );
+          },
         );
         setGiftProducts(bebidas);
       })
