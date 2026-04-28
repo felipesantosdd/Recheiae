@@ -171,11 +171,11 @@ export default function CheckoutPage() {
   const totalDiscount = calculateTotalDiscount(items);
   const deliveryRule = getNeighborhoodDeliveryRule(formData.bairro);
   const deliveryFee = calculateDeliveryFee(formData.bairro);
-  const paymentFeeDetails = getPaymentFeeDetails(formData.formaPagamento);
-  const paymentFee = calculatePaymentFee(formData.formaPagamento);
   const manualDiscount = DEV_ORDER_TOOLS_ENABLED ? parseMoneyInput(devDiscountInput) : 0;
-  const totalBeforeDevAdjustments = calculateTotal(items, deliveryFee, paymentFee);
-  const total = Math.max(0, totalBeforeDevAdjustments - manualDiscount);
+  const amountBeforePaymentFee = Math.max(0, subtotal + deliveryFee - manualDiscount);
+  const paymentFeeDetails = getPaymentFeeDetails(formData.formaPagamento, amountBeforePaymentFee);
+  const paymentFee = calculatePaymentFee(formData.formaPagamento, amountBeforePaymentFee);
+  const total = calculateTotal(items, deliveryFee, paymentFee) - manualDiscount;
   const normalizedStoreSettings = normalizeStoreSettings(settings);
   const businessHoursStatus = getBusinessHoursStatus(normalizedStoreSettings.businessHours);
   const scheduledOpeningInfo = getNextOpeningInfo(

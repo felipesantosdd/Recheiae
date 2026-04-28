@@ -248,6 +248,7 @@ class StoreSettingsUpdate(BaseModel):
     promotion_product_uuid: Optional[str] = None
     promotion_price: Optional[float] = None
     promotion_active: Optional[bool] = None
+    receivable_reset_day: Optional[int] = None
 
 class CashEntryCreate(BaseModel):
     tipo: str
@@ -265,6 +266,11 @@ class CashEntryUpdate(BaseModel):
     valor: Optional[float] = None
     forma_pagamento: Optional[str] = None
     data_lancamento: Optional[str] = None
+    observacao: Optional[str] = None
+
+class ReceivableWithdrawalCreate(BaseModel):
+    valor: float
+    data_saque: Optional[str] = None
     observacao: Optional[str] = None
 
 class StockItemCreate(BaseModel):
@@ -335,7 +341,8 @@ def init_db():
         business_hours TEXT NOT NULL,
         promotion_product_uuid TEXT,
         promotion_price REAL,
-        promotion_active INTEGER DEFAULT 0
+        promotion_active INTEGER DEFAULT 0,
+        receivable_reset_day INTEGER DEFAULT 15
     )''')
     existing_columns = {
         row['name']
@@ -347,6 +354,8 @@ def init_db():
         cur.execute("ALTER TABLE store_settings ADD COLUMN promotion_price REAL")
     if 'promotion_active' not in existing_columns:
         cur.execute("ALTER TABLE store_settings ADD COLUMN promotion_active INTEGER DEFAULT 0")
+    if 'receivable_reset_day' not in existing_columns:
+        cur.execute("ALTER TABLE store_settings ADD COLUMN receivable_reset_day INTEGER DEFAULT 15")
     cur.execute('''CREATE TABLE IF NOT EXISTS cash_entries (
         uuid TEXT PRIMARY KEY,
         tipo TEXT NOT NULL,
@@ -371,6 +380,13 @@ def init_db():
         product_uuid TEXT NOT NULL,
         stock_item_uuid TEXT NOT NULL,
         quantidade_utilizada REAL NOT NULL
+    )''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS receivable_withdrawals (
+        uuid TEXT PRIMARY KEY,
+        valor REAL NOT NULL,
+        data_saque TEXT NOT NULL,
+        observacao TEXT,
+        created_at TEXT NOT NULL
     )''')
     conn.commit()
     cur.execute("SELECT COUNT(*) as cnt FROM products")
@@ -419,8 +435,8 @@ def seed_store_settings(conn):
         """
         INSERT INTO store_settings (
             id, whatsapp, delivery_time, business_hours,
-            promotion_product_uuid, promotion_price, promotion_active
-        ) VALUES (1, ?, ?, ?, ?, ?, ?)
+            promotion_product_uuid, promotion_price, promotion_active, receivable_reset_day
+        ) VALUES (1, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             "5535998160726",
@@ -429,6 +445,7 @@ def seed_store_settings(conn):
             "prod-001",
             24.90,
             1,
+            15,
         ),
     )
     conn.commit()
@@ -441,7 +458,7 @@ def seed_data(conn):
         ("prod-002", "Batata Recheada De Strogonoff De Frango", "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!", 23.90, 10, "/images/products/batata-strogonoff-frango.jpeg", "Batatas Recheadas 400g", 0, 1),
         ("prod-003", "Batata Recheada De Frango Com Catupiry", "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.", 25.90, 10, "/images/products/batata-frango-catupiry.jpeg", "Batatas Recheadas 400g", 0, 1),
         ("prod-004", "Batata Recheada De Sabor Pizza", "Batata quentinha, feita na hora e carregada de sabor. Presunto e queijo super cremoso, tomate, finalizacao com mussarela, Doritos e cream cheese. E aquela batata forte, bem servida e sem miseria, pra quem gosta de comer de verdade.", 28.90, 10, "/images/products/batata-sabor-pizza.jpeg", "Batatas Recheadas 400g", 0, 1),
-        ("prod-005", "Batata Recheada De Brocolis Com Queijo", "Batata recheada feita na hora, bem caprichada e cheia de sabor. Brocolis temperadinho com queijo cremoso derretendo, combinacao que voce nem sabia que precisava. Mais leve? Talvez. Mas sem miseria? Nunca.", 22.90, 10, "/images/products/batata-brocolis-queijo.jpeg", "Batatas Recheadas 400g", 0, 1),
+        ("prod-005", "Batata Recheada De Brocolis Com Queijo", "Batata recheada feita na hora, bem caprichada e cheia de sabor. Brocolis temperadinho com queijo cremoso derretendo, combinacao que voce nem sabia que precisava. Mais leve? Talvez. Mas sem miseria? Nunca.", 22.90, 10, "/images/products/batata-brocolis-queijo.jpeg", "Batatas Recheadas 400g", 1, 1),
         ("prod-006", "Coca-Cola Lata 350ml", "Refrigerante Coca-Cola tradicional em lata de 350ml, gelado e pronto para acompanhar seu pedido.", 7.00, 0, None, "Bebidas", 0, 1),
         ("prod-007", "Coca-Cola Zero Lata 350ml", "Refrigerante Coca-Cola Zero em lata de 350ml, sem acucar e com o sabor classico que combina com qualquer refeicao.", 7.00, 0, None, "Bebidas", 0, 1),
         ("prod-008", "Guarana Antarctica Lata 350ml", "Refrigerante Guarana Antarctica tradicional em lata de 350ml, gelado e ideal para acompanhar seu lanche.", 7.00, 0, None, "Bebidas", 0, 1),
@@ -576,7 +593,8 @@ def get_store_settings():
             business_hours,
             promotion_product_uuid,
             promotion_price,
-            promotion_active
+            promotion_active,
+            receivable_reset_day
         FROM store_settings
         WHERE id = 1
         """
@@ -590,6 +608,7 @@ def get_store_settings():
             "promotion_product_uuid": "prod-001",
             "promotion_price": 24.90,
             "promotion_active": 1,
+            "receivable_reset_day": 15,
         }
     return dict(row)
 
@@ -821,6 +840,7 @@ def update_store_settings(settings: StoreSettingsUpdate):
         "promotion_product_uuid": None,
         "promotion_price": None,
         "promotion_active": 0,
+        "receivable_reset_day": 15,
     }
     if existing:
         row = conn.execute(
@@ -831,7 +851,8 @@ def update_store_settings(settings: StoreSettingsUpdate):
                 business_hours,
                 promotion_product_uuid,
                 promotion_price,
-                promotion_active
+                promotion_active,
+                receivable_reset_day
             FROM store_settings
             WHERE id = 1
             """
@@ -848,7 +869,8 @@ def update_store_settings(settings: StoreSettingsUpdate):
                 business_hours = ?,
                 promotion_product_uuid = ?,
                 promotion_price = ?,
-                promotion_active = ?
+                promotion_active = ?,
+                receivable_reset_day = ?
             WHERE id = 1
             """,
             (
@@ -858,6 +880,7 @@ def update_store_settings(settings: StoreSettingsUpdate):
                 payload["promotion_product_uuid"],
                 payload["promotion_price"],
                 1 if payload["promotion_active"] else 0,
+                payload["receivable_reset_day"] or 15,
             ),
         )
     else:
@@ -865,8 +888,8 @@ def update_store_settings(settings: StoreSettingsUpdate):
             """
             INSERT INTO store_settings (
                 id, whatsapp, delivery_time, business_hours,
-                promotion_product_uuid, promotion_price, promotion_active
-            ) VALUES (1, ?, ?, ?, ?, ?, ?)
+                promotion_product_uuid, promotion_price, promotion_active, receivable_reset_day
+            ) VALUES (1, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 payload["whatsapp"],
@@ -875,6 +898,7 @@ def update_store_settings(settings: StoreSettingsUpdate):
                 payload["promotion_product_uuid"],
                 payload["promotion_price"],
                 1 if payload["promotion_active"] else 0,
+                payload["receivable_reset_day"] or 15,
             ),
         )
     conn.commit()
@@ -886,7 +910,8 @@ def update_store_settings(settings: StoreSettingsUpdate):
             business_hours,
             promotion_product_uuid,
             promotion_price,
-            promotion_active
+            promotion_active,
+            receivable_reset_day
         FROM store_settings
         WHERE id = 1
         """
@@ -904,6 +929,54 @@ def get_cash_entries():
     ).fetchall()
     conn.close()
     return [row_to_dict(r) for r in rows]
+
+@api_router.get("/admin/receivable-withdrawals")
+def get_receivable_withdrawals():
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT * FROM receivable_withdrawals ORDER BY data_saque DESC, created_at DESC"
+    ).fetchall()
+    conn.close()
+    return [row_to_dict(r) for r in rows]
+
+@api_router.post("/admin/receivable-withdrawals")
+def create_receivable_withdrawal(withdrawal: ReceivableWithdrawalCreate):
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    new_uuid = str(uuid_lib.uuid4())
+    now_iso = datetime.now().isoformat(timespec='seconds')
+    data_saque = withdrawal.data_saque or now_iso[:10]
+    conn.execute(
+        """
+        INSERT INTO receivable_withdrawals (
+            uuid, valor, data_saque, observacao, created_at
+        ) VALUES (?, ?, ?, ?, ?)
+        """,
+        (
+            new_uuid,
+            withdrawal.valor,
+            data_saque,
+            withdrawal.observacao,
+            now_iso,
+        ),
+    )
+    conn.commit()
+    row = conn.execute("SELECT * FROM receivable_withdrawals WHERE uuid = ?", (new_uuid,)).fetchone()
+    conn.close()
+    return row_to_dict(row)
+
+@api_router.delete("/admin/receivable-withdrawals/{withdrawal_uuid}")
+def delete_receivable_withdrawal(withdrawal_uuid: str):
+    if not IS_DEVELOPMENT:
+        raise HTTPException(status_code=403, detail="Admin not available in production")
+    conn = get_db()
+    conn.execute("DELETE FROM receivable_withdrawals WHERE uuid = ?", (withdrawal_uuid,))
+    conn.commit()
+    conn.close()
+    return {"message": "Receivable withdrawal deleted"}
 
 @api_router.post("/admin/imports/ifood-report")
 async def import_ifood_report(file: UploadFile = File(...)):

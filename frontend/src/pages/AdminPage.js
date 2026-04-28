@@ -96,6 +96,7 @@ const emptySettings = {
   promotion_product_uuid: '',
   promotion_price: '',
   promotion_active: true,
+  receivable_reset_day: '15',
 };
 
 const emptyCashEntry = {
@@ -115,6 +116,7 @@ const cashCategories = [
   'insumo',
   'embalagem',
   'marketing',
+  'investimento inicial',
   'outros',
 ];
 
@@ -150,6 +152,45 @@ const emptyConfirmDialog = {
   onConfirm: null,
 };
 
+const emptyReceivableWithdrawal = {
+  valor: '',
+  data_saque: new Date().toISOString().slice(0, 10),
+  observacao: '',
+};
+
+const parseDisplayDate = (value) => {
+  const match = String(value || '').match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if (!match) return null;
+  return `${match[3]}-${match[2]}-${match[1]}`;
+};
+
+const isRetainedPaymentMethod = (value) => {
+  const normalized = normalizeCatalogText(value)
+    .replace(/\?/g, '')
+    .replace(/[^a-z0-9\s]/g, '');
+
+  return (
+    normalized.includes('credito')
+    || normalized.includes('debito')
+    || normalized.includes('cartao')
+    || normalized.includes('maquininha')
+    || /cr.?dito/.test(normalized)
+    || /d.?bito/.test(normalized)
+  );
+};
+
+const startOfReceivableCycle = (resetDay) => {
+  const today = new Date();
+  const safeResetDay = Math.min(28, Math.max(1, Number(resetDay) || 15));
+  const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), safeResetDay);
+
+  if (today >= currentMonthStart) {
+    return currentMonthStart.toISOString().slice(0, 10);
+  }
+
+  return new Date(today.getFullYear(), today.getMonth() - 1, safeResetDay).toISOString().slice(0, 10);
+};
+
 export default function AdminPage() {
   const { setSettings: setGlobalSettings, refreshSettings } = useStoreSettings();
   const [products, setProducts] = useState([]);
@@ -157,6 +198,7 @@ export default function AdminPage() {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [addons, setAddons] = useState([]);
   const [cashEntries, setCashEntries] = useState([]);
+  const [receivableWithdrawals, setReceivableWithdrawals] = useState([]);
   const [stockItems, setStockItems] = useState([]);
   const [productRecipes, setProductRecipes] = useState([]);
   const [settings, setSettings] = useState({ ...emptySettings });
@@ -165,6 +207,7 @@ export default function AdminPage() {
   const [savingCombo, setSavingCombo] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [savingCash, setSavingCash] = useState(false);
+  const [savingReceivableWithdrawal, setSavingReceivableWithdrawal] = useState(false);
   const [savingIfoodImport, setSavingIfoodImport] = useState(false);
   const [savingWhatsappImport, setSavingWhatsappImport] = useState(false);
   const [savingStock, setSavingStock] = useState(false);
@@ -174,6 +217,7 @@ export default function AdminPage() {
   const [comboDialog, setComboDialog] = useState(false);
   const [pmDialog, setPmDialog] = useState(false);
   const [cashDialog, setCashDialog] = useState(false);
+  const [receivableDialog, setReceivableDialog] = useState(false);
   const [ifoodImportDialog, setIfoodImportDialog] = useState(false);
   const [whatsappImportDialog, setWhatsappImportDialog] = useState(false);
   const [stockDialog, setStockDialog] = useState(false);
@@ -192,6 +236,7 @@ export default function AdminPage() {
   const [pmForm, setPmForm] = useState({ nome: '', ativo: true });
   const [addonForm, setAddonForm] = useState({ ...emptyAddon });
   const [cashForm, setCashForm] = useState({ ...emptyCashEntry });
+  const [receivableForm, setReceivableForm] = useState({ ...emptyReceivableWithdrawal });
   const [stockForm, setStockForm] = useState({ ...emptyStockItem });
   const [recipeForm, setRecipeForm] = useState({ ...emptyRecipeForm });
   const [recipeStockSearch, setRecipeStockSearch] = useState('');
@@ -199,6 +244,7 @@ export default function AdminPage() {
   const [cashTypeFilter, setCashTypeFilter] = useState('todos');
   const [cashDateFrom, setCashDateFrom] = useState('');
   const [cashDateTo, setCashDateTo] = useState('');
+  const [showInitialInvestments, setShowInitialInvestments] = useState(true);
   const [expandedCashEntries, setExpandedCashEntries] = useState({});
   const [ifoodImportForm, setIfoodImportForm] = useState({ ...emptyIfoodImport });
   const [ifoodImportFile, setIfoodImportFile] = useState(null);
@@ -212,6 +258,9 @@ export default function AdminPage() {
 
   const filteredCashEntries = useMemo(() => {
     return cashEntries.filter((entry) => {
+      if (!showInitialInvestments && entry.categoria === 'investimento inicial') {
+        return false;
+      }
       if (cashTypeFilter !== 'todos' && entry.tipo !== cashTypeFilter) {
         return false;
       }
@@ -224,7 +273,7 @@ export default function AdminPage() {
       }
       return true;
     });
-  }, [cashEntries, cashTypeFilter, cashDateFrom, cashDateTo]);
+  }, [cashEntries, cashTypeFilter, cashDateFrom, cashDateTo, showInitialInvestments]);
 
   const cashSummary = useMemo(() => {
     return filteredCashEntries.reduce((acc, entry) => {
@@ -254,6 +303,55 @@ export default function AdminPage() {
       return acc;
     }, { ifood: 0, whatsapp: 0 });
   }, [filteredCashEntries]);
+
+  const receivableSummary = useMemo(() => {
+    const cycleStart = startOfReceivableCycle(settings.receivable_reset_day);
+    const today = new Date().toISOString().slice(0, 10);
+
+    const ifood = cashEntries.reduce((acc, entry) => {
+      if (
+        entry.tipo === 'entrada'
+        && entry.descricao === 'Vendas iFood'
+        && String(entry.data_lancamento || '').slice(0, 10) >= cycleStart
+        && String(entry.data_lancamento || '').slice(0, 10) <= today
+      ) {
+        return acc + (Number(entry.valor) || 0);
+      }
+      return acc;
+    }, 0);
+
+    const card = cashEntries.reduce((acc, entry) => {
+      if (entry.descricao !== 'Vendas WhatsApp') return acc;
+      const parsedObservation = parseCashObservation(entry.observacao);
+      const batches = parsedObservation.metadata?.batches || [];
+      return acc + batches.reduce((batchAcc, batch) => {
+        return batchAcc + (batch.orders || []).reduce((orderAcc, order) => {
+          const orderDate = parseDisplayDate(order.createdAt) || batch.date || String(entry.data_lancamento || '').slice(0, 10);
+          const paymentMethod = order.paymentMethod || '';
+          if (!isRetainedPaymentMethod(paymentMethod) || orderDate < cycleStart || orderDate > today) {
+            return orderAcc;
+          }
+          return orderAcc + (Number(order.total) || 0);
+        }, 0);
+      }, 0);
+    }, 0);
+
+    const withdrawn = receivableWithdrawals.reduce((acc, withdrawal) => {
+      const withdrawalDate = String(withdrawal.data_saque || '').slice(0, 10);
+      if (withdrawalDate >= cycleStart && withdrawalDate <= today) {
+        return acc + (Number(withdrawal.valor) || 0);
+      }
+      return acc;
+    }, 0);
+
+    return {
+      cycleStart,
+      ifood,
+      card,
+      withdrawn,
+      total: Math.max(0, ifood + card - withdrawn),
+    };
+  }, [cashEntries, receivableWithdrawals, settings.receivable_reset_day]);
 
   const groupedCashEntries = useMemo(() => {
     return filteredCashEntries.reduce((groups, entry) => {
@@ -551,13 +649,14 @@ export default function AdminPage() {
 
   const fetchAll = async () => {
     try {
-      const [pRes, cRes, pmRes, addonRes, settingsRes, cashRes, stockRes, recipeRes] = await Promise.all([
+      const [pRes, cRes, pmRes, addonRes, settingsRes, cashRes, receivableRes, stockRes, recipeRes] = await Promise.all([
         api.get('/products/all'),
         api.get('/combos/all'),
         api.get('/payment-methods/all'),
         api.get('/addons/all'),
         api.get('/settings'),
         api.get('/admin/cash-entries'),
+        api.get('/admin/receivable-withdrawals'),
         api.get('/admin/stock-items'),
         api.get('/admin/product-recipes'),
       ]);
@@ -566,6 +665,7 @@ export default function AdminPage() {
       setPaymentMethods(pmRes.data);
       setAddons(addonRes.data);
       setCashEntries(cashRes.data);
+      setReceivableWithdrawals(receivableRes.data);
       setStockItems(stockRes.data);
       setProductRecipes(recipeRes.data);
       setSettings({
@@ -577,6 +677,7 @@ export default function AdminPage() {
         promotion_active: typeof settingsRes.data?.promotion_active === 'boolean'
           ? settingsRes.data.promotion_active
           : Boolean(settingsRes.data?.promotion_active),
+        receivable_reset_day: String(settingsRes.data?.receivable_reset_day || 15),
       });
     } catch (e) {
       toast.error('Erro ao carregar dados');
@@ -976,6 +1077,59 @@ export default function AdminPage() {
           toast.error('Erro ao remover lancamento');
         }
       },
+      });
+  };
+
+  const openReceivableDialog = () => {
+    setReceivableForm({
+      ...emptyReceivableWithdrawal,
+      data_saque: new Date().toISOString().slice(0, 10),
+    });
+    setReceivableDialog(true);
+  };
+
+  const saveReceivableWithdrawal = async () => {
+    const withdrawalValue = parseMoneyInput(receivableForm.valor);
+    if (withdrawalValue <= 0) {
+      toast.error('Informe um valor valido para o saque');
+      return;
+    }
+    if (withdrawalValue > receivableSummary.total) {
+      toast.error('O saque nao pode ser maior que o valor a receber');
+      return;
+    }
+    try {
+      setSavingReceivableWithdrawal(true);
+      await api.post('/admin/receivable-withdrawals', {
+        valor: withdrawalValue,
+        data_saque: receivableForm.data_saque || new Date().toISOString().slice(0, 10),
+        observacao: receivableForm.observacao.trim(),
+      });
+      setReceivableDialog(false);
+      toast.success('Saque registrado no contas a receber');
+      fetchAll();
+    } catch (error) {
+      toast.error('Erro ao registrar saque');
+    } finally {
+      setSavingReceivableWithdrawal(false);
+    }
+  };
+
+  const deleteReceivableWithdrawal = async (withdrawalUuid) => {
+    openConfirmDialog({
+      title: 'Remover saque',
+      description: 'Esse saque sera removido do contas a receber.',
+      actionLabel: 'Remover',
+      tone: 'destructive',
+      onConfirm: async () => {
+        try {
+          await api.delete(`/admin/receivable-withdrawals/${withdrawalUuid}`);
+          toast.success('Saque removido!');
+          fetchAll();
+        } catch (error) {
+          toast.error('Erro ao remover saque');
+        }
+      },
     });
   };
 
@@ -1286,6 +1440,7 @@ export default function AdminPage() {
           ? parseMoneyInput(settings.promotion_price)
           : null,
         promotion_active: Boolean(settings.promotion_active && settings.promotion_product_uuid && settings.promotion_price),
+        receivable_reset_day: Math.min(28, Math.max(1, parseInt(settings.receivable_reset_day || '15', 10) || 15)),
       };
       await api.put('/admin/settings', payload);
       setGlobalSettings({
@@ -1618,14 +1773,21 @@ export default function AdminPage() {
                   <Input type="date" value={cashDateTo} onChange={e => setCashDateTo(e.target.value)} />
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => { setCashTypeFilter('todos'); setCashDateFrom(''); setCashDateTo(''); }}>
-                  Limpar filtros
-                </Button>
-                <Button variant="outline" onClick={openIfoodImport}>
-                  <Upload className="h-4 w-4" />
-                  Importar iFood
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => { setCashTypeFilter('todos'); setCashDateFrom(''); setCashDateTo(''); }}>
+                    Limpar filtros
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowInitialInvestments(prev => !prev)}
+                  >
+                    {showInitialInvestments ? 'Ocultar investimento inicial' : 'Mostrar investimento inicial'}
+                  </Button>
+                  <Button variant="outline" onClick={openIfoodImport}>
+                    <Upload className="h-4 w-4" />
+                    Importar iFood
+                  </Button>
                 <Button variant="outline" onClick={openWhatsappImport}>
                   <Upload className="h-4 w-4" />
                   Importar WhatsApp
@@ -1670,22 +1832,31 @@ export default function AdminPage() {
               </Card>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-2">
-              <Card>
-                <CardContent className="p-3">
-                  <p className="text-xs text-muted-foreground">Vendas iFood</p>
-                  <p className="mt-1 text-base font-bold text-foreground">{formatPrice(channelSalesSummary.ifood)}</p>
-                </CardContent>
+              <div className="grid gap-3 md:grid-cols-3">
+                <Card>
+                  <CardContent className="p-3">
+                    <p className="text-xs text-muted-foreground">Vendas iFood</p>
+                    <p className="mt-1 text-base font-bold text-foreground">{formatPrice(channelSalesSummary.ifood)}</p>
+                  </CardContent>
               </Card>
               <Card>
-                <CardContent className="p-3">
-                  <p className="text-xs text-muted-foreground">Vendas WhatsApp</p>
-                  <p className="mt-1 text-base font-bold text-foreground">{formatPrice(channelSalesSummary.whatsapp)}</p>
-                </CardContent>
-              </Card>
-            </div>
+                  <CardContent className="p-3">
+                    <p className="text-xs text-muted-foreground">Vendas WhatsApp</p>
+                    <p className="mt-1 text-base font-bold text-foreground">{formatPrice(channelSalesSummary.whatsapp)}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent
+                    className="cursor-pointer p-3 transition-colors hover:bg-muted/40"
+                    onClick={openReceivableDialog}
+                  >
+                    <p className="text-xs text-muted-foreground">Contas a receber</p>
+                    <p className="mt-1 text-base font-bold text-foreground">{formatPrice(receivableSummary.total)}</p>
+                  </CardContent>
+                </Card>
+              </div>
 
-            <div className="space-y-2">
+              <div className="space-y-2">
               {filteredCashEntries.length === 0 && (
                 <Card>
                   <CardContent className="p-6 text-sm text-muted-foreground text-center">
@@ -1738,20 +1909,34 @@ export default function AdminPage() {
                   placeholder="40 min"
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-sm">Horarios</Label>
-                <Textarea
-                  value={settings.business_hours}
-                  onChange={e => setSettings(prev => ({ ...prev, business_hours: e.target.value }))}
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Horarios</Label>
+                  <Textarea
+                    value={settings.business_hours}
+                    onChange={e => setSettings(prev => ({ ...prev, business_hours: e.target.value }))}
                   placeholder={"Seg a Sex: 18:00 - 23:00\nSab e Dom: 17:00 - 00:00"}
                   rows={4}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Use uma linha para cada horario que deve aparecer no footer.
-                </p>
-              </div>
-              <div className="flex justify-end">
-                <Button onClick={saveSettings} disabled={savingSettings}>
+                  <p className="text-xs text-muted-foreground">
+                    Use uma linha para cada horario que deve aparecer no footer.
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Dia de reset do contas a receber</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="28"
+                    value={settings.receivable_reset_day}
+                    onChange={e => setSettings(prev => ({ ...prev, receivable_reset_day: e.target.value }))}
+                    placeholder="15"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Todo ciclo novo comeca nesse dia do mes para iFood e maquininha.
+                  </p>
+                </div>
+                <div className="flex justify-end">
+                  <Button onClick={saveSettings} disabled={savingSettings}>
                   {savingSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                   Salvar configuracoes
                 </Button>
@@ -2327,6 +2512,87 @@ export default function AdminPage() {
             <Button onClick={saveCashEntry} disabled={savingCash}>
               {savingCash ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={receivableDialog} onOpenChange={setReceivableDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Sacar contas a receber</DialogTitle>
+            <DialogDescription>
+              Registre quando uma parte do saldo retido do iFood ou da maquininha cair para voce.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="rounded-md border border-border bg-muted/30 p-3">
+              <p className="text-xs text-muted-foreground">Disponivel no ciclo atual</p>
+              <p className="mt-1 text-lg font-bold text-foreground">{formatPrice(receivableSummary.total)}</p>
+              <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                <p>iFood: {formatPrice(receivableSummary.ifood)}</p>
+                <p>Maquininha: {formatPrice(receivableSummary.card)}</p>
+                <p>Saques no ciclo: {formatPrice(receivableSummary.withdrawn)}</p>
+                <p>Ciclo atual desde: {receivableSummary.cycleStart}</p>
+                <p>Fechamento: dia {settings.receivable_reset_day || '15'} de cada mes</p>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">Valor</Label>
+              <Input
+                inputMode="numeric"
+                value={receivableForm.valor}
+                onChange={e => setReceivableForm(prev => ({ ...prev, valor: formatMoneyInput(e.target.value) }))}
+                placeholder="0,00"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">Data do saque</Label>
+              <Input
+                type="date"
+                value={receivableForm.data_saque}
+                onChange={e => setReceivableForm(prev => ({ ...prev, data_saque: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">Observacao</Label>
+              <Textarea
+                value={receivableForm.observacao}
+                onChange={e => setReceivableForm(prev => ({ ...prev, observacao: e.target.value }))}
+                rows={3}
+                placeholder="Ex.: repasse Mercado Pago"
+              />
+            </div>
+            {receivableWithdrawals.length > 0 && (
+              <div className="space-y-2 rounded-md border border-border p-3">
+                <p className="text-sm font-medium text-foreground">Ultimos saques</p>
+                {receivableWithdrawals.slice(0, 5).map((withdrawal) => (
+                  <div key={withdrawal.uuid} className="flex items-center justify-between gap-3 rounded-md border border-border p-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground">{formatPrice(withdrawal.valor)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {String(withdrawal.data_saque || '').slice(0, 10)}
+                        {withdrawal.observacao ? ` • ${withdrawal.observacao}` : ''}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive"
+                      onClick={() => deleteReceivableWithdrawal(withdrawal.uuid)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReceivableDialog(false)}>Cancelar</Button>
+            <Button onClick={saveReceivableWithdrawal} disabled={savingReceivableWithdrawal}>
+              {savingReceivableWithdrawal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Registrar saque
             </Button>
           </DialogFooter>
         </DialogContent>
