@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Plus, Pencil, Trash2, Loader2, Save, CreditCard, Wallet, ArrowDownCircle, ArrowUpCircle, Upload, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatPrice, calculateItemPrice } from '@/utils/calculations';
+import { formatPrice, calculateItemPrice, parseBusinessHours } from '@/utils/calculations';
 import { useStoreSettings } from '@/context/StoreSettingsContext';
 
 const formatMoneyInput = (value) => {
@@ -98,6 +98,16 @@ const emptySettings = {
   promotion_active: true,
   receivable_reset_day: '15',
 };
+
+const WEEKDAY_OPTIONS = [
+  { index: 1, key: 'seg', label: 'Segunda' },
+  { index: 2, key: 'ter', label: 'Terca' },
+  { index: 3, key: 'qua', label: 'Quarta' },
+  { index: 4, key: 'qui', label: 'Quinta' },
+  { index: 5, key: 'sex', label: 'Sexta' },
+  { index: 6, key: 'sab', label: 'Sabado' },
+  { index: 0, key: 'dom', label: 'Domingo' },
+];
 
 const emptyCashEntry = {
   tipo: 'entrada',
@@ -191,6 +201,45 @@ const startOfReceivableCycle = (resetDay) => {
   return new Date(today.getFullYear(), today.getMonth() - 1, safeResetDay).toISOString().slice(0, 10);
 };
 
+const defaultBusinessHoursByDay = () => WEEKDAY_OPTIONS.reduce((acc, day) => {
+  acc[day.key] = {
+    enabled: false,
+    start: '19:00',
+    end: '23:00',
+  };
+  return acc;
+}, {});
+
+const minutesToTime = (minutes) => {
+  const hours = String(Math.floor(minutes / 60)).padStart(2, '0');
+  const mins = String(minutes % 60).padStart(2, '0');
+  return `${hours}:${mins}`;
+};
+
+const buildBusinessHoursByDay = (businessHoursText) => {
+  const result = defaultBusinessHoursByDay();
+  const rules = parseBusinessHours(businessHoursText);
+
+  rules.forEach((rule) => {
+    rule.days.forEach((dayIndex) => {
+      const day = WEEKDAY_OPTIONS.find((item) => item.index === dayIndex);
+      if (!day) return;
+      result[day.key] = {
+        enabled: true,
+        start: minutesToTime(rule.startMinutes),
+        end: minutesToTime(rule.endMinutes),
+      };
+    });
+  });
+
+  return result;
+};
+
+const serializeBusinessHoursByDay = (scheduleByDay) => WEEKDAY_OPTIONS
+  .filter((day) => scheduleByDay?.[day.key]?.enabled)
+  .map((day) => `${day.key}: ${scheduleByDay[day.key].start} - ${scheduleByDay[day.key].end}`)
+  .join('\n');
+
 export default function AdminPage() {
   const { setSettings: setGlobalSettings, refreshSettings } = useStoreSettings();
   const [products, setProducts] = useState([]);
@@ -202,6 +251,7 @@ export default function AdminPage() {
   const [stockItems, setStockItems] = useState([]);
   const [productRecipes, setProductRecipes] = useState([]);
   const [settings, setSettings] = useState({ ...emptySettings });
+  const [businessHoursByDay, setBusinessHoursByDay] = useState(defaultBusinessHoursByDay);
   const [loading, setLoading] = useState(true);
   const [savingProduct, setSavingProduct] = useState(false);
   const [savingCombo, setSavingCombo] = useState(false);
@@ -668,10 +718,11 @@ export default function AdminPage() {
       setReceivableWithdrawals(receivableRes.data);
       setStockItems(stockRes.data);
       setProductRecipes(recipeRes.data);
+      const fetchedBusinessHours = settingsRes.data?.business_hours || '';
       setSettings({
         whatsapp: settingsRes.data?.whatsapp || '',
         delivery_time: settingsRes.data?.delivery_time || '',
-        business_hours: settingsRes.data?.business_hours || '',
+        business_hours: fetchedBusinessHours,
         promotion_product_uuid: settingsRes.data?.promotion_product_uuid || '',
         promotion_price: settingsRes.data?.promotion_price ? toMoneyInput(settingsRes.data.promotion_price) : '',
         promotion_active: typeof settingsRes.data?.promotion_active === 'boolean'
@@ -679,6 +730,7 @@ export default function AdminPage() {
           : Boolean(settingsRes.data?.promotion_active),
         receivable_reset_day: String(settingsRes.data?.receivable_reset_day || 15),
       });
+      setBusinessHoursByDay(buildBusinessHoursByDay(fetchedBusinessHours));
     } catch (e) {
       toast.error('Erro ao carregar dados');
     } finally {
@@ -1429,27 +1481,29 @@ export default function AdminPage() {
   };
 
   const saveSettings = async () => {
-    try {
-      setSavingSettings(true);
-      const payload = {
-        whatsapp: settings.whatsapp.trim(),
-        delivery_time: settings.delivery_time.trim(),
-        business_hours: settings.business_hours.trim(),
-        promotion_product_uuid: settings.promotion_product_uuid || null,
-        promotion_price: settings.promotion_product_uuid && settings.promotion_price
-          ? parseMoneyInput(settings.promotion_price)
-          : null,
+      try {
+        setSavingSettings(true);
+        const serializedBusinessHours = serializeBusinessHoursByDay(businessHoursByDay);
+        const payload = {
+          whatsapp: settings.whatsapp.trim(),
+          delivery_time: settings.delivery_time.trim(),
+          business_hours: serializedBusinessHours,
+          promotion_product_uuid: settings.promotion_product_uuid || null,
+          promotion_price: settings.promotion_product_uuid && settings.promotion_price
+            ? parseMoneyInput(settings.promotion_price)
+            : null,
         promotion_active: Boolean(settings.promotion_active && settings.promotion_product_uuid && settings.promotion_price),
         receivable_reset_day: Math.min(28, Math.max(1, parseInt(settings.receivable_reset_day || '15', 10) || 15)),
       };
-      await api.put('/admin/settings', payload);
-      setGlobalSettings({
-        ...payload,
-        promotion_price: payload.promotion_price,
-        promotion_active: payload.promotion_active,
-      });
-      refreshSettings();
-      toast.success('Configuracoes atualizadas!');
+        await api.put('/admin/settings', payload);
+        setGlobalSettings({
+          ...payload,
+          promotion_price: payload.promotion_price,
+          promotion_active: payload.promotion_active,
+        });
+        setSettings(prev => ({ ...prev, business_hours: serializedBusinessHours }));
+        refreshSettings();
+        toast.success('Configuracoes atualizadas!');
     } catch (e) {
       toast.error('Erro ao salvar configuracoes');
     } finally {
@@ -1911,14 +1965,54 @@ export default function AdminPage() {
               </div>
                 <div className="space-y-1.5">
                   <Label className="text-sm">Horarios</Label>
-                  <Textarea
-                    value={settings.business_hours}
-                    onChange={e => setSettings(prev => ({ ...prev, business_hours: e.target.value }))}
-                  placeholder={"Seg a Sex: 18:00 - 23:00\nSab e Dom: 17:00 - 00:00"}
-                  rows={4}
-                />
+                  <div className="space-y-2 rounded-md border border-border p-3">
+                    {WEEKDAY_OPTIONS.map((day) => {
+                      const daySchedule = businessHoursByDay[day.key] || { enabled: false, start: '19:00', end: '23:00' };
+                      return (
+                        <div key={day.key} className="grid grid-cols-[110px_1fr_1fr] items-center gap-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm font-medium text-foreground">{day.label}</span>
+                            <Switch
+                              checked={daySchedule.enabled}
+                              onCheckedChange={(checked) => setBusinessHoursByDay(prev => ({
+                                ...prev,
+                                [day.key]: {
+                                  ...prev[day.key],
+                                  enabled: checked,
+                                },
+                              }))}
+                            />
+                          </div>
+                          <Input
+                            type="time"
+                            value={daySchedule.start}
+                            disabled={!daySchedule.enabled}
+                            onChange={e => setBusinessHoursByDay(prev => ({
+                              ...prev,
+                              [day.key]: {
+                                ...prev[day.key],
+                                start: e.target.value,
+                              },
+                            }))}
+                          />
+                          <Input
+                            type="time"
+                            value={daySchedule.end}
+                            disabled={!daySchedule.enabled}
+                            onChange={e => setBusinessHoursByDay(prev => ({
+                              ...prev,
+                              [day.key]: {
+                                ...prev[day.key],
+                                end: e.target.value,
+                              },
+                            }))}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    Use uma linha para cada horario que deve aparecer no footer.
+                    Dias desligados ficam fechados. Fora do horario, o sistema continua enviando pedido agendado.
                   </p>
                 </div>
                 <div className="space-y-1.5">
