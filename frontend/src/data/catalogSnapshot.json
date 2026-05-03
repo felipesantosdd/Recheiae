@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-30T00:48:17.657Z",
+  "generatedAt": "2026-05-02T23:14:11.518Z",
   "products": [
     {
       "uuid": "prod-005",
@@ -323,7 +323,19 @@
       "categoria": "Batatas Recheadas 400g",
       "vendas": 6,
       "ativo": true,
-      "sold_count": 12
+      "sold_count": 13
+    },
+    {
+      "uuid": "prod-001",
+      "nome": "Batata Recheada De Carne Com Cheddar E Doritos",
+      "descricao": "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
+      "preco": 28.9,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-001.jpeg",
+      "categoria": "Batatas Recheadas 400g",
+      "vendas": 2,
+      "ativo": true,
+      "sold_count": 11
     },
     {
       "uuid": "prod-003",
@@ -336,18 +348,6 @@
       "vendas": 4,
       "ativo": true,
       "sold_count": 11
-    },
-    {
-      "uuid": "prod-001",
-      "nome": "Batata Recheada De Carne Com Cheddar E Doritos",
-      "descricao": "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
-      "preco": 28.9,
-      "desconto": 0,
-      "foto": "/images/uploads/product-prod-001.jpeg",
-      "categoria": "Batatas Recheadas 400g",
-      "vendas": 2,
-      "ativo": true,
-      "sold_count": 9
     }
   ],
   "combos": [

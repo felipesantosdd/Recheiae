@@ -86,6 +86,7 @@ const CHECKOUT_DRAFT_STORAGE_KEY = 'recheiae-checkout-draft';
 const EMPTY_CHECKOUT_FORM = {
   nome: '',
   telefone: '',
+  tipoEntrega: 'entrega',
   cep: '',
   endereco: '',
   numero: '',
@@ -170,7 +171,8 @@ export default function CheckoutPage() {
   const subtotal = calculateSubtotal(items);
   const totalDiscount = calculateTotalDiscount(items);
   const deliveryRule = getNeighborhoodDeliveryRule(formData.bairro);
-  const deliveryFee = calculateDeliveryFee(formData.bairro);
+  const isPickup = formData.tipoEntrega === 'retirada';
+  const deliveryFee = isPickup ? 0 : calculateDeliveryFee(formData.bairro);
   const manualDiscount = DEV_ORDER_TOOLS_ENABLED ? parseMoneyInput(devDiscountInput) : 0;
   const amountBeforePaymentFee = Math.max(0, subtotal + deliveryFee - manualDiscount);
   const paymentFeeDetails = getPaymentFeeDetails(formData.formaPagamento, amountBeforePaymentFee);
@@ -293,11 +295,13 @@ export default function CheckoutPage() {
     if (
       !formData.nome ||
       !formData.telefone ||
-      !formData.endereco ||
-      !formData.numero ||
-      !formData.bairro ||
       !formData.formaPagamento
     ) {
+      toast.error('Preencha todos os campos obrigatorios');
+      return;
+    }
+
+    if (!isPickup && (!formData.endereco || !formData.numero || !formData.bairro)) {
       toast.error('Preencha todos os campos obrigatorios');
       return;
     }
@@ -412,6 +416,28 @@ export default function CheckoutPage() {
               <CardTitle className="text-base">Endereco de Entrega</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <Label className="text-sm">Como deseja receber?</Label>
+                <Select
+                  value={formData.tipoEntrega}
+                  onValueChange={(value) => handleChange('tipoEntrega', value)}
+                >
+                  <SelectTrigger className="bg-card">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="entrega">Entrega</SelectItem>
+                    <SelectItem value="retirada">Retirada na loja</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {isPickup ? (
+                <div className="rounded-md border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                  Pedido marcado para retirada na loja. O frete fica zerado.
+                </div>
+              ) : (
+                <>
               <div className="space-y-1.5">
                 <Label htmlFor="cep" className="text-sm">CEP</Label>
                 <div className="flex gap-2">
@@ -534,6 +560,8 @@ export default function CheckoutPage() {
                   />
                 </div>
               </div>
+                </>
+              )}
             </CardContent>
           </Card>
 

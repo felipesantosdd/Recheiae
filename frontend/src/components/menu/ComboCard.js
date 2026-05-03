@@ -3,58 +3,74 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Plus, ImageOff } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import { formatPrice, calculateItemPrice, calculateAddonsTotal } from '@/utils/calculations';
+import { formatPrice, calculateItemPrice } from '@/utils/calculations';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+
+function isSoda(product) {
+  const nome = String(product?.nome || '').toLowerCase();
+  const categoria = String(product?.categoria || '').toLowerCase();
+  return categoria === 'bebidas' && nome.includes('lata') && !nome.includes('suco');
+}
+
+function isPotato(product) {
+  return String(product?.categoria || '').toLowerCase() !== 'bebidas';
+}
 
 export function ComboCard({ combo }) {
   const { addItem } = useCart();
   const [imgError, setImgError] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isImageZoomOpen, setIsImageZoomOpen] = useState(false);
-  const [addons, setAddons] = useState([]);
-  const [selectedAddonIds, setSelectedAddonIds] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [selectedPotatoId, setSelectedPotatoId] = useState('');
+  const [selectedDrinkId, setSelectedDrinkId] = useState('');
   const [notes, setNotes] = useState('');
 
   const discountedPrice = calculateItemPrice(combo.valor, combo.desconto);
   const hasDiscount = combo.desconto > 0;
 
   useEffect(() => {
-    api.get('/addons')
-      .then((response) => setAddons(
-        (response.data || []).map((addon) => ({
-          ...addon,
-          name: addon.name || addon.nome,
-          price: addon.price ?? addon.preco ?? 0,
-        })),
-      ))
-      .catch(() => setAddons([]));
+    api.get('/products')
+      .then((response) => setProducts(response.data || []))
+      .catch(() => setProducts([]));
   }, []);
 
-  const selectedAddons = useMemo(
-    () => addons.filter((addon) => selectedAddonIds.includes(addon.uuid)),
-    [addons, selectedAddonIds],
+  const potatoOptions = useMemo(
+    () => products.filter(isPotato).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
+    [products],
   );
-  const finalUnitPrice = discountedPrice + calculateAddonsTotal(selectedAddons);
+  const drinkOptions = useMemo(
+    () => products.filter(isSoda).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
+    [products],
+  );
+
+  const selectedPotato = potatoOptions.find((product) => product.uuid === selectedPotatoId) || null;
+  const selectedDrink = drinkOptions.find((product) => product.uuid === selectedDrinkId) || null;
 
   const resetCustomization = () => {
-    setSelectedAddonIds([]);
+    setSelectedPotatoId('');
+    setSelectedDrinkId('');
     setNotes('');
   };
 
-  const toggleAddon = (addonId) => {
-    setSelectedAddonIds((current) =>
-      current.includes(addonId) ? current.filter((id) => id !== addonId) : [...current, addonId],
-    );
-  };
-
   const handleAddToCart = () => {
+    if (!selectedPotato || !selectedDrink) {
+      toast.error('Selecione a batata e o refrigerante do combo');
+      return;
+    }
+
+    const selectionSummary = `${selectedPotato.nome} + ${selectedDrink.nome}`;
+    const finalNotes = [
+      `Combo: ${selectionSummary}`,
+      notes.trim(),
+    ].filter(Boolean).join(' | ');
+
     addItem({
       id: combo.uuid,
       type: 'combo',
@@ -62,8 +78,10 @@ export function ComboCard({ combo }) {
       originalPrice: combo.valor,
       discount: combo.desconto || 0,
       foto: combo.foto,
-      addons: selectedAddons,
-      notes: notes.trim(),
+      addons: [],
+      notes: finalNotes,
+      selectedPotatoId,
+      selectedDrinkId,
     });
     toast.success(`${combo.nome} adicionado ao carrinho!`);
     setIsDialogOpen(false);
@@ -169,66 +187,57 @@ export function ComboCard({ combo }) {
               <p className="text-sm leading-relaxed text-muted-foreground">{combo.descricao}</p>
             )}
 
-            <Tabs defaultValue="adicionais" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="adicionais">Adicionais</TabsTrigger>
-                <TabsTrigger value="observacoes">Observacoes</TabsTrigger>
-              </TabsList>
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label className="text-sm">Escolha a batata</Label>
+                <Select value={selectedPotatoId} onValueChange={setSelectedPotatoId}>
+                  <SelectTrigger className="bg-card">
+                    <SelectValue placeholder="Selecione a batata" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {potatoOptions.map((product) => (
+                      <SelectItem key={product.uuid} value={product.uuid}>
+                        {product.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-              <TabsContent value="adicionais" className="space-y-3 pt-3">
-                {addons.length === 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    Nenhum adicional disponivel no momento.
-                  </p>
-                )}
+              <div className="space-y-1.5">
+                <Label className="text-sm">Escolha o refrigerante</Label>
+                <Select value={selectedDrinkId} onValueChange={setSelectedDrinkId}>
+                  <SelectTrigger className="bg-card">
+                    <SelectValue placeholder="Selecione o refrigerante" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {drinkOptions.map((product) => (
+                      <SelectItem key={product.uuid} value={product.uuid}>
+                        {product.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                {addons.map((addon) => (
-                  <label
-                    key={addon.uuid}
-                    className="flex cursor-pointer items-center justify-between rounded-md border border-border p-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Checkbox
-                        checked={selectedAddonIds.includes(addon.uuid)}
-                        onCheckedChange={() => toggleAddon(addon.uuid)}
-                      />
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{addon.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          + {formatPrice(addon.price)}
-                        </p>
-                      </div>
-                    </div>
-                  </label>
-                ))}
-              </TabsContent>
-
-              <TabsContent value="observacoes" className="space-y-2 pt-3">
+              <div className="space-y-1.5">
                 <Label htmlFor={`combo-notes-${combo.uuid}`} className="text-sm">
-                  Observacoes do item
+                  Observacoes
                 </Label>
                 <Textarea
                   id={`combo-notes-${combo.uuid}`}
                   value={notes}
                   onChange={(event) => setNotes(event.target.value)}
-                  placeholder="Ex: caprichar no recheio, separar embalagem..."
+                  placeholder="Ex: sem cebola, caprichar no molho..."
                   rows={4}
                 />
-              </TabsContent>
-            </Tabs>
+              </div>
+            </div>
 
             <div className="rounded-md bg-muted/50 p-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Preco base</span>
-                <span className="font-medium">{formatPrice(discountedPrice)}</span>
-              </div>
-              <div className="mt-1 flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Adicionais</span>
-                <span className="font-medium">{formatPrice(calculateAddonsTotal(selectedAddons))}</span>
-              </div>
-              <div className="mt-2 flex items-center justify-between text-base font-bold">
-                <span>Total do item</span>
-                <span>{formatPrice(finalUnitPrice)}</span>
+              <div className="flex items-center justify-between text-base font-bold">
+                <span>Total do combo</span>
+                <span>{formatPrice(discountedPrice)}</span>
               </div>
             </div>
 

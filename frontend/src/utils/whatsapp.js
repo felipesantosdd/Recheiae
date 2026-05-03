@@ -33,6 +33,7 @@ export function generateWhatsAppMessage({
   scheduledOrder = null,
 }) {
   const paymentFeeDetails = getPaymentFeeDetails(customer.formaPagamento);
+  const isPickup = customer.tipoEntrega === 'retirada';
   const now = new Date();
   const dateStr = now.toLocaleDateString('pt-BR');
   const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -44,10 +45,15 @@ export function generateWhatsAppMessage({
   }
   msg += `Cliente: ${customer.nome}\n`;
   msg += `Telefone: ${customer.telefone}\n\n`;
-  msg += `Entrega:\n`;
-  msg += `${customer.endereco}, ${customer.numero} - ${customer.bairro}\n`;
-  if (customer.complemento) {
-    msg += `Compl.: ${customer.complemento}\n`;
+  if (isPickup) {
+    msg += `Entrega:\n`;
+    msg += `Vem buscar no estabelecimento\n`;
+  } else {
+    msg += `Entrega:\n`;
+    msg += `${customer.endereco}, ${customer.numero} - ${customer.bairro}\n`;
+    if (customer.complemento) {
+      msg += `Compl.: ${customer.complemento}\n`;
+    }
   }
   msg += `\n`;
   msg += `Itens:\n`;
