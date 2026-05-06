@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-02T23:14:11.518Z",
+  "generatedAt": "2026-05-06T21:26:55.785Z",
   "products": [
     {
       "uuid": "prod-005",
@@ -76,7 +76,7 @@
       "foto": "/images/uploads/product-prod-007.png",
       "categoria": "Bebidas",
       "vendas": 0,
-      "ativo": true
+      "ativo": false
     },
     {
       "uuid": "prod-008",
@@ -131,7 +131,7 @@
       "foto": "/images/uploads/product-145d557b-4c6e-4c63-9b7f-97abb1ccd25b.png",
       "categoria": "Bebidas",
       "vendas": 0,
-      "ativo": true
+      "ativo": false
     },
     {
       "uuid": "cb448eb5-f631-4491-afd2-59e4ffe5902b",
@@ -224,17 +224,6 @@
       "ativo": true
     },
     {
-      "uuid": "prod-007",
-      "nome": "Coca-Cola Zero Lata 350ml",
-      "descricao": "Refrigerante Coca-Cola Zero em lata de 350ml, sem acucar e com o sabor classico que combina com qualquer refeicao.",
-      "preco": 6,
-      "desconto": 0,
-      "foto": "/images/uploads/product-prod-007.png",
-      "categoria": "Bebidas",
-      "vendas": 0,
-      "ativo": true
-    },
-    {
       "uuid": "prod-008",
       "nome": "Guarana Antarctica Lata 350ml",
       "descricao": "Refrigerante Guarana Antarctica tradicional em lata de 350ml, gelado e ideal para acompanhar seu lanche.",
@@ -274,17 +263,6 @@
       "preco": 7,
       "desconto": 0,
       "foto": "/images/uploads/product-d27de8d0-24e6-4ca8-ac46-88dede4bc882.png",
-      "categoria": "Bebidas",
-      "vendas": 0,
-      "ativo": true
-    },
-    {
-      "uuid": "145d557b-4c6e-4c63-9b7f-97abb1ccd25b",
-      "nome": "Suco de Goiaba",
-      "descricao": "Suco de goiaba natural, preparado na hora, com textura suave e sabor marcante, equilibrando doçura e frescor em cada gole.",
-      "preco": 7,
-      "desconto": 0,
-      "foto": "/images/uploads/product-145d557b-4c6e-4c63-9b7f-97abb1ccd25b.png",
       "categoria": "Bebidas",
       "vendas": 0,
       "ativo": true
@@ -493,7 +471,7 @@
   "settings": {
     "whatsapp": "5535998160726",
     "delivery_time": "40 min",
-    "business_hours": "Seg: 19:00 - 23:30\nTer: 19:00 - 23:30\nQui a Sex: 19:00 - 23:30\nSab e Dom: 19:00 - 21:30",
+    "business_hours": "ter: 19:00 - 23:30\nqua: 19:00 - 23:00\nqui: 19:00 - 23:30\nsex: 19:00 - 23:30\nsab: 19:00 - 21:30\ndom: 19:00 - 21:30",
     "promotion_product_uuid": "prod-001",
     "promotion_price": 24.9,
     "promotion_active": 0
