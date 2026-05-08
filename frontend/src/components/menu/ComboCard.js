@@ -22,6 +22,11 @@ function isPotato(product) {
   return String(product?.categoria || '').toLowerCase() !== 'bebidas';
 }
 
+function isMothersDayCombo(combo) {
+  const nome = String(combo?.nome || '').toLowerCase();
+  return nome.includes('dia das maes') || nome.includes('dia das mães') || nome.includes('sua mae') || nome.includes('sua mãe');
+}
+
 export function ComboCard({ combo }) {
   const { addItem } = useCart();
   const [imgError, setImgError] = useState(false);
@@ -30,10 +35,13 @@ export function ComboCard({ combo }) {
   const [products, setProducts] = useState([]);
   const [selectedPotatoId, setSelectedPotatoId] = useState('');
   const [selectedDrinkId, setSelectedDrinkId] = useState('');
+  const [selectedPotatoId2, setSelectedPotatoId2] = useState('');
+  const [selectedDrinkId2, setSelectedDrinkId2] = useState('');
   const [notes, setNotes] = useState('');
 
   const discountedPrice = calculateItemPrice(combo.valor, combo.desconto);
   const hasDiscount = combo.desconto > 0;
+  const comboRequiresTwoOfEach = isMothersDayCombo(combo);
 
   useEffect(() => {
     api.get('/products')
@@ -52,10 +60,14 @@ export function ComboCard({ combo }) {
 
   const selectedPotato = potatoOptions.find((product) => product.uuid === selectedPotatoId) || null;
   const selectedDrink = drinkOptions.find((product) => product.uuid === selectedDrinkId) || null;
+  const selectedPotato2 = potatoOptions.find((product) => product.uuid === selectedPotatoId2) || null;
+  const selectedDrink2 = drinkOptions.find((product) => product.uuid === selectedDrinkId2) || null;
 
   const resetCustomization = () => {
     setSelectedPotatoId('');
     setSelectedDrinkId('');
+    setSelectedPotatoId2('');
+    setSelectedDrinkId2('');
     setNotes('');
   };
 
@@ -64,10 +76,16 @@ export function ComboCard({ combo }) {
       toast.error('Selecione a batata e o refrigerante do combo');
       return;
     }
+    if (comboRequiresTwoOfEach && (!selectedPotato2 || !selectedDrink2)) {
+      toast.error('Selecione as duas batatas e as duas bebidas da promocao');
+      return;
+    }
 
-    const selectionSummary = `${selectedPotato.nome} + ${selectedDrink.nome}`;
+    const selectionSummary = comboRequiresTwoOfEach
+      ? `${selectedPotato.nome} + ${selectedDrink.nome} | ${selectedPotato2.nome} + ${selectedDrink2.nome}`
+      : `${selectedPotato.nome} + ${selectedDrink.nome}`;
     const finalNotes = [
-      `Combo: ${selectionSummary}`,
+      `${comboRequiresTwoOfEach ? 'Promocao' : 'Combo'}: ${selectionSummary}`,
       notes.trim(),
     ].filter(Boolean).join(' | ');
 
@@ -82,6 +100,8 @@ export function ComboCard({ combo }) {
       notes: finalNotes,
       selectedPotatoId,
       selectedDrinkId,
+      selectedPotatoId2: comboRequiresTwoOfEach ? selectedPotatoId2 : '',
+      selectedDrinkId2: comboRequiresTwoOfEach ? selectedDrinkId2 : '',
     });
     toast.success(`${combo.nome} adicionado ao carrinho!`);
     setIsDialogOpen(false);
@@ -189,7 +209,7 @@ export function ComboCard({ combo }) {
 
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label className="text-sm">Escolha a batata</Label>
+                <Label className="text-sm">{comboRequiresTwoOfEach ? 'Escolha a primeira batata' : 'Escolha a batata'}</Label>
                 <Select value={selectedPotatoId} onValueChange={setSelectedPotatoId}>
                   <SelectTrigger className="bg-card">
                     <SelectValue placeholder="Selecione a batata" />
@@ -205,7 +225,7 @@ export function ComboCard({ combo }) {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-sm">Escolha o refrigerante</Label>
+                <Label className="text-sm">{comboRequiresTwoOfEach ? 'Escolha a primeira bebida' : 'Escolha o refrigerante'}</Label>
                 <Select value={selectedDrinkId} onValueChange={setSelectedDrinkId}>
                   <SelectTrigger className="bg-card">
                     <SelectValue placeholder="Selecione o refrigerante" />
@@ -219,6 +239,42 @@ export function ComboCard({ combo }) {
                   </SelectContent>
                 </Select>
               </div>
+
+              {comboRequiresTwoOfEach && (
+                <>
+                  <div className="space-y-1.5">
+                    <Label className="text-sm">Escolha a segunda batata</Label>
+                    <Select value={selectedPotatoId2} onValueChange={setSelectedPotatoId2}>
+                      <SelectTrigger className="bg-card">
+                        <SelectValue placeholder="Selecione a segunda batata" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {potatoOptions.map((product) => (
+                          <SelectItem key={`${product.uuid}-second-potato`} value={product.uuid}>
+                            {product.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-sm">Escolha a segunda bebida</Label>
+                    <Select value={selectedDrinkId2} onValueChange={setSelectedDrinkId2}>
+                      <SelectTrigger className="bg-card">
+                        <SelectValue placeholder="Selecione a segunda bebida" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {drinkOptions.map((product) => (
+                          <SelectItem key={`${product.uuid}-second-drink`} value={product.uuid}>
+                            {product.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
 
               <div className="space-y-1.5">
                 <Label htmlFor={`combo-notes-${combo.uuid}`} className="text-sm">

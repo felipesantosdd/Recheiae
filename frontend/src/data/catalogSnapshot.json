@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-06T21:26:55.785Z",
+  "generatedAt": "2026-05-08T21:08:24.719Z",
   "products": [
     {
       "uuid": "prod-005",
@@ -301,19 +301,7 @@
       "categoria": "Batatas Recheadas 400g",
       "vendas": 6,
       "ativo": true,
-      "sold_count": 13
-    },
-    {
-      "uuid": "prod-001",
-      "nome": "Batata Recheada De Carne Com Cheddar E Doritos",
-      "descricao": "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
-      "preco": 28.9,
-      "desconto": 0,
-      "foto": "/images/uploads/product-prod-001.jpeg",
-      "categoria": "Batatas Recheadas 400g",
-      "vendas": 2,
-      "ativo": true,
-      "sold_count": 11
+      "sold_count": 17
     },
     {
       "uuid": "prod-003",
@@ -324,6 +312,18 @@
       "foto": "/images/uploads/product-prod-003.jpeg",
       "categoria": "Batatas Recheadas 400g",
       "vendas": 4,
+      "ativo": true,
+      "sold_count": 12
+    },
+    {
+      "uuid": "prod-001",
+      "nome": "Batata Recheada De Carne Com Cheddar E Doritos",
+      "descricao": "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.",
+      "preco": 28.9,
+      "desconto": 0,
+      "foto": "/images/uploads/product-prod-001.jpeg",
+      "categoria": "Batatas Recheadas 400g",
+      "vendas": 2,
       "ativo": true,
       "sold_count": 11
     }
@@ -342,6 +342,25 @@
       "vendas": 0,
       "foto": "/images/uploads/combo-182dd2e8-de0e-4cac-b8fc-d94130b5579c.jpeg",
       "ativo": true
+    },
+    {
+      "uuid": "d732365d-cc74-4335-b33a-ff555533064d",
+      "nome": "Duas Batatas pra Dividir com Sua Mãe",
+      "descricao": "Promoção de Dia das Mães: escolha 2 batatas recheadas e 2 refrigerantes Coca-Cola ou Guaraná Antarctica em lata por apenas R$ 55,90.",
+      "produto_ids": [
+        "prod-001",
+        "prod-002",
+        "prod-003",
+        "prod-004",
+        "prod-005",
+        "prod-006",
+        "prod-008"
+      ],
+      "valor": 55.9,
+      "desconto": 0,
+      "vendas": 0,
+      "foto": "/images/uploads/combo-182dd2e8-de0e-4cac-b8fc-d94130b5579c.jpeg",
+      "ativo": true
     }
   ],
   "activeCombos": [
@@ -354,6 +373,25 @@
         "prod-006"
       ],
       "valor": 29.9,
+      "desconto": 0,
+      "vendas": 0,
+      "foto": "/images/uploads/combo-182dd2e8-de0e-4cac-b8fc-d94130b5579c.jpeg",
+      "ativo": true
+    },
+    {
+      "uuid": "d732365d-cc74-4335-b33a-ff555533064d",
+      "nome": "Duas Batatas pra Dividir com Sua Mãe",
+      "descricao": "Promoção de Dia das Mães: escolha 2 batatas recheadas e 2 refrigerantes Coca-Cola ou Guaraná Antarctica em lata por apenas R$ 55,90.",
+      "produto_ids": [
+        "prod-001",
+        "prod-002",
+        "prod-003",
+        "prod-004",
+        "prod-005",
+        "prod-006",
+        "prod-008"
+      ],
+      "valor": 55.9,
       "desconto": 0,
       "vendas": 0,
       "foto": "/images/uploads/combo-182dd2e8-de0e-4cac-b8fc-d94130b5579c.jpeg",
