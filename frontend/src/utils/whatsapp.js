@@ -63,7 +63,7 @@ export function generateWhatsAppMessage({
     const addonsTotal = (item.addons || []).reduce((sum, addon) => sum + (addon.price ?? addon.preco ?? 0), 0);
     const unitPrice = basePrice + addonsTotal;
     const lineTotal = unitPrice * item.quantity;
-    msg += `*${item.quantity} x ${item.name}*\n`;
+    msg += `• *${item.quantity} x ${item.name}*\n`;
     if (item.addons?.length) {
       item.addons.forEach((addon) => {
         msg += `- ${formatAddonName(addon)} (+R$ ${formatBRL(addon.price ?? addon.preco ?? 0)})\n`;

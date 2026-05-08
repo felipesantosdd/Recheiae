@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-08T21:08:24.719Z",
+  "generatedAt": "2026-05-08T22:38:02.714Z",
   "products": [
     {
       "uuid": "prod-005",
@@ -359,7 +359,7 @@
       "valor": 55.9,
       "desconto": 0,
       "vendas": 0,
-      "foto": "/images/uploads/combo-182dd2e8-de0e-4cac-b8fc-d94130b5579c.jpeg",
+      "foto": "/images/uploads/combo-dia-das-maes.jpeg",
       "ativo": true
     }
   ],
@@ -394,7 +394,7 @@
       "valor": 55.9,
       "desconto": 0,
       "vendas": 0,
-      "foto": "/images/uploads/combo-182dd2e8-de0e-4cac-b8fc-d94130b5579c.jpeg",
+      "foto": "/images/uploads/combo-dia-das-maes.jpeg",
       "ativo": true
     }
   ],
