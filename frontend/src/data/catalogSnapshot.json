@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-08T22:38:02.714Z",
+  "generatedAt": "2026-05-12T20:14:44.150Z",
   "products": [
     {
       "uuid": "prod-005",
@@ -36,9 +36,9 @@
     },
     {
       "uuid": "prod-004",
-      "nome": "Batata Recheada De Sabor Pizza",
-      "descricao": "Batata quentinha, feita na hora e carregada de sabor. Presunto e queijo super cremoso, tomate, finalizacao com mussarela, Doritos e cream cheese. E aquela batata forte, bem servida e sem miseria, pra quem gosta de comer de verdade.",
-      "preco": 26.9,
+      "nome": "Batata Recheada De Carne Seca Especial",
+      "descricao": "Nossa batata recheada de aproximadamente 400g, preparada com carne seca desfiada e bem temperada, coberta com bastante mussarela derretida e finalizada com um toque cremoso de cream cheese, criando a combinacao perfeita entre sabor e cremosidade.",
+      "preco": 33,
       "desconto": 0,
       "foto": "/images/uploads/product-prod-004.jpeg",
       "categoria": "Batatas Recheadas 400g",
@@ -192,9 +192,9 @@
     },
     {
       "uuid": "prod-004",
-      "nome": "Batata Recheada De Sabor Pizza",
-      "descricao": "Batata quentinha, feita na hora e carregada de sabor. Presunto e queijo super cremoso, tomate, finalizacao com mussarela, Doritos e cream cheese. E aquela batata forte, bem servida e sem miseria, pra quem gosta de comer de verdade.",
-      "preco": 26.9,
+      "nome": "Batata Recheada De Carne Seca Especial",
+      "descricao": "Nossa batata recheada de aproximadamente 400g, preparada com carne seca desfiada e bem temperada, coberta com bastante mussarela derretida e finalizada com um toque cremoso de cream cheese, criando a combinacao perfeita entre sabor e cremosidade.",
+      "preco": 33,
       "desconto": 0,
       "foto": "/images/uploads/product-prod-004.jpeg",
       "categoria": "Batatas Recheadas 400g",
@@ -313,7 +313,7 @@
       "categoria": "Batatas Recheadas 400g",
       "vendas": 4,
       "ativo": true,
-      "sold_count": 12
+      "sold_count": 16
     },
     {
       "uuid": "prod-001",

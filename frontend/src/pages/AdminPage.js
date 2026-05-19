@@ -75,6 +75,23 @@ const parseCashObservation = (value) => {
   }
 };
 
+const normalizePhoneForImport = (value) => String(value || '').replace(/\D/g, '');
+
+const buildWhatsappOrderSignature = (order) => {
+  const itemSignature = (order.items || [])
+    .map((item) => `${Number(item.quantity) || 0}x:${normalizeCatalogText(item.name)}`)
+    .sort()
+    .join('|');
+
+  return JSON.stringify({
+    createdAt: String(order.createdAt || '').trim(),
+    phone: normalizePhoneForImport(order.customerPhone || order.phone || ''),
+    total: Number(order.total || 0).toFixed(2),
+    freight: Number(order.freight || 0).toFixed(2),
+    items: itemSignature,
+  });
+};
+
 const emptyProduct = {
   nome: '', descricao: '', preco: '', desconto: '0',
   foto: '', categoria: 'Batatas Recheadas', vendas: '0', ativo: true,
@@ -182,8 +199,6 @@ const isRetainedPaymentMethod = (value) => {
   return (
     normalized.includes('credito')
     || normalized.includes('debito')
-    || normalized.includes('cartao')
-    || normalized.includes('maquininha')
     || /cr.?dito/.test(normalized)
     || /d.?bito/.test(normalized)
   );
@@ -355,16 +370,8 @@ export default function AdminPage() {
   }, [filteredCashEntries]);
 
   const receivableSummary = useMemo(() => {
-    const cycleStart = startOfReceivableCycle(settings.receivable_reset_day);
-    const today = new Date().toISOString().slice(0, 10);
-
     const ifood = cashEntries.reduce((acc, entry) => {
-      if (
-        entry.tipo === 'entrada'
-        && entry.descricao === 'Vendas iFood'
-        && String(entry.data_lancamento || '').slice(0, 10) >= cycleStart
-        && String(entry.data_lancamento || '').slice(0, 10) <= today
-      ) {
+      if (entry.tipo === 'entrada' && entry.descricao === 'Vendas iFood') {
         return acc + (Number(entry.valor) || 0);
       }
       return acc;
@@ -376,9 +383,8 @@ export default function AdminPage() {
       const batches = parsedObservation.metadata?.batches || [];
       return acc + batches.reduce((batchAcc, batch) => {
         return batchAcc + (batch.orders || []).reduce((orderAcc, order) => {
-          const orderDate = parseDisplayDate(order.createdAt) || batch.date || String(entry.data_lancamento || '').slice(0, 10);
           const paymentMethod = order.paymentMethod || '';
-          if (!isRetainedPaymentMethod(paymentMethod) || orderDate < cycleStart || orderDate > today) {
+          if (!isRetainedPaymentMethod(paymentMethod)) {
             return orderAcc;
           }
           return orderAcc + (Number(order.total) || 0);
@@ -387,21 +393,16 @@ export default function AdminPage() {
     }, 0);
 
     const withdrawn = receivableWithdrawals.reduce((acc, withdrawal) => {
-      const withdrawalDate = String(withdrawal.data_saque || '').slice(0, 10);
-      if (withdrawalDate >= cycleStart && withdrawalDate <= today) {
-        return acc + (Number(withdrawal.valor) || 0);
-      }
-      return acc;
+      return acc + (Number(withdrawal.valor) || 0);
     }, 0);
 
     return {
-      cycleStart,
       ifood,
       card,
       withdrawn,
       total: Math.max(0, ifood + card - withdrawn),
     };
-  }, [cashEntries, receivableWithdrawals, settings.receivable_reset_day]);
+  }, [cashEntries, receivableWithdrawals]);
 
   const groupedCashEntries = useMemo(() => {
     return filteredCashEntries.reduce((groups, entry) => {
@@ -1210,7 +1211,7 @@ export default function AdminPage() {
   const parseWhatsappOrders = (rawText) => {
     const text = String(rawText || '').trim();
     if (!text) {
-      return { orders: [], total: 0, productCounts: {}, parsedDate: '' };
+      return { orders: [], total: 0, productCounts: {}, parsedDate: '', ordersByDate: {} };
     }
 
     const headingRegex = /^(?:####\s*NOVO PEDIDO\s*####|PEDIDO AGENDADO|NOVO PEDIDO)$/gim;
@@ -1233,16 +1234,12 @@ export default function AdminPage() {
 
       const finalLine = lines.find((line) => /^(VALOR FINAL|Total):/i.test(line));
       const freightLine = lines.find((line) => /^FRETE:/i.test(line));
-      const paymentLine = lines.find((line) => (
-        /^Pagamento:/i.test(line)
-        || /^(Pix|Dinheiro|Cart[aã]o|Cr[eé]dito|D[eé]bito)/i.test(line)
-      ));
+      const paymentLine = lines.find((line) => /^Pagamento:/i.test(line) || /^(Pix|Dinheiro|Cart|Cr[e?]dito|D[e?]bito)/i.test(line));
+      const customerLine = lines.find((line) => /^Cliente:/i.test(line));
+      const phoneLine = lines.find((line) => /^Telefone:/i.test(line));
       const itemLines = lines.filter((line) => /^\d+\s*x\s+.+/i.test(line) && !/R\$\s*/i.test(line));
-      const orderNumberLine = lines.find((line) => (/N[ºo°]?\s*pedido:/i.test(line) || /^Pedido\s*n[ºo°]/i.test(line)));
-      const createdAtLine = lines.find((line) => (
-        /^feito em /i.test(line)
-        || /^\d{2}\/\d{2}\/\d{4}\s+as\s+\d{2}:\d{2}$/i.test(line)
-      ));
+      const orderNumberLine = lines.find((line) => /pedido/i.test(line) && /:\s*/.test(line));
+      const createdAtLine = lines.find((line) => /^feito em /i.test(line) || /^\d{2}\/\d{2}\/\d{4}\s+as\s+\d{2}:\d{2}$/i.test(line));
 
       const items = itemLines.map((line) => {
         const match = line.match(/^(\d+)\s*x\s+(.+)$/i);
@@ -1255,6 +1252,9 @@ export default function AdminPage() {
 
       const total = parseCurrencyText(finalLine);
       const freight = parseCurrencyText(freightLine);
+      const cleanedCreatedAt = createdAtLine
+        ? createdAtLine.replace(/^feito em\s*/i, '').trim()
+        : '';
       const parsedPaymentMethod = paymentLine
         ? (/^Pagamento:/i.test(paymentLine)
             ? paymentLine.replace(/^Pagamento:\s*/i, '').trim()
@@ -1263,19 +1263,17 @@ export default function AdminPage() {
 
       return {
         orderNumber: orderNumberLine
-          ? orderNumberLine
-              .replace(/^Pedido\s*n[ºo°]\s*/i, '')
-              .replace(/.*:\s*/i, '')
-              .trim()
+          ? orderNumberLine.replace(/.*:\s*/i, '').trim()
           : '',
-        createdAt: createdAtLine
-          ? createdAtLine
-              .replace(/^feito em\s*/i, '')
-              .trim()
-          : '',
+        createdAt: cleanedCreatedAt,
+        parsedDate: parseDisplayDate(cleanedCreatedAt),
+        customerName: customerLine ? customerLine.replace(/^Cliente:\s*/i, '').trim() : '',
+        customerPhone: phoneLine ? normalizePhoneForImport(phoneLine.replace(/^Telefone:\s*/i, '').trim()) : '',
         total,
         freight,
-        netTotal: Math.max(0, total - freight),
+        netTotal: isRetainedPaymentMethod(parsedPaymentMethod)
+          ? total
+          : Math.max(0, total - freight),
         paymentMethod: parsedPaymentMethod || 'WhatsApp',
         items,
       };
@@ -1283,11 +1281,13 @@ export default function AdminPage() {
 
     const total = orders.reduce((acc, order) => acc + order.netTotal, 0);
     const productCounts = {};
-    const firstOrderDate = orders.find((order) => /\d{2}\/\d{2}\/\d{4}/.test(order.createdAt || ''))?.createdAt || '';
-    const parsedDateMatch = firstOrderDate.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-    const parsedDate = parsedDateMatch
-      ? `${parsedDateMatch[3]}-${parsedDateMatch[2]}-${parsedDateMatch[1]}`
-      : '';
+    const parsedDate = orders.find((order) => order.parsedDate)?.parsedDate || '';
+    const ordersByDate = orders.reduce((acc, order) => {
+      if (!order.parsedDate) return acc;
+      if (!acc[order.parsedDate]) acc[order.parsedDate] = [];
+      acc[order.parsedDate].push(order);
+      return acc;
+    }, {});
 
     orders.forEach((order) => {
       order.items.forEach((item) => {
@@ -1296,7 +1296,7 @@ export default function AdminPage() {
       });
     });
 
-    return { orders, total, productCounts, parsedDate };
+    return { orders, total, productCounts, parsedDate, ordersByDate };
   };
 
   const importIfoodSales = async () => {
@@ -1403,75 +1403,99 @@ export default function AdminPage() {
       return;
     }
 
-    const { orders, total, parsedDate } = parseWhatsappOrders(whatsappImportForm.rawText);
+    const { orders, total, ordersByDate } = parseWhatsappOrders(whatsappImportForm.rawText);
     if (orders.length === 0 || total <= 0) {
       toast.error('Nao foi possivel encontrar pedidos validos no texto');
       return;
     }
-    if (!parsedDate) {
+
+    const targetDates = Object.keys(ordersByDate);
+    if (targetDates.length === 0) {
       toast.error('Nao foi possivel identificar a data automaticamente no texto do WhatsApp');
       return;
     }
 
     try {
       setSavingWhatsappImport(true);
+      let importedCount = 0;
 
-      const targetDate = parsedDate;
-      const existingEntry = cashEntries.find((entry) => (
-        entry.tipo === 'entrada'
-        && entry.descricao === 'Vendas WhatsApp'
-        && String(entry.data_lancamento || '').slice(0, 10) === targetDate
-      ));
+      for (const targetDate of targetDates) {
+        const ordersForDate = ordersByDate[targetDate] || [];
+        if (ordersForDate.length === 0) continue;
 
-      const paymentSummary = orders.reduce((acc, order) => {
-        const key = order.paymentMethod || 'WhatsApp';
-        acc[key] = (acc[key] || 0) + order.total;
-        return acc;
-      }, {});
+        const existingEntry = cashEntries.find((entry) => (
+          entry.tipo === 'entrada'
+          && entry.descricao === 'Vendas WhatsApp'
+          && String(entry.data_lancamento || '').slice(0, 10) === targetDate
+        ));
 
-      const paymentLabel = Object.entries(paymentSummary)
-        .map(([method, amount]) => `${method}: ${formatPrice(amount)}`)
-        .join(', ');
+        const existingObservation = existingEntry ? parseCashObservation(existingEntry.observacao) : null;
+        const existingBatches = existingObservation?.metadata?.batches || [];
+        const existingSignatures = new Set(
+          existingBatches.flatMap((batch) => (batch.orders || []).map(buildWhatsappOrderSignature)),
+        );
 
-      const importNote = `Importado do WhatsApp: ${orders.length} pedido(s) somando ${formatPrice(total)} em ${targetDate}. ${paymentLabel}`;
-      const batchDetails = {
-        channel: 'whatsapp',
-        importedAt: new Date().toISOString(),
-        date: targetDate,
-        total,
-        orderCount: orders.length,
-        orders,
-      };
+        const uniqueOrders = ordersForDate.filter((order) => !existingSignatures.has(buildWhatsappOrderSignature(order)));
+        if (uniqueOrders.length === 0) {
+          continue;
+        }
 
-      if (existingEntry) {
-        const existingObservation = parseCashObservation(existingEntry.observacao);
-        const mergedMetadata = {
+        importedCount += uniqueOrders.length;
+        const uniqueTotal = uniqueOrders.reduce((acc, order) => acc + (Number(order.netTotal) || 0), 0);
+        const paymentSummary = uniqueOrders.reduce((acc, order) => {
+          const key = order.paymentMethod || 'WhatsApp';
+          acc[key] = (acc[key] || 0) + order.total;
+          return acc;
+        }, {});
+
+        const paymentLabel = Object.entries(paymentSummary)
+          .map(([method, amount]) => `${method}: ${formatPrice(amount)}`)
+          .join(', ');
+
+        const importNote = `Importado do WhatsApp: ${uniqueOrders.length} pedido(s) somando ${formatPrice(uniqueTotal)} em ${targetDate}. ${paymentLabel}`;
+        const batchDetails = {
           channel: 'whatsapp',
-          batches: [...(existingObservation.metadata?.batches || []), batchDetails],
+          importedAt: new Date().toISOString(),
+          date: targetDate,
+          total: uniqueTotal,
+          orderCount: uniqueOrders.length,
+          orders: uniqueOrders,
         };
 
-        await api.put(`/admin/cash-entries/${existingEntry.uuid}`, {
-          valor: Number(existingEntry.valor || 0) + total,
-          observacao: buildCashObservation(importNote, mergedMetadata),
-          forma_pagamento: paymentLabel || existingEntry.forma_pagamento,
-        });
-      } else {
-        await api.post('/admin/cash-entries', {
-          tipo: 'entrada',
-          categoria: 'venda',
-          descricao: 'Vendas WhatsApp',
-          valor: total,
-          forma_pagamento: paymentLabel || 'WhatsApp',
-          data_lancamento: targetDate,
-          observacao: buildCashObservation(importNote, {
+        if (existingEntry) {
+          const mergedMetadata = {
             channel: 'whatsapp',
-            batches: [batchDetails],
-          }),
-        });
+            batches: [...existingBatches, batchDetails],
+          };
+
+          await api.put(`/admin/cash-entries/${existingEntry.uuid}`, {
+            valor: Number(existingEntry.valor || 0) + uniqueTotal,
+            observacao: buildCashObservation(importNote, mergedMetadata),
+            forma_pagamento: paymentLabel || existingEntry.forma_pagamento,
+          });
+        } else {
+          await api.post('/admin/cash-entries', {
+            tipo: 'entrada',
+            categoria: 'venda',
+            descricao: 'Vendas WhatsApp',
+            valor: uniqueTotal,
+            forma_pagamento: paymentLabel || 'WhatsApp',
+            data_lancamento: targetDate,
+            observacao: buildCashObservation(importNote, {
+              channel: 'whatsapp',
+              batches: [batchDetails],
+            }),
+          });
+        }
+      }
+
+      if (importedCount === 0) {
+        toast.error('Nenhum pedido novo encontrado no texto do WhatsApp');
+        return;
       }
 
       setWhatsappImportDialog(false);
-      toast.success(`Pedidos do WhatsApp importados para ${targetDate}`);
+      toast.success(`${importedCount} pedido(s) novos do WhatsApp importados`);
       fetchAll();
     } catch (e) {
       toast.error('Erro ao importar pedidos do WhatsApp');
@@ -2621,14 +2645,12 @@ export default function AdminPage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="rounded-md border border-border bg-muted/30 p-3">
-              <p className="text-xs text-muted-foreground">Disponivel no ciclo atual</p>
+              <p className="text-xs text-muted-foreground">Disponivel total a receber</p>
               <p className="mt-1 text-lg font-bold text-foreground">{formatPrice(receivableSummary.total)}</p>
               <div className="mt-3 space-y-1 text-xs text-muted-foreground">
                 <p>iFood: {formatPrice(receivableSummary.ifood)}</p>
                 <p>Maquininha: {formatPrice(receivableSummary.card)}</p>
-                <p>Saques no ciclo: {formatPrice(receivableSummary.withdrawn)}</p>
-                <p>Ciclo atual desde: {receivableSummary.cycleStart}</p>
-                <p>Fechamento: dia {settings.receivable_reset_day || '15'} de cada mes</p>
+                <p>Saques realizados: {formatPrice(receivableSummary.withdrawn)}</p>
               </div>
             </div>
             <div className="space-y-1.5">
