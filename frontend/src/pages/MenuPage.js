@@ -79,6 +79,7 @@ export default function MenuPage() {
     acc[cat] = filteredProducts.filter(p => p.categoria === cat);
     return acc;
   }, {});
+  const launchProductUuid = 'prod-004';
 
   const topProductIds = new Set(topProducts.map((product) => product.uuid));
   const promotedProduct = useMemo(() => {
@@ -286,7 +287,14 @@ export default function MenuPage() {
 
       {/* Category sections */}
       {!searchQuery && categories.map(cat => {
-        const catProducts = productsByCategory[cat] || [];
+        const catProducts = [...(productsByCategory[cat] || [])];
+        if (cat === 'Batatas Recheadas 400g') {
+          catProducts.sort((a, b) => {
+            if (a.uuid === launchProductUuid && b.uuid !== launchProductUuid) return -1;
+            if (b.uuid === launchProductUuid && a.uuid !== launchProductUuid) return 1;
+            return 0;
+          });
+        }
         if (catProducts.length === 0) return null;
         return (
           <section
@@ -301,6 +309,7 @@ export default function MenuPage() {
                   key={product.uuid}
                   product={product}
                   showPopular={topProductIds.has(product.uuid)}
+                  highlightBadgeText={product.uuid === launchProductUuid ? 'Lançamento' : null}
                   {...getPromotionProps(product)}
                 />
               ))}

@@ -331,70 +331,38 @@
   "combos": [
     {
       "uuid": "a85e7eb7-244f-4d39-ba49-8def749a155c",
-      "nome": "Batata Explosão + Coca-Cola Lata",
-      "descricao": "Batata recheada feita na hora, bem caprichada e sem economia. Carne moída bem temperada com nosso molho de tomate cremoso da casa envolvendo tudo, finalizada com bastante mussarela, cheddar nas bordas e toque de cheiro verde. Recheio generoso do começo ao fim, acompanhada de Coca-Cola gelada pra completar.",
+      "nome": "Combo Batata + Coca-Cola Lata",
+      "descricao": "Escolha sua batata recheada favorita e receba uma Coca-Cola lata para completar o combo por um valor especial.",
       "produto_ids": [
         "prod-001",
+        "prod-002",
+        "prod-003",
+        "prod-005",
         "prod-006"
       ],
       "valor": 29.9,
       "desconto": 0,
       "vendas": 0,
       "foto": "/images/uploads/combo-182dd2e8-de0e-4cac-b8fc-d94130b5579c.jpeg",
-      "ativo": true
-    },
-    {
-      "uuid": "d732365d-cc74-4335-b33a-ff555533064d",
-      "nome": "Duas Batatas pra Dividir com Sua Mãe",
-      "descricao": "Promoção de Dia das Mães: escolha 2 batatas recheadas e 2 refrigerantes Coca-Cola ou Guaraná Antarctica em lata por apenas R$ 55,90.",
-      "produto_ids": [
-        "prod-001",
-        "prod-002",
-        "prod-003",
-        "prod-004",
-        "prod-005",
-        "prod-006",
-        "prod-008"
-      ],
-      "valor": 55.9,
-      "desconto": 0,
-      "vendas": 0,
-      "foto": "/images/uploads/combo-dia-das-maes.jpeg",
       "ativo": true
     }
   ],
   "activeCombos": [
     {
       "uuid": "a85e7eb7-244f-4d39-ba49-8def749a155c",
-      "nome": "Batata Explosão + Coca-Cola Lata",
-      "descricao": "Batata recheada feita na hora, bem caprichada e sem economia. Carne moída bem temperada com nosso molho de tomate cremoso da casa envolvendo tudo, finalizada com bastante mussarela, cheddar nas bordas e toque de cheiro verde. Recheio generoso do começo ao fim, acompanhada de Coca-Cola gelada pra completar.",
+      "nome": "Combo Batata + Coca-Cola Lata",
+      "descricao": "Escolha sua batata recheada favorita e receba uma Coca-Cola lata para completar o combo por um valor especial.",
       "produto_ids": [
         "prod-001",
+        "prod-002",
+        "prod-003",
+        "prod-005",
         "prod-006"
       ],
       "valor": 29.9,
       "desconto": 0,
       "vendas": 0,
       "foto": "/images/uploads/combo-182dd2e8-de0e-4cac-b8fc-d94130b5579c.jpeg",
-      "ativo": true
-    },
-    {
-      "uuid": "d732365d-cc74-4335-b33a-ff555533064d",
-      "nome": "Duas Batatas pra Dividir com Sua Mãe",
-      "descricao": "Promoção de Dia das Mães: escolha 2 batatas recheadas e 2 refrigerantes Coca-Cola ou Guaraná Antarctica em lata por apenas R$ 55,90.",
-      "produto_ids": [
-        "prod-001",
-        "prod-002",
-        "prod-003",
-        "prod-004",
-        "prod-005",
-        "prod-006",
-        "prod-008"
-      ],
-      "valor": 55.9,
-      "desconto": 0,
-      "vendas": 0,
-      "foto": "/images/uploads/combo-dia-das-maes.jpeg",
       "ativo": true
     }
   ],

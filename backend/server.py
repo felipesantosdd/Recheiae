@@ -469,24 +469,13 @@ def seed_data(conn):
     combos = [
         (
             "combo-001",
-            "Batata Explosão + Coca-Cola Lata",
-            "Batata recheada feita na hora, bem caprichada e sem economia. Carne moída bem temperada com nosso molho de tomate cremoso da casa envolvendo tudo, finalizada com bastante mussarela, cheddar nas bordas e toque de cheiro verde. Recheio generoso do começo ao fim, acompanhada de Coca-Cola gelada pra completar.",
-            json.dumps(["prod-001", "prod-006"]),
+            "Combo Batata + Coca-Cola Lata",
+            "Escolha sua batata recheada favorita e receba uma Coca-Cola lata para completar o combo por um valor especial.",
+            json.dumps(["prod-001", "prod-002", "prod-003", "prod-005", "prod-006"]),
             29.90,
             0,
             0,
             "/images/uploads/combo-182dd2e8-de0e-4cac-b8fc-d94130b5579c.jpeg",
-            1,
-        ),
-        (
-            "combo-004",
-            "Duas Batatas pra Dividir com Sua Mãe",
-            "Promoção de Dia das Mães: escolha 2 batatas recheadas e 2 refrigerantes Coca-Cola ou Guaraná Antarctica em lata por apenas R$ 55,90.",
-            json.dumps(["prod-001", "prod-002", "prod-003", "prod-004", "prod-005", "prod-006", "prod-008"]),
-            55.90,
-            0,
-            0,
-            "/images/uploads/combo-dia-das-maes.jpeg",
             1,
         ),
     ]

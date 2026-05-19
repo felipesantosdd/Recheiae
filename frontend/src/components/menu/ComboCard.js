@@ -19,7 +19,14 @@ function isSoda(product) {
 }
 
 function isPotato(product) {
-  return String(product?.categoria || '').toLowerCase() !== 'bebidas';
+  return String(product?.categoria || '').toLowerCase() === 'batatas recheadas 400g';
+}
+
+function isEligibleComboPotato(product) {
+  if (!isPotato(product)) {
+    return false;
+  }
+  return String(product?.nome || '').toLowerCase() !== 'batata recheada de carne seca especial';
 }
 
 function isMothersDayCombo(combo) {
@@ -42,6 +49,13 @@ export function ComboCard({ combo }) {
   const discountedPrice = calculateItemPrice(combo.valor, combo.desconto);
   const hasDiscount = combo.desconto > 0;
   const comboRequiresTwoOfEach = isMothersDayCombo(combo);
+  const fixedCokeProduct = useMemo(
+    () => products.find((product) => product.uuid === 'prod-006') || products.find((product) => {
+      const nome = String(product?.nome || '').toLowerCase();
+      return isSoda(product) && nome.includes('coca');
+    }) || null,
+    [products],
+  );
 
   useEffect(() => {
     api.get('/products')
@@ -50,7 +64,7 @@ export function ComboCard({ combo }) {
   }, []);
 
   const potatoOptions = useMemo(
-    () => products.filter(isPotato).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
+    () => products.filter(isEligibleComboPotato).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')),
     [products],
   );
   const drinkOptions = useMemo(
@@ -72,8 +86,8 @@ export function ComboCard({ combo }) {
   };
 
   const handleAddToCart = () => {
-    if (!selectedPotato || !selectedDrink) {
-      toast.error('Selecione a batata e o refrigerante do combo');
+    if (!selectedPotato || (!comboRequiresTwoOfEach && !fixedCokeProduct) || (comboRequiresTwoOfEach && !selectedDrink)) {
+      toast.error(comboRequiresTwoOfEach ? 'Selecione a batata e o refrigerante do combo' : 'Selecione a batata do combo');
       return;
     }
     if (comboRequiresTwoOfEach && (!selectedPotato2 || !selectedDrink2)) {
@@ -81,9 +95,10 @@ export function ComboCard({ combo }) {
       return;
     }
 
+    const primaryDrink = comboRequiresTwoOfEach ? selectedDrink : fixedCokeProduct;
     const selectionSummary = comboRequiresTwoOfEach
       ? `${selectedPotato.nome} + ${selectedDrink.nome} | ${selectedPotato2.nome} + ${selectedDrink2.nome}`
-      : `${selectedPotato.nome} + ${selectedDrink.nome}`;
+      : `${selectedPotato.nome} + ${primaryDrink.nome}`;
     const finalNotes = [
       `${comboRequiresTwoOfEach ? 'Promocao' : 'Combo'}: ${selectionSummary}`,
       notes.trim(),
@@ -99,7 +114,7 @@ export function ComboCard({ combo }) {
       addons: [],
       notes: finalNotes,
       selectedPotatoId,
-      selectedDrinkId,
+      selectedDrinkId: comboRequiresTwoOfEach ? selectedDrinkId : (fixedCokeProduct?.uuid || ''),
       selectedPotatoId2: comboRequiresTwoOfEach ? selectedPotatoId2 : '',
       selectedDrinkId2: comboRequiresTwoOfEach ? selectedDrinkId2 : '',
     });
@@ -225,19 +240,25 @@ export function ComboCard({ combo }) {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-sm">{comboRequiresTwoOfEach ? 'Escolha a primeira bebida' : 'Escolha o refrigerante'}</Label>
-                <Select value={selectedDrinkId} onValueChange={setSelectedDrinkId}>
-                  <SelectTrigger className="bg-card">
-                    <SelectValue placeholder="Selecione o refrigerante" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {drinkOptions.map((product) => (
-                      <SelectItem key={product.uuid} value={product.uuid}>
-                        {product.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label className="text-sm">{comboRequiresTwoOfEach ? 'Escolha a primeira bebida' : 'Bebida do combo'}</Label>
+                {comboRequiresTwoOfEach ? (
+                  <Select value={selectedDrinkId} onValueChange={setSelectedDrinkId}>
+                    <SelectTrigger className="bg-card">
+                      <SelectValue placeholder="Selecione o refrigerante" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {drinkOptions.map((product) => (
+                        <SelectItem key={product.uuid} value={product.uuid}>
+                          {product.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-foreground">
+                    {fixedCokeProduct?.nome || 'Coca-Cola Lata'}
+                  </div>
+                )}
               </div>
 
               {comboRequiresTwoOfEach && (

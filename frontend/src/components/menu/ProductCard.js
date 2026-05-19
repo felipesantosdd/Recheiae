@@ -13,7 +13,7 @@ import { formatPrice, calculateItemPrice, calculateAddonsTotal } from '@/utils/c
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 
-export function ProductCard({ product, showPromo, showPopular, priceOverride = null, promoBadgeText = null }) {
+export function ProductCard({ product, showPromo, showPopular, priceOverride = null, promoBadgeText = null, highlightBadgeText = null }) {
   const { addItem } = useCart();
   const [imgError, setImgError] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -106,6 +106,11 @@ export function ProductCard({ product, showPromo, showPopular, priceOverride = n
             </div>
           )}
           <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+            {highlightBadgeText && (
+              <Badge variant="combo" className="text-[10px]">
+                {highlightBadgeText}
+              </Badge>
+            )}
             {showPromo && hasBaseSavings && (
               <Badge variant="promo" className="text-[10px]">
                 {hasOverridePrice ? promoText : `-${product.desconto}%`}
