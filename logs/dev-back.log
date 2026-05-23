@@ -1,0 +1,125 @@
+
+> dev:back
+> python -m uvicorn server:app --app-dir backend --host 0.0.0.0 --port 8000
+
+2026-05-21 14:18:32,484 - server - INFO - Database initialized at C:\Users\Felipe S. Oliveira\Documents\Projects\Recheiae\backend\catalog.db
+2026-05-21 14:18:32,485 - server - INFO - Development mode: True
+INFO:     Started server process [21744]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 10048] error while attempting to bind on address ('0.0.0.0', 8000): [winerror 10048] normalmente é permitida apenas uma utilização de cada endereço de soquete (protocolo/endereço de rede/porta)
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+
+> dev:back
+> python -m uvicorn server:app --app-dir backend --host 0.0.0.0 --port 8000
+
+2026-05-22 11:31:57,898 - server - INFO - Database initialized at C:\Users\Felipe S. Oliveira\Documents\Projects\Recheiae\backend\catalog.db
+2026-05-22 11:31:57,898 - server - INFO - Development mode: True
+INFO:     Started server process [19564]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:54784 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60825 - "GET /api/combos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56546 - "GET /api/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/products/top HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54784 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56546 - "GET /api/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60825 - "GET /api/combos HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/categories HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/products/top HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60825 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/products HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54784 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60825 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56546 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54784 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60825 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56546 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54784 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60825 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/addons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/products/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60825 - "GET /api/payment-methods/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/combos/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54784 - "GET /api/addons/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56546 - "GET /api/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/admin/receivable-withdrawals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62445 - "GET /api/admin/cash-entries HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56546 - "GET /api/payment-methods/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/combos/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62445 - "GET /api/addons/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60825 - "GET /api/admin/stock-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54784 - "GET /api/products/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62959 - "GET /api/admin/product-recipes HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56546 - "GET /api/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55534 - "GET /api/admin/receivable-withdrawals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62445 - "GET /api/admin/cash-entries HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60825 - "GET /api/admin/stock-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54784 - "GET /api/admin/product-recipes HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59829 - "OPTIONS /api/admin/receivable-withdrawals/7c210866-fed4-489c-b8c8-8e9d9d82bd92 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59829 - "DELETE /api/admin/receivable-withdrawals/7c210866-fed4-489c-b8c8-8e9d9d82bd92 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59829 - "GET /api/products/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59829 - "GET /api/combos/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59829 - "GET /api/payment-methods/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59829 - "GET /api/addons/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59829 - "GET /api/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59829 - "GET /api/admin/cash-entries HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59829 - "GET /api/admin/receivable-withdrawals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59829 - "GET /api/admin/stock-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59829 - "GET /api/admin/product-recipes HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57629 - "OPTIONS /api/admin/receivable-withdrawals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57629 - "POST /api/admin/receivable-withdrawals HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:56008 - "POST /api/admin/receivable-withdrawals HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:63744 - "GET /api/receivable-withdrawals HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63745 - "POST /api/receivable-withdrawals HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58477 - "GET /api/admin/receivable-withdrawals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58479 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58480 - "POST /api/admin/receivable-withdrawals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64109 - "DELETE /api/admin/receivable-withdrawals/6521d0e2-2591-45f2-843f-d2c66c12ba6d HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56974 - "POST /api/admin/receivable-withdrawals HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:56974 - "POST /api/admin/receivable-withdrawals HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:58637 - "POST /api/admin/receivable-withdrawals HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:60208 - "GET /api/products/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62929 - "GET /api/payment-methods/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49809 - "GET /api/combos/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56006 - "GET /api/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56486 - "GET /api/addons/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58957 - "GET /api/admin/cash-entries HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60208 - "GET /api/admin/receivable-withdrawals HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62929 - "GET /api/admin/stock-items HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49809 - "GET /api/admin/product-recipes HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60828 - "POST /api/admin/receivable-withdrawals HTTP/1.1" 422 Unprocessable Entity
+
+> dev:back
+> python -m uvicorn server:app --app-dir backend --host 0.0.0.0 --port 8000
+
+2026-05-23 17:03:16,865 - server - INFO - Database initialized at C:\Users\Felipe S. Oliveira\Documents\Projects\Recheiae\backend\catalog.db
+2026-05-23 17:03:16,865 - server - INFO - Development mode: True
+INFO:     Started server process [12024]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)

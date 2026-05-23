@@ -26,7 +26,11 @@ function isEligibleComboPotato(product) {
   if (!isPotato(product)) {
     return false;
   }
-  return String(product?.nome || '').toLowerCase() !== 'batata recheada de carne seca especial';
+  const nome = String(product?.nome || '').toLowerCase();
+  return [
+    'batata recheada de frango com catupiry',
+    'batata recheada de brocolis com queijo',
+  ].includes(nome);
 }
 
 function isMothersDayCombo(combo) {

@@ -180,6 +180,7 @@ const emptyConfirmDialog = {
 };
 
 const emptyReceivableWithdrawal = {
+  origem: 'ifood',
   valor: '',
   data_saque: new Date().toISOString().slice(0, 10),
   observacao: '',
@@ -370,14 +371,14 @@ export default function AdminPage() {
   }, [filteredCashEntries]);
 
   const receivableSummary = useMemo(() => {
-    const ifood = cashEntries.reduce((acc, entry) => {
+    const ifoodGross = cashEntries.reduce((acc, entry) => {
       if (entry.tipo === 'entrada' && entry.descricao === 'Vendas iFood') {
         return acc + (Number(entry.valor) || 0);
       }
       return acc;
     }, 0);
 
-    const card = cashEntries.reduce((acc, entry) => {
+    const cardGross = cashEntries.reduce((acc, entry) => {
       if (entry.descricao !== 'Vendas WhatsApp') return acc;
       const parsedObservation = parseCashObservation(entry.observacao);
       const batches = parsedObservation.metadata?.batches || [];
@@ -392,15 +393,31 @@ export default function AdminPage() {
       }, 0);
     }, 0);
 
-    const withdrawn = receivableWithdrawals.reduce((acc, withdrawal) => {
-      return acc + (Number(withdrawal.valor) || 0);
+    const withdrawnIfood = receivableWithdrawals.reduce((acc, withdrawal) => {
+      return String(withdrawal.origem || 'ifood').toLowerCase() === 'ifood'
+        ? acc + (Number(withdrawal.valor) || 0)
+        : acc;
     }, 0);
 
+    const withdrawnCard = receivableWithdrawals.reduce((acc, withdrawal) => {
+      return String(withdrawal.origem || '').toLowerCase() === 'card'
+        ? acc + (Number(withdrawal.valor) || 0)
+        : acc;
+    }, 0);
+
+    const ifood = Math.max(0, ifoodGross - withdrawnIfood);
+    const card = Math.max(0, cardGross - withdrawnCard);
+    const withdrawn = withdrawnIfood + withdrawnCard;
+
     return {
+      ifoodGross,
+      cardGross,
       ifood,
       card,
+      withdrawnIfood,
+      withdrawnCard,
       withdrawn,
-      total: Math.max(0, ifood + card - withdrawn),
+      total: ifood + card,
     };
   }, [cashEntries, receivableWithdrawals]);
 
@@ -1143,17 +1160,22 @@ export default function AdminPage() {
 
   const saveReceivableWithdrawal = async () => {
     const withdrawalValue = parseMoneyInput(receivableForm.valor);
+    const withdrawalSource = String(receivableForm.origem || 'ifood').toLowerCase();
+    const availableForSource = withdrawalSource === 'card'
+      ? receivableSummary.card
+      : receivableSummary.ifood;
     if (withdrawalValue <= 0) {
       toast.error('Informe um valor valido para o saque');
       return;
     }
-    if (withdrawalValue > receivableSummary.total) {
-      toast.error('O saque nao pode ser maior que o valor a receber');
+    if (withdrawalValue > availableForSource) {
+      toast.error('O saque nao pode ser maior que o valor disponivel nessa origem');
       return;
     }
     try {
       setSavingReceivableWithdrawal(true);
       await api.post('/admin/receivable-withdrawals', {
+        origem: withdrawalSource,
         valor: withdrawalValue,
         data_saque: receivableForm.data_saque || new Date().toISOString().slice(0, 10),
         observacao: receivableForm.observacao.trim(),
@@ -1162,7 +1184,11 @@ export default function AdminPage() {
       toast.success('Saque registrado no contas a receber');
       fetchAll();
     } catch (error) {
-      toast.error('Erro ao registrar saque');
+      const apiMessage = error?.response?.data?.detail;
+      const normalizedMessage = Array.isArray(apiMessage)
+        ? apiMessage.map((item) => item?.msg).filter(Boolean).join(' | ')
+        : apiMessage;
+      toast.error(normalizedMessage || 'Erro ao registrar saque');
     } finally {
       setSavingReceivableWithdrawal(false);
     }
@@ -2653,6 +2679,30 @@ export default function AdminPage() {
                 <p>Saques realizados: {formatPrice(receivableSummary.withdrawn)}</p>
               </div>
             </div>
+            <div className="space-y-2">
+              <Label className="text-sm">Origem do saque</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant={receivableForm.origem === 'ifood' ? 'default' : 'outline'}
+                  className="justify-start"
+                  onClick={() => setReceivableForm((prev) => ({ ...prev, origem: 'ifood' }))}
+                >
+                  iFood
+                </Button>
+                <Button
+                  type="button"
+                  variant={receivableForm.origem === 'card' ? 'default' : 'outline'}
+                  className="justify-start"
+                  onClick={() => setReceivableForm((prev) => ({ ...prev, origem: 'card' }))}
+                >
+                  Maquininha
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Disponivel nessa origem: {formatPrice(receivableForm.origem === 'card' ? receivableSummary.card : receivableSummary.ifood)}
+              </p>
+            </div>
             <div className="space-y-1.5">
               <Label className="text-sm">Valor</Label>
               <Input
@@ -2688,6 +2738,7 @@ export default function AdminPage() {
                       <p className="text-sm font-medium text-foreground">{formatPrice(withdrawal.valor)}</p>
                       <p className="text-xs text-muted-foreground">
                         {String(withdrawal.data_saque || '').slice(0, 10)}
+                        {withdrawal.origem ? ` • ${withdrawal.origem === 'card' ? 'Maquininha' : 'iFood'}` : ''}
                         {withdrawal.observacao ? ` • ${withdrawal.observacao}` : ''}
                       </p>
                     </div>

@@ -270,6 +270,7 @@ class CashEntryUpdate(BaseModel):
 
 class ReceivableWithdrawalCreate(BaseModel):
     valor: float
+    origem: Optional[str] = 'ifood'
     data_saque: Optional[str] = None
     observacao: Optional[str] = None
 
@@ -383,11 +384,15 @@ def init_db():
     )''')
     cur.execute('''CREATE TABLE IF NOT EXISTS receivable_withdrawals (
         uuid TEXT PRIMARY KEY,
+        origem TEXT NOT NULL DEFAULT 'ifood',
         valor REAL NOT NULL,
         data_saque TEXT NOT NULL,
         observacao TEXT,
         created_at TEXT NOT NULL
     )''')
+    withdrawal_columns = {row['name'] for row in cur.execute("PRAGMA table_info(receivable_withdrawals)").fetchall()}
+    if 'origem' not in withdrawal_columns:
+        cur.execute("ALTER TABLE receivable_withdrawals ADD COLUMN origem TEXT NOT NULL DEFAULT 'ifood'")
     conn.commit()
     cur.execute("SELECT COUNT(*) as cnt FROM products")
     if cur.fetchone()['cnt'] == 0:
@@ -457,7 +462,7 @@ def seed_data(conn):
         ("prod-001", "Batata Recheada De Carne Com Cheddar E Doritos", "Batata recheada feita na hora, bem caprichada. Carne moida bem temperada com molho de tomate da casa cremoso envolvendo tudo, feito com carne, molho de tomate da casa, na finalizacao vai mussarela, cheddar nas bordas e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.", 28.90, 10, "/images/products/batata-carne-cheddar-doritos.jpeg", "Batatas Recheadas 400g", 0, 1),
         ("prod-002", "Batata Recheada De Strogonoff De Frango", "Batata recheada feita na hora, com um sabor excepcional. Recheio cremoso de strogonoff de frango feito com frango, cebola, molho de tomate da casa, creme de leite, na finalizacao vai mussarela, catupiry nas bordas, batata palha crocante e cheiro verde pra finalizar. E pode ficar tranquilo: aqui e sem miseria mesmo, viu? E recheio de verdade!", 23.90, 10, "/images/products/batata-strogonoff-frango.jpeg", "Batatas Recheadas 400g", 0, 1),
         ("prod-003", "Batata Recheada De Frango Com Catupiry", "Batata recheada feita na hora, bem caprichada e daquele jeito que da orgulho de servir. Frango desfiado bem temperado com muito catupiry cremoso envolvendo tudo, feito com frango, molho de tomate da casa e catupiry cremoso, na finalizacao vai mussarela, catupiry nas bordas, bacon e cheiro verde. Aqui a gente nao economiza nao, e recheio generoso pra comer feliz do comeco ao fim.", 25.90, 10, "/images/products/batata-frango-catupiry.jpeg", "Batatas Recheadas 400g", 0, 1),
-        ("prod-004", "Batata Recheada De Carne Seca Especial", "Nossa batata recheada de aproximadamente 400g, preparada com carne seca desfiada e bem temperada, coberta com bastante mussarela derretida e finalizada com um toque cremoso de cream cheese, criando a combinacao perfeita entre sabor e cremosidade.", 33.00, 10, "/images/uploads/product-prod-004.jpeg", "Batatas Recheadas 400g", 0, 1),
+        ("prod-004", "Batata Recheada De Carne Seca Especial", "Nossa batata recheada de aproximadamente 400g, preparada com carne seca desfiada e bem temperada, coberta com bastante mussarela derretida e finalizada com um toque cremoso de cream cheese, criando a combinacao perfeita entre sabor e cremosidade.", 33.90, 10, "/images/uploads/product-prod-004.jpeg", "Batatas Recheadas 400g", 0, 1),
         ("prod-005", "Batata Recheada De Brocolis Com Queijo", "Batata recheada feita na hora, bem caprichada e cheia de sabor. Brocolis temperadinho com queijo cremoso derretendo, combinacao que voce nem sabia que precisava. Mais leve? Talvez. Mas sem miseria? Nunca.", 22.90, 10, "/images/products/batata-brocolis-queijo.jpeg", "Batatas Recheadas 400g", 1, 1),
         ("prod-006", "Coca-Cola Lata 350ml", "Refrigerante Coca-Cola tradicional em lata de 350ml, gelado e pronto para acompanhar seu pedido.", 7.00, 0, None, "Bebidas", 0, 1),
         ("prod-007", "Coca-Cola Zero Lata 350ml", "Refrigerante Coca-Cola Zero em lata de 350ml, sem acucar e com o sabor classico que combina com qualquer refeicao.", 7.00, 0, None, "Bebidas", 0, 1),
@@ -960,6 +965,9 @@ def get_receivable_withdrawals():
 def create_receivable_withdrawal(withdrawal: ReceivableWithdrawalCreate):
     if not IS_DEVELOPMENT:
         raise HTTPException(status_code=403, detail="Admin not available in production")
+    origem = str(withdrawal.origem or '').strip().lower()
+    if origem not in ('ifood', 'card'):
+        raise HTTPException(status_code=400, detail="Origem do saque invalida")
     conn = get_db()
     new_uuid = str(uuid_lib.uuid4())
     now_iso = datetime.now().isoformat(timespec='seconds')
@@ -967,11 +975,12 @@ def create_receivable_withdrawal(withdrawal: ReceivableWithdrawalCreate):
     conn.execute(
         """
         INSERT INTO receivable_withdrawals (
-            uuid, valor, data_saque, observacao, created_at
-        ) VALUES (?, ?, ?, ?, ?)
+            uuid, origem, valor, data_saque, observacao, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?)
         """,
         (
             new_uuid,
+            origem,
             withdrawal.valor,
             data_saque,
             withdrawal.observacao,
