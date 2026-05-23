@@ -1,13 +1,16 @@
-import { MapPin, Clock, Star } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { STORE_CONFIG, getBusinessHoursStatus } from '@/utils/calculations';
-import { useStoreSettings } from '@/context/StoreSettingsContext';
+import { MapPin, Clock, Star } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { STORE_CONFIG, getBusinessHoursStatus } from "@/utils/calculations";
+import { useStoreSettings } from "@/context/StoreSettingsContext";
 
-const ACTIVE_PROMOTION_TEXT = 'PROMOCAO ATIVA: 10% DE DESCONTO EM TODA A LOJA NOS PAGAMENTOS VIA PIX ATE 24/05/2026 23:59';
+const ACTIVE_PROMOTION_TEXT =
+  "10% DE DESCONTO EM TODA A LOJA NOS PAGAMENTOS VIA PIX!";
 
 export function HeroBanner() {
   const { normalizedSettings } = useStoreSettings();
-  const businessHoursStatus = getBusinessHoursStatus(normalizedSettings.businessHours);
+  const businessHoursStatus = getBusinessHoursStatus(
+    normalizedSettings.businessHours,
+  );
 
   return (
     <div className="relative w-full h-[232px] sm:h-[292px] md:h-[352px] overflow-hidden">
@@ -19,12 +22,14 @@ export function HeroBanner() {
       <div className="hero-gradient absolute inset-0" />
       <div className="relative z-10 h-full max-w-6xl mx-auto px-4 flex flex-col justify-end pb-11 sm:pb-12 md:pb-14">
         <Badge
-          variant={businessHoursStatus.isOpen ? 'success' : 'outline'}
-          className={businessHoursStatus.isOpen
-            ? 'w-fit mb-2 text-[10px] uppercase tracking-wider'
-            : 'w-fit mb-2 border-orange-300/70 bg-orange-500/15 text-orange-100 text-[10px] uppercase tracking-wider'}
+          variant={businessHoursStatus.isOpen ? "success" : "outline"}
+          className={
+            businessHoursStatus.isOpen
+              ? "w-fit mb-2 text-[10px] uppercase tracking-wider"
+              : "w-fit mb-2 border-orange-300/70 bg-orange-500/15 text-orange-100 text-[10px] uppercase tracking-wider"
+          }
         >
-          {businessHoursStatus.isOpen ? 'Aberto agora' : 'Fechado no momento'}
+          {businessHoursStatus.isOpen ? "Aberto agora" : "Fechado no momento"}
         </Badge>
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-card drop-shadow-md">
           {STORE_CONFIG.nome}
