@@ -146,6 +146,34 @@ html {
   );
 }
 
+@keyframes promo-marquee {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-33.333%, 0, 0); }
+}
+
+.promo-marquee {
+  width: 100%;
+  overflow: hidden;
+}
+
+.promo-marquee-track {
+  display: flex;
+  width: max-content;
+  min-width: 200%;
+  animation: promo-marquee 18s linear infinite;
+  will-change: transform;
+}
+
+.promo-marquee-track span {
+  flex: 0 0 auto;
+  padding: 0.6rem 1.75rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 /* Image placeholder */
 .img-placeholder {
   background: hsl(var(--muted));

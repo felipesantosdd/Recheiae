@@ -5,6 +5,7 @@ import {
   calculateSubtotal,
   calculateTotalDiscount,
   calculateDeliveryFee,
+  calculatePixWeekendDiscount,
   getPaymentFeeDetails,
   calculatePaymentFee,
   calculateTotal,
@@ -16,6 +17,7 @@ import {
   getBusinessHoursStatus,
   getNextOpeningInfo,
   formatScheduleDateTime,
+  isPixWeekendPromotionActive,
   normalizeStoreSettings,
   parseDeliveryMinutes,
 } from '@/utils/calculations';
@@ -57,7 +59,6 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 const DEV_ORDER_TOOLS_ENABLED = process.env.NODE_ENV !== 'production';
-const FIRST_ORDER_MODAL_DISMISSED_KEY = 'recheiae-first-order-modal-dismissed';
 
 function formatCep(value) {
   const digits = value.replace(/\D/g, '').slice(0, 8);
@@ -114,12 +115,7 @@ export default function CheckoutPage() {
   const [loadingCep, setLoadingCep] = useState(false);
   const [bairroOpen, setBairroOpen] = useState(false);
   const [formData, setFormData] = useState(loadCheckoutDraft);
-  const [giftProducts, setGiftProducts] = useState([]);
   const [devDiscountInput, setDevDiscountInput] = useState('0,00');
-  const [devGiftProductId, setDevGiftProductId] = useState('');
-  const [devGiftQuantity, setDevGiftQuantity] = useState('1');
-  const [devGiftItems, setDevGiftItems] = useState([]);
-  const [isFirstOrderCustomer, setIsFirstOrderCustomer] = useState(false);
 
   useEffect(() => {
     api.get('/payment-methods')
@@ -136,35 +132,6 @@ export default function CheckoutPage() {
   }, []);
 
   useEffect(() => {
-    const orderCount = parseInt(localStorage.getItem('recheiae-order-counter') || '0', 10);
-    setIsFirstOrderCustomer(orderCount === 0);
-  }, []);
-
-  useEffect(() => {
-    if (!DEV_ORDER_TOOLS_ENABLED && !isFirstOrderCustomer) return;
-    api.get('/products')
-      .then((res) => {
-        const bebidas = (res.data || []).filter(
-          (product) => {
-            const nome = String(product.nome || '').toLowerCase();
-            const categoria = String(product.categoria || '').toLowerCase();
-            return (
-              product.ativo
-              && categoria === 'bebidas'
-              && nome.includes('lata')
-              && !nome.includes('combo')
-              && !nome.includes('suco')
-            );
-          },
-        );
-        setGiftProducts(bebidas);
-      })
-      .catch(() => {
-        setGiftProducts([]);
-      });
-  }, [isFirstOrderCustomer]);
-
-  useEffect(() => {
     localStorage.setItem(CHECKOUT_DRAFT_STORAGE_KEY, JSON.stringify(formData));
   }, [formData]);
 
@@ -174,10 +141,12 @@ export default function CheckoutPage() {
   const isPickup = formData.tipoEntrega === 'retirada';
   const deliveryFee = isPickup ? 0 : calculateDeliveryFee(formData.bairro);
   const manualDiscount = DEV_ORDER_TOOLS_ENABLED ? parseMoneyInput(devDiscountInput) : 0;
-  const amountBeforePaymentFee = Math.max(0, subtotal + deliveryFee - manualDiscount);
+  const pixPromotionActive = isPixWeekendPromotionActive();
+  const pixPromotionDiscount = calculatePixWeekendDiscount(subtotal, formData.formaPagamento);
+  const amountBeforePaymentFee = Math.max(0, subtotal + deliveryFee - manualDiscount - pixPromotionDiscount);
   const paymentFeeDetails = getPaymentFeeDetails(formData.formaPagamento, amountBeforePaymentFee);
   const paymentFee = calculatePaymentFee(formData.formaPagamento, amountBeforePaymentFee);
-  const total = calculateTotal(items, deliveryFee, paymentFee) - manualDiscount;
+  const total = calculateTotal(items, deliveryFee, paymentFee) - manualDiscount - pixPromotionDiscount;
   const normalizedStoreSettings = normalizeStoreSettings(settings);
   const businessHoursStatus = getBusinessHoursStatus(normalizedStoreSettings.businessHours);
   const scheduledOpeningInfo = getNextOpeningInfo(
@@ -193,61 +162,8 @@ export default function CheckoutPage() {
       }
     : null;
 
-  const canManageGiftDrinks = DEV_ORDER_TOOLS_ENABLED || isFirstOrderCustomer;
-  const giftSectionTitle = isFirstOrderCustomer ? 'Bebida gratis do primeiro pedido' : 'Bebida de brinde';
-  const canEditGiftQuantity = DEV_ORDER_TOOLS_ENABLED;
-
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleAddGiftItem = () => {
-    if (!canManageGiftDrinks) return;
-
-    const product = giftProducts.find((item) => item.uuid === devGiftProductId);
-    const quantity = canEditGiftQuantity
-      ? Math.max(1, parseInt(devGiftQuantity || '1', 10) || 1)
-      : 1;
-
-    if (!product) {
-      toast.error('Selecione uma bebida para brinde');
-      return;
-    }
-
-    setDevGiftItems((prev) => {
-      if (!canEditGiftQuantity) {
-        return [{
-          id: product.uuid,
-          name: product.nome,
-          quantity: 1,
-        }];
-      }
-
-      const existing = prev.find((item) => item.id === product.uuid);
-      if (existing) {
-        return prev.map((item) => (
-          item.id === product.uuid
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        ));
-      }
-
-      return [
-        ...prev,
-        {
-          id: product.uuid,
-          name: product.nome,
-          quantity,
-        },
-      ];
-    });
-
-    setDevGiftProductId('');
-    setDevGiftQuantity('1');
-  };
-
-  const handleRemoveGiftItem = (giftId) => {
-    setDevGiftItems((prev) => prev.filter((item) => item.id !== giftId));
   };
 
   const lookupCep = async (cepValue = formData.cep) => {
@@ -321,7 +237,7 @@ export default function CheckoutPage() {
       paymentFee,
       totalDiscount,
       manualDiscount,
-      giftItems: devGiftItems,
+      pixPromotionDiscount,
       total,
       settings,
       scheduledOrder,
@@ -334,7 +250,6 @@ export default function CheckoutPage() {
         ? `Pedido #${orderNumber} agendado para ${scheduledOrder.deliveryAtLabel}!`
         : `Pedido #${orderNumber} enviado!`,
     );
-    localStorage.removeItem(FIRST_ORDER_MODAL_DISMISSED_KEY);
     clearCart();
     navigate('/');
   };
@@ -614,86 +529,26 @@ export default function CheckoutPage() {
             </CardContent>
           </Card>
 
-          {canManageGiftDrinks && (
+          {DEV_ORDER_TOOLS_ENABLED && (
             <Card>
               <CardHeader className="pb-4">
-                <CardTitle className="text-base">
-                  {DEV_ORDER_TOOLS_ENABLED && !isFirstOrderCustomer ? 'Ajustes do Pedido (Dev)' : giftSectionTitle}
-                </CardTitle>
+                <CardTitle className="text-base">Ajustes do Pedido (Dev)</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {DEV_ORDER_TOOLS_ENABLED && (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="devDiscount" className="text-sm">Desconto manual</Label>
-                    <Input
-                      id="devDiscount"
-                      inputMode="numeric"
-                      value={devDiscountInput}
-                      onChange={(e) => setDevDiscountInput(toMoneyInput(e.target.value))}
-                      placeholder="0,00"
-                      className="bg-card"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Digite em centavos. Ex.: 500 vira 5,00.
-                    </p>
-                  </div>
-                )}
-
                 <div className="space-y-1.5">
-                  <Label className="text-sm">{giftSectionTitle}</Label>
-                  <div className={cn('grid gap-2', canEditGiftQuantity ? 'sm:grid-cols-[1fr_100px_auto]' : 'sm:grid-cols-[1fr_auto]')}>
-                    <Select value={devGiftProductId} onValueChange={setDevGiftProductId}>
-                      <SelectTrigger className="bg-card">
-                        <SelectValue placeholder="Selecione uma bebida" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {giftProducts.map((product) => (
-                          <SelectItem key={product.uuid} value={product.uuid}>
-                            {product.nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    {canEditGiftQuantity && (
-                      <Input
-                        inputMode="numeric"
-                        value={devGiftQuantity}
-                        onChange={(e) => setDevGiftQuantity(e.target.value.replace(/\D/g, '') || '1')}
-                        className="bg-card"
-                      />
-                    )}
-
-                    <Button type="button" variant="outline" onClick={handleAddGiftItem}>
-                      {canEditGiftQuantity ? 'Adicionar' : 'Escolher'}
-                    </Button>
-                  </div>
-                  {isFirstOrderCustomer && (
-                    <p className="text-xs text-muted-foreground">
-                      Cliente em primeiro pedido: escolha apenas 1 bebida gratis antes de finalizar.
-                    </p>
-                  )}
+                  <Label htmlFor="devDiscount" className="text-sm">Desconto manual</Label>
+                  <Input
+                    id="devDiscount"
+                    inputMode="numeric"
+                    value={devDiscountInput}
+                    onChange={(e) => setDevDiscountInput(toMoneyInput(e.target.value))}
+                    placeholder="0,00"
+                    className="bg-card"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Digite em centavos. Ex.: 500 vira 5,00.
+                  </p>
                 </div>
-
-                {devGiftItems.length > 0 && (
-                  <div className="space-y-2 rounded-lg border border-border p-3">
-                    {devGiftItems.map((gift) => (
-                      <div key={gift.id} className="flex items-center justify-between gap-3 text-sm">
-                        <span className="text-foreground">
-                          {gift.quantity}x {gift.name}
-                        </span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className="h-auto px-2 py-1 text-xs"
-                          onClick={() => handleRemoveGiftItem(gift.id)}
-                        >
-                          Remover
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </CardContent>
             </Card>
           )}
@@ -756,6 +611,12 @@ export default function CheckoutPage() {
                   <span className="text-foreground">{formatPrice(paymentFee)}</span>
                 </div>
               )}
+              {pixPromotionDiscount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-success">DESCONTO PIX 10%</span>
+                  <span className="text-success">-{formatPrice(pixPromotionDiscount)}</span>
+                </div>
+              )}
               {DEV_ORDER_TOOLS_ENABLED && manualDiscount > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-success">DESCONTO MANUAL</span>
@@ -768,23 +629,17 @@ export default function CheckoutPage() {
                   <span className="text-success">-{formatPrice(totalDiscount)}</span>
                 </div>
               )}
-              {devGiftItems.length > 0 && (
-                <div className="space-y-1 rounded-lg bg-muted/40 p-3 text-sm">
-                  <p className="font-medium text-foreground">Brindes</p>
-                  {devGiftItems.map((gift) => (
-                    <p key={gift.id} className="text-muted-foreground">
-                      {gift.quantity}x {gift.name}
-                    </p>
-                  ))}
-                </div>
-              )}
-
               <Separator />
 
               <div className="flex justify-between font-bold text-lg">
                 <span className="text-foreground">VALOR FINAL</span>
                 <span className="text-foreground">{formatPrice(total)}</span>
               </div>
+              {pixPromotionActive && (
+                <p className="text-xs text-muted-foreground">
+                  Pagando no Pix ate 24/05/2026 as 23:59 voce recebe 10% de desconto nos produtos.
+                </p>
+              )}
 
               <Button size="lg" className="w-full hidden md:flex mt-2" onClick={handleSubmit}>
                 <MessageCircle className="h-4 w-4" />

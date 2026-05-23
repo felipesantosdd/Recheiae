@@ -28,7 +28,7 @@ export function generateWhatsAppMessage({
   paymentFee = 0,
   totalDiscount,
   manualDiscount = 0,
-  giftItems = [],
+  pixPromotionDiscount = 0,
   total,
   scheduledOrder = null,
 }) {
@@ -84,18 +84,13 @@ export function generateWhatsAppMessage({
   if (manualDiscount > 0) {
     msg += `Desconto manual: R$ ${formatBRL(manualDiscount)}\n`;
   }
+  if (pixPromotionDiscount > 0) {
+    msg += `Desconto Pix 10%: R$ ${formatBRL(pixPromotionDiscount)}\n`;
+  }
   if (totalDiscount > 0) {
     msg += `Descontos: R$ ${formatBRL(totalDiscount)}\n`;
   }
   msg += `*Total: R$ ${formatBRL(total)}*\n\n`;
-
-  if (giftItems.length > 0) {
-    msg += `Brindes:\n`;
-    giftItems.forEach((gift) => {
-      msg += `- ${gift.quantity}x ${gift.name}\n`;
-    });
-    msg += `\n`;
-  }
 
   msg += `Pagamento: ${customer.formaPagamento}`;
   if (customer.observacoes) {

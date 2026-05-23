@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
-import { calculateSubtotal, calculateTotalDiscount, calculateDeliveryFee, formatPrice, resolveNeighborhoodName } from '@/utils/calculations';
+import { calculateSubtotal, calculateTotalDiscount, calculateDeliveryFee, formatPrice, resolveNeighborhoodName, isPixWeekendPromotionActive } from '@/utils/calculations';
 import { CartItem } from '@/components/cart/CartItem';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -25,6 +25,7 @@ export function CartDrawer() {
   const [freightResult, setFreightResult] = useState(null);
   const subtotal = calculateSubtotal(items);
   const totalDiscount = calculateTotalDiscount(items);
+  const pixPromotionDiscount = isPixWeekendPromotionActive() ? subtotal * 0.1 : 0;
 
   const lookupFreight = async () => {
     const digits = cep.replace(/\D/g, '');
@@ -156,11 +157,22 @@ export function CartDrawer() {
                     <span className="font-medium text-success">-{formatPrice(totalDiscount)}</span>
                   </div>
                 )}
+                {pixPromotionDiscount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-success">Pix ate 24/05</span>
+                    <span className="font-medium text-success">-{formatPrice(pixPromotionDiscount)}</span>
+                  </div>
+                )}
                 <Separator />
                 <div className="flex justify-between font-bold text-lg">
                   <span className="text-foreground">Produtos</span>
                   <span className="text-foreground">{formatPrice(subtotal)}</span>
                 </div>
+                {pixPromotionDiscount > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    O desconto de 10% no Pix sera aplicado automaticamente no checkout.
+                  </p>
+                )}
                 <div className="flex gap-2 pt-1">
                   <Button
                     variant="outline"

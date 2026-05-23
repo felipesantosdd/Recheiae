@@ -6,7 +6,6 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
-
 export function Header() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -55,7 +54,6 @@ export function Header() {
           {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
       </div>
-
       {/* Mobile nav dropdown */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-border bg-card px-4 py-3 animate-slide-up">
