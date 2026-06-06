@@ -25,7 +25,8 @@ export function CartDrawer() {
   const [freightResult, setFreightResult] = useState(null);
   const subtotal = calculateSubtotal(items);
   const totalDiscount = calculateTotalDiscount(items);
-  const pixPromotionDiscount = isPixWeekendPromotionActive() ? subtotal * 0.1 : 0;
+  const nonComboSubtotal = items.filter(i => i.type !== 'combo').reduce((acc, i) => acc + (i.preco || 0) * (i.quantity || 1), 0);
+  const pixPromotionDiscount = isPixWeekendPromotionActive() ? nonComboSubtotal * 0.1 : 0;
 
   const lookupFreight = async () => {
     const digits = cep.replace(/\D/g, '');
@@ -159,7 +160,7 @@ export function CartDrawer() {
                 )}
                 {pixPromotionDiscount > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-success">Pix ate 24/05</span>
+                    <span className="text-success">Desconto Pix 10%</span>
                     <span className="font-medium text-success">-{formatPrice(pixPromotionDiscount)}</span>
                   </div>
                 )}
@@ -170,7 +171,7 @@ export function CartDrawer() {
                 </div>
                 {pixPromotionDiscount > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    O desconto de 10% no Pix sera aplicado automaticamente no checkout.
+                    O desconto de 10% no Pix sera aplicado automaticamente no checkout. Nao se aplica a combos.
                   </p>
                 )}
                 <div className="flex gap-2 pt-1">

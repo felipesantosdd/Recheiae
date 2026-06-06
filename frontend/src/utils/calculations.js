@@ -10,7 +10,6 @@
   promotionActive: true,
 };
 
-export const PIX_WEEKEND_PROMOTION_END_AT = '2026-05-24T23:59:59-03:00';
 
 const DELIVERY_FEE_ENTRIES = [
   { name: 'Acude', fee: 9.0 },
@@ -425,16 +424,19 @@ export function calculateDeliveryFee(bairro = '') {
   return getNeighborhoodDeliveryRule(bairro)?.fee ?? STORE_CONFIG.deliveryFee;
 }
 
-export function isPixWeekendPromotionActive(now = new Date()) {
-  return now.getTime() <= new Date(PIX_WEEKEND_PROMOTION_END_AT).getTime();
+export function isPixWeekendPromotionActive() {
+  return true;
 }
 
-export function calculatePixWeekendDiscount(subtotal = 0, paymentMethod = '', now = new Date()) {
+export function calculatePixWeekendDiscount(subtotal = 0, paymentMethod = '', _now = new Date(), items = []) {
   const normalized = normalizeText(paymentMethod);
-  if (!isPixWeekendPromotionActive(now) || !normalized.includes('PIX')) {
+  if (!normalized.includes('PIX')) {
     return 0;
   }
-  return Number(subtotal || 0) * 0.1;
+  const nonComboSubtotal = items.length > 0
+    ? items.filter(i => i.type !== 'combo').reduce((acc, i) => acc + (i.preco || 0) * (i.quantity || 1), 0)
+    : Number(subtotal || 0);
+  return nonComboSubtotal * 0.1;
 }
 
 export function getPaymentFeeDetails(paymentMethod = '', baseAmount = 0) {

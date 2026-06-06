@@ -142,7 +142,7 @@ export default function CheckoutPage() {
   const deliveryFee = isPickup ? 0 : calculateDeliveryFee(formData.bairro);
   const manualDiscount = DEV_ORDER_TOOLS_ENABLED ? parseMoneyInput(devDiscountInput) : 0;
   const pixPromotionActive = isPixWeekendPromotionActive();
-  const pixPromotionDiscount = calculatePixWeekendDiscount(subtotal, formData.formaPagamento);
+  const pixPromotionDiscount = calculatePixWeekendDiscount(subtotal, formData.formaPagamento, new Date(), items);
   const amountBeforePaymentFee = Math.max(0, subtotal + deliveryFee - manualDiscount - pixPromotionDiscount);
   const paymentFeeDetails = getPaymentFeeDetails(formData.formaPagamento, amountBeforePaymentFee);
   const paymentFee = calculatePaymentFee(formData.formaPagamento, amountBeforePaymentFee);
@@ -637,7 +637,7 @@ export default function CheckoutPage() {
               </div>
               {pixPromotionActive && (
                 <p className="text-xs text-muted-foreground">
-                  Pagando no Pix ate 24/05/2026 as 23:59 voce recebe 10% de desconto nos produtos.
+                  Pagando no Pix voce recebe 10% de desconto nos produtos (nao se aplica a combos).
                 </p>
               )}
 
